@@ -1,0 +1,779 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>LyricFlow · Lyric Scroller</title>
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <style>
+        :root {
+            /* Soft pastel palette with a subtle edge */
+            --bg: #0f1020;
+            --card: #181a2e;
+            --panel: #f9f5ff;
+            --accent: #ff9f9a;
+            --accent-strong: #7c5cff;
+            --text-main: #111321;
+            --text-soft: #4b4d63;
+            --text-invert: #ffffff;
+            --border-subtle: rgba(12, 14, 35, 0.08);
+            --shadow-soft: 0 18px 45px rgba(3, 7, 30, 0.55);
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-sm: 999px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: radial-gradient(circle at top, #2b2b58 0, #0f1020 45%, #050614 100%);
+            color: var(--text-invert);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+            body > header,
+            .controls,
+            .main,
+            .footer,
+            #ad-slot-top,
+            #ad-slot-bottom,
+            #setlistBar {
+                max-width: 760px;
+                width: 100%;
+                margin: 0 auto;
+            }
+
+        header {
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(120deg, rgba(255, 159, 154, 0.18), rgba(124, 92, 255, 0.35));
+            border: 1px solid rgba(248, 244, 255, 0.35);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            font-size: 0.9rem;
+            text-align: center;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #fefbff;
+        }
+
+        .controls {
+            padding: 10px;
+            background: rgba(7, 9, 29, 0.85);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(110, 120, 255, 0.22);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .controls button {
+                flex: 1 1 30%;
+                min-width: 96px;
+                border: none;
+                border-radius: var(--radius-sm);
+                padding: 9px 12px;
+                font-size: 0.9rem;
+                background: rgba(249, 245, 255, 0.06);
+                color: #f5f2ff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+            }
+
+                .controls button.primary {
+                    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+                    color: #1b1020;
+                    font-weight: 600;
+                }
+
+                .controls button:active {
+                    transform: translateY(1px) scale(0.99);
+                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+                }
+
+            .controls .speed-wrap {
+                width: 100%;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                font-size: 0.8rem;
+                color: rgba(215, 213, 245, 0.9);
+            }
+
+            .controls input[type="range"] {
+                flex: 1;
+                accent-color: var(--accent-strong);
+            }
+
+        #ad-slot-top,
+        #ad-slot-bottom {
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            background: rgba(15, 16, 32, 0.7);
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+            color: rgba(230, 227, 255, 0.75);
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        #ad-slot-bottom {
+            margin-top: 8px;
+            margin-bottom: 4px;
+            border-radius: var(--radius-lg);
+            padding: 10px 12px;
+        }
+
+        #setlistBar {
+            margin-top: 8px;
+            padding: 6px 8px;
+            border-radius: 999px;
+            background: rgba(9, 10, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 0.8rem;
+            color: rgba(230, 227, 255, 0.85);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        #setlistChips {
+            display: flex;
+            gap: 6px;
+        }
+
+        #editSetlistBtn {
+            margin-left: auto;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: none;
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f7f4ff;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            resize: none;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-subtle);
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: var(--panel);
+            color: var(--text-main);
+            box-shadow: var(--shadow-soft);
+            min-height: 36vh;
+        }
+
+        .viewer-wrapper {
+            flex: 1;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: radial-gradient(circle at top left, rgba(255, 159, 154, 0.12), rgba(124, 92, 255, 0.26)), linear-gradient(145deg, #090b20 0%, #050615 100%);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-soft);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        .viewer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 16px 48px;
+            white-space: pre-wrap;
+            font-size: 1.35rem;
+            line-height: 1.45;
+            color: #fdf7ff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+        }
+
+        .footer {
+            padding: 6px 4px 4px;
+            margin-top: 6px;
+            font-size: 0.75rem;
+            color: rgba(219, 216, 248, 0.8);
+            text-align: center;
+        }
+
+            .footer nav a {
+                color: inherit;
+                text-decoration: none;
+                margin: 0 6px;
+            }
+
+        @media (orientation: landscape) and (min-width: 720px) {
+            .main {
+                flex-direction: row;
+            }
+
+            .editor-column {
+                width: 45%;
+            }
+
+            .viewer-wrapper {
+                width: 55%;
+            }
+        }
+
+        /* Gig mode */
+
+        body.gig-mode {
+            background: #000;
+        }
+
+            body.gig-mode .viewer-wrapper {
+                background: #000;
+                border-color: rgba(255, 255, 255, 0.3);
+            }
+
+            body.gig-mode .viewer {
+                font-size: 1.8rem;
+                line-height: 1.5;
+            }
+
+            body.gig-mode .controls,
+            body.gig-mode #setlistBar {
+                background: #050505;
+            }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span style="font-weight:600;">LyricFlow</span>
+        · Smooth Lyric Scroller
+    </header>
+
+    <div id="ad-slot-top">
+        Ad space · 320×50 (reserved)
+    </div>
+
+    <div class="controls">
+        <button id="copyToViewer">Load Lyrics</button>
+        <button id="start" class="primary">Start</button>
+        <button id="pause">Pause</button>
+        <button id="prevSongBtn">◀ Prev</button>
+        <button id="nextSongBtn">Next ▶</button>
+        <button id="gigModeBtn">Gig mode</button>
+
+        <div class="speed-wrap">
+            Speed:
+            <input type="range" id="speed" min="10" max="200" value="60" />
+            <span id="speedValue">60</span> px/s
+        </div>
+
+        <div class="speed-wrap">
+            Text size:
+            <input type="range" id="fontSize" min="16" max="32" value="22" />
+            <span id="fontSizeValue">22</span> px
+        </div>
+    </div>
+
+    <div id="setlistBar">
+        <span style="opacity:.8;margin-right:4px;">Setlist:</span>
+        <div id="setlistChips"></div>
+        <button id="editSetlistBtn">Edit</button>
+    </div>
+
+    <main class="main" aria-label="Lyric editor and scroller">
+        <div class="editor-column" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:760px;margin:0 auto;">
+            <div style="display:flex;gap:6px;align-items:center;">
+                <select id="songSelect"
+                        style="
+                  flex:1;
+                  border-radius:12px;
+                  border:1px solid rgba(12,14,35,0.15);
+                  padding:6px 10px;
+                  font-size:0.9rem;
+                ">
+                    <option value="__new__">+ New song…</option>
+                </select>
+                <button id="newSongBtn"
+                        style="
+                  padding:6px 10px;
+                  border-radius:999px;
+                  border:none;
+                  font-size:0.85rem;
+                ">
+                    New
+                </button>
+                <button id="deleteSongBtn"
+                        style="
+                  padding:6px 10px;
+                  border-radius:999px;
+                  border:none;
+                  font-size:0.85rem;
+                  background:#ff4b5c;color:#fff;
+                ">
+                    Del
+                </button>
+            </div>
+
+            <input id="songTitle"
+                   type="text"
+                   placeholder="Song title (e.g. Wonderwall – Oasis)"
+                   style="
+               width:100%;
+               border-radius:12px;
+               border:1px solid rgba(12,14,35,0.15);
+               padding:8px 10px;
+               font-size:0.95rem;
+             " />
+
+            <textarea id="editor"
+                      placeholder="Paste your lyrics here..."></textarea>
+        </div>
+
+        <section class="viewer-wrapper" aria-label="Lyric display">
+            <div id="viewer" class="viewer"></div>
+        </section>
+    </main>
+
+    <div id="ad-slot-bottom">
+        Ad space · 320×100 (reserved)
+    </div>
+
+    <footer class="footer">
+        <div style="margin-bottom:4px;">
+            © 2026 LyricFlow • v1.0
+        </div>
+        <nav>
+            <a href="#">About</a>·
+            <a href="#">Contact</a>·
+            <a href="#">Privacy</a>
+        </nav>
+    </footer>
+
+    <script>
+    const editor = document.getElementById("editor");
+    const titleInput = document.getElementById("songTitle");
+    const songSelect = document.getElementById("songSelect");
+    const newSongBtn = document.getElementById("newSongBtn");
+    const deleteSongBtn = document.getElementById("deleteSongBtn");
+
+    const viewer = document.getElementById("viewer");
+    const copyBtn = document.getElementById("copyToViewer");
+    const startBtn = document.getElementById("start");
+    const pauseBtn = document.getElementById("pause");
+    const speedSlider = document.getElementById("speed");
+    const speedValue = document.getElementById("speedValue");
+
+    const prevSongBtn = document.getElementById("prevSongBtn");
+    const nextSongBtn = document.getElementById("nextSongBtn");
+
+    const setlistBar = document.getElementById("setlistBar");
+    const setlistChips = document.getElementById("setlistChips");
+    const editSetlistBtn = document.getElementById("editSetlistBtn");
+
+    const gigModeBtn = document.getElementById("gigModeBtn");
+    const fontSizeSlider = document.getElementById("fontSize");
+    const fontSizeValue = document.getElementById("fontSizeValue");
+
+    const STORAGE_KEY = "lyricflow:songs:v1";
+    const SETLIST_KEY = "lyricflow:setlist:v1";
+    const GIG_MODE_KEY = "lyricflow:gig-mode";
+    const FONT_SIZE_KEY = "lyricflow:viewer-font-size";
+
+    let songs = [];
+    let setlist = [];
+    let currentId = null;
+
+    let scrolling = false;
+    let lastTime = null;
+    let currentTop = 0;
+
+    function loadSongs() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        songs = raw ? JSON.parse(raw) || [] : [];
+      } catch (e) {
+        console.warn("Could not load songs", e);
+        songs = [];
+      }
+    }
+
+    function saveSongs() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+      } catch (e) {
+        console.warn("Could not save songs", e);
+      }
+    }
+
+    function loadSetlist() {
+      try {
+        const raw = localStorage.getItem(SETLIST_KEY);
+        setlist = raw ? JSON.parse(raw) || [] : [];
+      } catch (e) {
+        console.warn("Could not load setlist", e);
+        setlist = [];
+      }
+    }
+
+    function saveSetlist() {
+      try {
+        localStorage.setItem(SETLIST_KEY, JSON.stringify(setlist));
+      } catch (e) {
+        console.warn("Could not save setlist", e);
+      }
+    }
+
+    function generateId() {
+      return "song_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    }
+
+    function refreshSongSelect() {
+      const prevValue = currentId;
+      songSelect.innerHTML = "";
+      const optNew = document.createElement("option");
+      optNew.value = "__new__";
+      optNew.textContent = "+ New song…";
+      songSelect.appendChild(optNew);
+
+      songs.forEach(song => {
+        const opt = document.createElement("option");
+        opt.value = song.id;
+        opt.textContent = song.title || "(Untitled)";
+        songSelect.appendChild(opt);
+      });
+
+      if (prevValue && songs.find(s => s.id === prevValue)) {
+        songSelect.value = prevValue;
+      } else {
+        songSelect.value = "__new__";
+        currentId = null;
+      }
+    }
+
+    function refreshSetlistChips() {
+      setlistChips.innerHTML = "";
+      if (!setlist.length) {
+        const span = document.createElement("span");
+        span.style.opacity = "0.6";
+        span.textContent = "Tap ‘Edit’ to add songs.";
+        setlistChips.appendChild(span);
+        return;
+      }
+
+      setlist.forEach(id => {
+        const song = songs.find(s => s.id === id);
+        if (!song) return;
+        const chip = document.createElement("button");
+        chip.textContent = song.title || "(Untitled)";
+        chip.style.border = "none";
+        chip.style.borderRadius = "999px";
+        chip.style.padding = "4px 10px";
+        chip.style.fontSize = "0.78rem";
+        chip.style.background = (id === currentId)
+          ? "rgba(255,159,154,0.9)"
+          : "rgba(255,255,255,0.08)";
+        chip.style.color = (id === currentId) ? "#1b1020" : "#f7f4ff";
+        chip.style.whiteSpace = "nowrap";
+
+        chip.addEventListener("click", () => {
+          if (id !== currentId) {
+            loadSongIntoFields(id);
+            refreshSongSelect();
+            refreshSetlistChips();
+          }
+        });
+
+        setlistChips.appendChild(chip);
+      });
+    }
+
+    function loadSongIntoFields(id) {
+      const song = songs.find(s => s.id === id);
+      if (!song) return;
+      currentId = id;
+      titleInput.value = song.title || "";
+      editor.value = song.lyrics || "";
+      viewer.textContent = "";
+      currentTop = 0;
+      viewer.style.top = "0px";
+      autoResizeTextarea(editor);
+    }
+
+    function clearFields() {
+      currentId = null;
+      titleInput.value = "";
+      editor.value = "";
+      viewer.textContent = "";
+      currentTop = 0;
+      viewer.style.top = "0px";
+      songSelect.value = "__new__";
+      autoResizeTextarea(editor);
+    }
+
+    function upsertCurrentSong() {
+      const title = titleInput.value.trim();
+      const lyrics = editor.value;
+
+      if (!currentId) {
+        currentId = generateId();
+        songs.push({
+          id: currentId,
+          title: title || "Untitled",
+          lyrics,
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        const idx = songs.findIndex(s => s.id === currentId);
+        if (idx !== -1) {
+          songs[idx].title = title || "Untitled";
+          songs[idx].lyrics = lyrics;
+          songs[idx].updatedAt = new Date().toISOString();
+        }
+      }
+      saveSongs();
+      refreshSongSelect();
+      refreshSetlistChips();
+    }
+
+    function deleteCurrentSong() {
+      if (!currentId) return;
+      const idx = songs.findIndex(s => s.id === currentId);
+      if (idx === -1) return;
+      const deletingId = currentId;
+      songs.splice(idx, 1);
+      saveSongs();
+      setlist = setlist.filter(id => id !== deletingId);
+      saveSetlist();
+      currentId = null;
+      refreshSongSelect();
+      refreshSetlistChips();
+      clearFields();
+    }
+
+    songSelect.addEventListener("change", () => {
+      const value = songSelect.value;
+      if (value === "__new__") {
+        clearFields();
+      } else {
+        loadSongIntoFields(value);
+        refreshSetlistChips();
+      }
+    });
+
+    newSongBtn.addEventListener("click", () => {
+      clearFields();
+      titleInput.focus();
+    });
+
+    deleteSongBtn.addEventListener("click", () => {
+      if (!currentId) return;
+      const ok = confirm("Delete this song from LyricFlow?");
+      if (!ok) return;
+      deleteCurrentSong();
+    });
+
+    let saveTimer;
+    function queueSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        if (titleInput.value.trim() === "" && editor.value.trim() === "") {
+          return;
+        }
+        upsertCurrentSong();
+      }, 400);
+    }
+
+    titleInput.addEventListener("input", () => {
+      queueSave();
+    });
+
+    editor.addEventListener("input", () => {
+      queueSave();
+      autoResizeTextarea(editor);
+    });
+
+    function autoResizeTextarea(el) {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    }
+
+    copyBtn.addEventListener("click", () => {
+      viewer.textContent = editor.value || "No lyrics loaded.";
+      currentTop = 0;
+      viewer.style.top = "0px";
+    });
+
+    function step(timestamp) {
+      if (!scrolling) {
+        lastTime = null;
+        return;
+      }
+      if (!lastTime) lastTime = timestamp;
+      const delta = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+
+      const speed = Number(speedSlider.value);
+      currentTop -= speed * delta;
+      viewer.style.top = currentTop + "px";
+
+      const wrapperHeight = viewer.parentElement.clientHeight;
+      const viewerHeight = viewer.scrollHeight;
+
+      if (-currentTop > viewerHeight + 40) {
+        currentTop = wrapperHeight;
+      }
+      requestAnimationFrame(step);
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (!scrolling) {
+        scrolling = true;
+        requestAnimationFrame(step);
+      }
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      scrolling = false;
+    });
+
+    speedSlider.addEventListener("input", () => {
+      speedValue.textContent = speedSlider.value;
+    });
+
+    function goToSongInSetlist(direction) {
+      if (!setlist.length) return;
+
+      let index = setlist.findIndex(id => id === currentId);
+      if (index === -1) {
+        index = direction > 0 ? 0 : setlist.length - 1;
+      } else {
+        index += direction;
+      }
+
+      if (index < 0) index = setlist.length - 1;
+      if (index >= setlist.length) index = 0;
+
+      const targetId = setlist[index];
+      const song = songs.find(s => s.id === targetId);
+      if (!song) return;
+
+      loadSongIntoFields(targetId);
+      refreshSongSelect();
+      refreshSetlistChips();
+      viewer.textContent = "";
+      currentTop = 0;
+      viewer.style.top = "0px";
+    }
+
+    prevSongBtn.addEventListener("click", () => {
+      goToSongInSetlist(-1);
+    });
+
+    nextSongBtn.addEventListener("click", () => {
+      goToSongInSetlist(1);
+    });
+
+    function applyGigModeFromStorage() {
+      const enabled = localStorage.getItem(GIG_MODE_KEY) === "1";
+      document.body.classList.toggle("gig-mode", enabled);
+    }
+
+    gigModeBtn.addEventListener("click", () => {
+      const enabled = !document.body.classList.contains("gig-mode");
+      document.body.classList.toggle("gig-mode", enabled);
+      localStorage.setItem(GIG_MODE_KEY, enabled ? "1" : "0");
+    });
+
+    function applyViewerFontSize(px) {
+      viewer.style.fontSize = px + "px";
+      fontSizeSlider.value = px;
+      fontSizeValue.textContent = px;
+    }
+
+    function loadViewerFontSize() {
+      const stored = localStorage.getItem(FONT_SIZE_KEY);
+      const fallback = 22;
+      const size = stored ? parseInt(stored, 10) : fallback;
+      if (!isNaN(size)) applyViewerFontSize(size);
+    }
+
+    fontSizeSlider.addEventListener("input", () => {
+      const size = parseInt(fontSizeSlider.value, 10);
+      if (isNaN(size)) return;
+      applyViewerFontSize(size);
+      localStorage.setItem(FONT_SIZE_KEY, String(size));
+    });
+
+    editSetlistBtn.addEventListener("click", () => {
+      if (!songs.length) {
+        alert("No songs saved yet. Create a song first.");
+        return;
+      }
+
+      const lines = songs.map((s, idx) => `${idx + 1}. ${s.title || "Untitled"}`).join("\n");
+      const currentOrder = setlist.length
+        ? setlist
+            .map(id => songs.findIndex(s => s.id === id) + 1)
+            .filter(n => n > 0)
+            .join(",")
+        : "";
+
+      const input = prompt(
+        "Setlist order (comma-separated numbers):\n\n" + lines + "\n\nExample: 1,3,2",
+        currentOrder
+      );
+
+      if (!input) return;
+
+      const indices = input
+        .split(",")
+        .map(x => parseInt(x.trim(), 10))
+        .filter(n => !isNaN(n) && n > 0 && n <= songs.length);
+
+      if (!indices.length) {
+        alert("No valid numbers entered.");
+        return;
+      }
+
+      setlist = indices.map(i => songs[i - 1].id);
+      saveSetlist();
+      refreshSetlistChips();
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSongs();
+      refreshSongSelect();
+      loadSetlist();
+      refreshSetlistChips();
+      applyGigModeFromStorage();
+      loadViewerFontSize();
+      autoResizeTextarea(editor);
+    });
+    </script>
+</body>
+</html>
