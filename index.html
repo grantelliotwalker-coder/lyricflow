@@ -11,7 +11,6 @@
 
     <style>
         :root {
-            /* Soft pastel palette with a subtle edge */
             --bg: #0f1020;
             --card: #181a2e;
             --panel: #f9f5ff;
@@ -46,10 +45,7 @@
             body > header,
             .controls,
             .main,
-            .footer,
-            #ad-slot-top,
-            #ad-slot-bottom,
-            #setlistBar {
+            .footer {
                 max-width: 760px;
                 width: 100%;
                 margin: 0 auto;
@@ -124,52 +120,21 @@
                 accent-color: var(--accent-strong);
             }
 
-        #ad-slot-top,
-        #ad-slot-bottom {
-            padding: 6px 10px;
-            border-radius: var(--radius-sm);
-            background: rgba(15, 16, 32, 0.7);
-            border: 1px dashed rgba(255, 255, 255, 0.12);
-            color: rgba(230, 227, 255, 0.75);
-            font-size: 0.75rem;
-            text-align: center;
+        /* Collapsible settings panel */
+        #settingsPanel {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
         }
 
-        #ad-slot-bottom {
-            margin-top: 8px;
-            margin-bottom: 4px;
-            border-radius: var(--radius-lg);
-            padding: 10px 12px;
-        }
-
-        #setlistBar {
-            margin-top: 8px;
-            padding: 6px 8px;
-            border-radius: 999px;
-            background: rgba(9, 10, 32, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            font-size: 0.8rem;
-            color: rgba(230, 227, 255, 0.85);
+        .controls.settings-open #settingsPanel {
             display: flex;
-            align-items: center;
-            gap: 6px;
-            overflow-x: auto;
-            white-space: nowrap;
         }
 
-        #setlistChips {
-            display: flex;
-            gap: 6px;
-        }
-
-        #editSetlistBtn {
-            margin-left: auto;
-            padding: 4px 8px;
-            border-radius: 999px;
-            border: none;
-            font-size: 0.75rem;
-            background: rgba(255, 255, 255, 0.08);
-            color: #f7f4ff;
+        #toggleSettingsBtn {
+            flex: 1 1 100%;
         }
 
         .main {
@@ -178,6 +143,8 @@
             flex-direction: column;
             gap: 10px;
             margin-top: 10px;
+            max-width: 760px;
+            width: 100%;
         }
 
         textarea {
@@ -223,6 +190,8 @@
             font-size: 0.75rem;
             color: rgba(219, 216, 248, 0.8);
             text-align: center;
+            max-width: 760px;
+            width: 100%;
         }
 
             .footer nav a {
@@ -246,7 +215,6 @@
         }
 
         /* Gig mode */
-
         body.gig-mode {
             background: #000;
         }
@@ -261,8 +229,7 @@
                 line-height: 1.5;
             }
 
-            body.gig-mode .controls,
-            body.gig-mode #setlistBar {
+            body.gig-mode .controls {
                 background: #050505;
             }
     </style>
@@ -274,39 +241,53 @@
         · Smooth Lyric Scroller
     </header>
 
+    <!--
     <div id="ad-slot-top">
-        Ad space · 320×50 (reserved)
+      Ad space · 320×50 (reserved)
     </div>
+    -->
 
     <div class="controls">
+        <!-- Always visible -->
         <button id="copyToViewer">Load Lyrics</button>
         <button id="start" class="primary">Start</button>
         <button id="pause">Pause</button>
-        <button id="prevSongBtn">◀ Prev</button>
-        <button id="nextSongBtn">Next ▶</button>
-        <button id="gigModeBtn">Gig mode</button>
 
-        <div class="speed-wrap">
-            Speed:
-            <input type="range" id="speed" min="10" max="200" value="60" />
-            <span id="speedValue">60</span> px/s
-        </div>
+        <button id="toggleSettingsBtn">Show settings</button>
 
-        <div class="speed-wrap">
-            Text size:
-            <input type="range" id="fontSize" min="16" max="32" value="22" />
-            <span id="fontSizeValue">22</span> px
-        </div>
-    </div>
+        <!-- Settings (hidden by default) -->
+        <div id="settingsPanel">
+            <!-- Setlist chips -->
+            <div style="
+            padding:6px 8px;
+            border-radius:999px;
+            background:rgba(9,10,32,0.9);
+            border:1px solid rgba(255,255,255,0.12);
+            font-size:0.8rem;
+            color:rgba(230,227,255,0.85);
+            display:flex;
+            align-items:center;
+            gap:6px;
+            overflow-x:auto;
+            white-space:nowrap;
+          ">
+                <span style="opacity:.8;margin-right:4px;">Setlist:</span>
+                <div id="setlistChips" style="display:flex;gap:6px;"></div>
+                <button id="editSetlistBtn"
+                        style="
+                  margin-left:auto;
+                  padding:4px 8px;
+                  border-radius:999px;
+                  border:none;
+                  font-size:0.75rem;
+                  background:rgba(255,255,255,0.08);
+                  color:#f7f4ff;
+                ">
+                    Edit
+                </button>
+            </div>
 
-    <div id="setlistBar">
-        <span style="opacity:.8;margin-right:4px;">Setlist:</span>
-        <div id="setlistChips"></div>
-        <button id="editSetlistBtn">Edit</button>
-    </div>
-
-    <main class="main" aria-label="Lyric editor and scroller">
-        <div class="editor-column" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:760px;margin:0 auto;">
+            <!-- Song picker + title -->
             <div style="display:flex;gap:6px;align-items:center;">
                 <select id="songSelect"
                         style="
@@ -350,6 +331,27 @@
                font-size:0.95rem;
              " />
 
+            <button id="prevSongBtn">◀ Prev</button>
+            <button id="nextSongBtn">Next ▶</button>
+            <button id="gigModeBtn">Gig mode</button>
+
+            <div class="speed-wrap">
+                Speed:
+                <input type="range" id="speed" min="10" max="200" value="60" />
+                <span id="speedValue">60</span> px/s
+            </div>
+
+            <div class="speed-wrap">
+                Text size:
+                <input type="range" id="fontSize" min="16" max="32" value="22" />
+                <span id="fontSizeValue">22</span> px
+            </div>
+        </div>
+    </div>
+
+    <main class="main" aria-label="Lyric editor and scroller">
+        <div class="editor-column"
+             style="display:flex;flex-direction:column;gap:8px;width:100%;margin:0 auto;">
             <textarea id="editor"
                       placeholder="Paste your lyrics here..."></textarea>
         </div>
@@ -359,9 +361,11 @@
         </section>
     </main>
 
+    <!--
     <div id="ad-slot-bottom">
-        Ad space · 320×100 (reserved)
+      Ad space · 320×100 (reserved)
     </div>
+    -->
 
     <footer class="footer">
         <div style="margin-bottom:4px;">
@@ -375,405 +379,418 @@
     </footer>
 
     <script>
-    const editor = document.getElementById("editor");
-    const titleInput = document.getElementById("songTitle");
-    const songSelect = document.getElementById("songSelect");
-    const newSongBtn = document.getElementById("newSongBtn");
-    const deleteSongBtn = document.getElementById("deleteSongBtn");
+        const editor = document.getElementById("editor");
+        const titleInput = document.getElementById("songTitle");
+        const songSelect = document.getElementById("songSelect");
+        const newSongBtn = document.getElementById("newSongBtn");
+        const deleteSongBtn = document.getElementById("deleteSongBtn");
 
-    const viewer = document.getElementById("viewer");
-    const copyBtn = document.getElementById("copyToViewer");
-    const startBtn = document.getElementById("start");
-    const pauseBtn = document.getElementById("pause");
-    const speedSlider = document.getElementById("speed");
-    const speedValue = document.getElementById("speedValue");
+        const viewer = document.getElementById("viewer");
+        const copyBtn = document.getElementById("copyToViewer");
+        const startBtn = document.getElementById("start");
+        const pauseBtn = document.getElementById("pause");
+        const speedSlider = document.getElementById("speed");
+        const speedValue = document.getElementById("speedValue");
 
-    const prevSongBtn = document.getElementById("prevSongBtn");
-    const nextSongBtn = document.getElementById("nextSongBtn");
+        const prevSongBtn = document.getElementById("prevSongBtn");
+        const nextSongBtn = document.getElementById("nextSongBtn");
 
-    const setlistBar = document.getElementById("setlistBar");
-    const setlistChips = document.getElementById("setlistChips");
-    const editSetlistBtn = document.getElementById("editSetlistBtn");
+        const setlistChips = document.getElementById("setlistChips");
+        const editSetlistBtn = document.getElementById("editSetlistBtn");
 
-    const gigModeBtn = document.getElementById("gigModeBtn");
-    const fontSizeSlider = document.getElementById("fontSize");
-    const fontSizeValue = document.getElementById("fontSizeValue");
+        const gigModeBtn = document.getElementById("gigModeBtn");
+        const fontSizeSlider = document.getElementById("fontSize");
+        const fontSizeValue = document.getElementById("fontSizeValue");
 
-    const STORAGE_KEY = "lyricflow:songs:v1";
-    const SETLIST_KEY = "lyricflow:setlist:v1";
-    const GIG_MODE_KEY = "lyricflow:gig-mode";
-    const FONT_SIZE_KEY = "lyricflow:viewer-font-size";
+        const toggleSettingsBtn = document.getElementById("toggleSettingsBtn");
+        const controls = document.querySelector(".controls");
 
-    let songs = [];
-    let setlist = [];
-    let currentId = null;
+        const STORAGE_KEY = "lyricflow:songs:v1";
+        const SETLIST_KEY = "lyricflow:setlist:v1";
+        const GIG_MODE_KEY = "lyricflow:gig-mode";
+        const FONT_SIZE_KEY = "lyricflow:viewer-font-size";
 
-    let scrolling = false;
-    let lastTime = null;
-    let currentTop = 0;
+        let songs = [];
+        let setlist = [];
+        let currentId = null;
 
-    function loadSongs() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        songs = raw ? JSON.parse(raw) || [] : [];
-      } catch (e) {
-        console.warn("Could not load songs", e);
-        songs = [];
-      }
-    }
+        let scrolling = false;
+        let lastTime = null;
+        let currentTop = 0;
 
-    function saveSongs() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
-      } catch (e) {
-        console.warn("Could not save songs", e);
-      }
-    }
+        function loadSongs() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                songs = raw ? JSON.parse(raw) || [] : [];
+            } catch (e) {
+                console.warn("Could not load songs", e);
+                songs = [];
+            }
+        }
 
-    function loadSetlist() {
-      try {
-        const raw = localStorage.getItem(SETLIST_KEY);
-        setlist = raw ? JSON.parse(raw) || [] : [];
-      } catch (e) {
-        console.warn("Could not load setlist", e);
-        setlist = [];
-      }
-    }
+        function saveSongs() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+            } catch (e) {
+                console.warn("Could not save songs", e);
+            }
+        }
 
-    function saveSetlist() {
-      try {
-        localStorage.setItem(SETLIST_KEY, JSON.stringify(setlist));
-      } catch (e) {
-        console.warn("Could not save setlist", e);
-      }
-    }
+        function loadSetlist() {
+            try {
+                const raw = localStorage.getItem(SETLIST_KEY);
+                setlist = raw ? JSON.parse(raw) || [] : [];
+            } catch (e) {
+                console.warn("Could not load setlist", e);
+                setlist = [];
+            }
+        }
 
-    function generateId() {
-      return "song_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-    }
+        function saveSetlist() {
+            try {
+                localStorage.setItem(SETLIST_KEY, JSON.stringify(setlist));
+            } catch (e) {
+                console.warn("Could not save setlist", e);
+            }
+        }
 
-    function refreshSongSelect() {
-      const prevValue = currentId;
-      songSelect.innerHTML = "";
-      const optNew = document.createElement("option");
-      optNew.value = "__new__";
-      optNew.textContent = "+ New song…";
-      songSelect.appendChild(optNew);
+        function generateId() {
+            return "song_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+        }
 
-      songs.forEach(song => {
-        const opt = document.createElement("option");
-        opt.value = song.id;
-        opt.textContent = song.title || "(Untitled)";
-        songSelect.appendChild(opt);
-      });
+        function refreshSongSelect() {
+            const prevValue = currentId;
+            songSelect.innerHTML = "";
+            const optNew = document.createElement("option");
+            optNew.value = "__new__";
+            optNew.textContent = "+ New song…";
+            songSelect.appendChild(optNew);
 
-      if (prevValue && songs.find(s => s.id === prevValue)) {
-        songSelect.value = prevValue;
-      } else {
-        songSelect.value = "__new__";
-        currentId = null;
-      }
-    }
+            songs.forEach(song => {
+                const opt = document.createElement("option");
+                opt.value = song.id;
+                opt.textContent = song.title || "(Untitled)";
+                songSelect.appendChild(opt);
+            });
 
-    function refreshSetlistChips() {
-      setlistChips.innerHTML = "";
-      if (!setlist.length) {
-        const span = document.createElement("span");
-        span.style.opacity = "0.6";
-        span.textContent = "Tap ‘Edit’ to add songs.";
-        setlistChips.appendChild(span);
-        return;
-      }
+            if (prevValue && songs.find(s => s.id === prevValue)) {
+                songSelect.value = prevValue;
+            } else {
+                songSelect.value = "__new__";
+                currentId = null;
+            }
+        }
 
-      setlist.forEach(id => {
-        const song = songs.find(s => s.id === id);
-        if (!song) return;
-        const chip = document.createElement("button");
-        chip.textContent = song.title || "(Untitled)";
-        chip.style.border = "none";
-        chip.style.borderRadius = "999px";
-        chip.style.padding = "4px 10px";
-        chip.style.fontSize = "0.78rem";
-        chip.style.background = (id === currentId)
-          ? "rgba(255,159,154,0.9)"
-          : "rgba(255,255,255,0.08)";
-        chip.style.color = (id === currentId) ? "#1b1020" : "#f7f4ff";
-        chip.style.whiteSpace = "nowrap";
+        function refreshSetlistChips() {
+            setlistChips.innerHTML = "";
+            if (!setlist.length) {
+                const span = document.createElement("span");
+                span.style.opacity = "0.6";
+                span.textContent = "Tap ‘Edit’ to add songs.";
+                setlistChips.appendChild(span);
+                return;
+            }
 
-        chip.addEventListener("click", () => {
-          if (id !== currentId) {
-            loadSongIntoFields(id);
+            setlist.forEach(id => {
+                const song = songs.find(s => s.id === id);
+                if (!song) return;
+                const chip = document.createElement("button");
+                chip.textContent = song.title || "(Untitled)";
+                chip.style.border = "none";
+                chip.style.borderRadius = "999px";
+                chip.style.padding = "4px 10px";
+                chip.style.fontSize = "0.78rem";
+                chip.style.background = (id === currentId)
+                    ? "rgba(255,159,154,0.9)"
+                    : "rgba(255,255,255,0.08)";
+                chip.style.color = (id === currentId) ? "#1b1020" : "#f7f4ff";
+                chip.style.whiteSpace = "nowrap";
+
+                chip.addEventListener("click", () => {
+                    if (id !== currentId) {
+                        loadSongIntoFields(id);
+                        refreshSongSelect();
+                        refreshSetlistChips();
+                    }
+                });
+
+                setlistChips.appendChild(chip);
+            });
+        }
+
+        function loadSongIntoFields(id) {
+            const song = songs.find(s => s.id === id);
+            if (!song) return;
+            currentId = id;
+            titleInput.value = song.title || "";
+            editor.value = song.lyrics || "";
+            viewer.textContent = "";
+            currentTop = 0;
+            viewer.style.top = "0px";
+            autoResizeTextarea(editor);
+        }
+
+        function clearFields() {
+            currentId = null;
+            titleInput.value = "";
+            editor.value = "";
+            viewer.textContent = "";
+            currentTop = 0;
+            viewer.style.top = "0px";
+            songSelect.value = "__new__";
+            autoResizeTextarea(editor);
+        }
+
+        function upsertCurrentSong() {
+            const title = titleInput.value.trim();
+            const lyrics = editor.value;
+
+            if (!currentId) {
+                currentId = generateId();
+                songs.push({
+                    id: currentId,
+                    title: title || "Untitled",
+                    lyrics,
+                    updatedAt: new Date().toISOString()
+                });
+            } else {
+                const idx = songs.findIndex(s => s.id === currentId);
+                if (idx !== -1) {
+                    songs[idx].title = title || "Untitled";
+                    songs[idx].lyrics = lyrics;
+                    songs[idx].updatedAt = new Date().toISOString();
+                }
+            }
+            saveSongs();
             refreshSongSelect();
             refreshSetlistChips();
-          }
+        }
+
+        function deleteCurrentSong() {
+            if (!currentId) return;
+            const idx = songs.findIndex(s => s.id === currentId);
+            if (idx === -1) return;
+            const deletingId = currentId;
+            songs.splice(idx, 1);
+            saveSongs();
+            setlist = setlist.filter(id => id !== deletingId);
+            saveSetlist();
+            currentId = null;
+            refreshSongSelect();
+            refreshSetlistChips();
+            clearFields();
+        }
+
+        songSelect.addEventListener("change", () => {
+            const value = songSelect.value;
+            if (value === "__new__") {
+                clearFields();
+            } else {
+                loadSongIntoFields(value);
+                refreshSetlistChips();
+            }
         });
 
-        setlistChips.appendChild(chip);
-      });
-    }
-
-    function loadSongIntoFields(id) {
-      const song = songs.find(s => s.id === id);
-      if (!song) return;
-      currentId = id;
-      titleInput.value = song.title || "";
-      editor.value = song.lyrics || "";
-      viewer.textContent = "";
-      currentTop = 0;
-      viewer.style.top = "0px";
-      autoResizeTextarea(editor);
-    }
-
-    function clearFields() {
-      currentId = null;
-      titleInput.value = "";
-      editor.value = "";
-      viewer.textContent = "";
-      currentTop = 0;
-      viewer.style.top = "0px";
-      songSelect.value = "__new__";
-      autoResizeTextarea(editor);
-    }
-
-    function upsertCurrentSong() {
-      const title = titleInput.value.trim();
-      const lyrics = editor.value;
-
-      if (!currentId) {
-        currentId = generateId();
-        songs.push({
-          id: currentId,
-          title: title || "Untitled",
-          lyrics,
-          updatedAt: new Date().toISOString()
+        newSongBtn.addEventListener("click", () => {
+            clearFields();
+            titleInput.focus();
         });
-      } else {
-        const idx = songs.findIndex(s => s.id === currentId);
-        if (idx !== -1) {
-          songs[idx].title = title || "Untitled";
-          songs[idx].lyrics = lyrics;
-          songs[idx].updatedAt = new Date().toISOString();
+
+        deleteSongBtn.addEventListener("click", () => {
+            if (!currentId) return;
+            const ok = confirm("Delete this song from LyricFlow?");
+            if (!ok) return;
+            deleteCurrentSong();
+        });
+
+        let saveTimer;
+        function queueSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                if (titleInput.value.trim() === "" && editor.value.trim() === "") {
+                    return;
+                }
+                upsertCurrentSong();
+            }, 400);
         }
-      }
-      saveSongs();
-      refreshSongSelect();
-      refreshSetlistChips();
-    }
 
-    function deleteCurrentSong() {
-      if (!currentId) return;
-      const idx = songs.findIndex(s => s.id === currentId);
-      if (idx === -1) return;
-      const deletingId = currentId;
-      songs.splice(idx, 1);
-      saveSongs();
-      setlist = setlist.filter(id => id !== deletingId);
-      saveSetlist();
-      currentId = null;
-      refreshSongSelect();
-      refreshSetlistChips();
-      clearFields();
-    }
+        titleInput.addEventListener("input", () => {
+            queueSave();
+        });
 
-    songSelect.addEventListener("change", () => {
-      const value = songSelect.value;
-      if (value === "__new__") {
-        clearFields();
-      } else {
-        loadSongIntoFields(value);
-        refreshSetlistChips();
-      }
-    });
+        editor.addEventListener("input", () => {
+            queueSave();
+            autoResizeTextarea(editor);
+        });
 
-    newSongBtn.addEventListener("click", () => {
-      clearFields();
-      titleInput.focus();
-    });
-
-    deleteSongBtn.addEventListener("click", () => {
-      if (!currentId) return;
-      const ok = confirm("Delete this song from LyricFlow?");
-      if (!ok) return;
-      deleteCurrentSong();
-    });
-
-    let saveTimer;
-    function queueSave() {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        if (titleInput.value.trim() === "" && editor.value.trim() === "") {
-          return;
+        function autoResizeTextarea(el) {
+            el.style.height = "auto";
+            el.style.height = el.scrollHeight + "px";
         }
-        upsertCurrentSong();
-      }, 400);
-    }
 
-    titleInput.addEventListener("input", () => {
-      queueSave();
-    });
+        copyBtn.addEventListener("click", () => {
+            viewer.textContent = editor.value || "No lyrics loaded.";
+            currentTop = 0;
+            viewer.style.top = "0px";
+        });
 
-    editor.addEventListener("input", () => {
-      queueSave();
-      autoResizeTextarea(editor);
-    });
+        function step(timestamp) {
+            if (!scrolling) {
+                lastTime = null;
+                return;
+            }
+            if (!lastTime) lastTime = timestamp;
+            const delta = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
 
-    function autoResizeTextarea(el) {
-      el.style.height = "auto";
-      el.style.height = el.scrollHeight + "px";
-    }
+            const speed = Number(speedSlider.value);
+            currentTop -= speed * delta;
+            viewer.style.top = currentTop + "px";
 
-    copyBtn.addEventListener("click", () => {
-      viewer.textContent = editor.value || "No lyrics loaded.";
-      currentTop = 0;
-      viewer.style.top = "0px";
-    });
+            const wrapperHeight = viewer.parentElement.clientHeight;
+            const viewerHeight = viewer.scrollHeight;
 
-    function step(timestamp) {
-      if (!scrolling) {
-        lastTime = null;
-        return;
-      }
-      if (!lastTime) lastTime = timestamp;
-      const delta = (timestamp - lastTime) / 1000;
-      lastTime = timestamp;
+            if (-currentTop > viewerHeight + 40) {
+                currentTop = wrapperHeight;
+            }
+            requestAnimationFrame(step);
+        }
 
-      const speed = Number(speedSlider.value);
-      currentTop -= speed * delta;
-      viewer.style.top = currentTop + "px";
+        startBtn.addEventListener("click", () => {
+            if (!scrolling) {
+                scrolling = true;
+                requestAnimationFrame(step);
+            }
+        });
 
-      const wrapperHeight = viewer.parentElement.clientHeight;
-      const viewerHeight = viewer.scrollHeight;
+        pauseBtn.addEventListener("click", () => {
+            scrolling = false;
+        });
 
-      if (-currentTop > viewerHeight + 40) {
-        currentTop = wrapperHeight;
-      }
-      requestAnimationFrame(step);
-    }
+        speedSlider.addEventListener("input", () => {
+            speedValue.textContent = speedSlider.value;
+        });
 
-    startBtn.addEventListener("click", () => {
-      if (!scrolling) {
-        scrolling = true;
-        requestAnimationFrame(step);
-      }
-    });
+        function goToSongInSetlist(direction) {
+            if (!setlist.length) return;
 
-    pauseBtn.addEventListener("click", () => {
-      scrolling = false;
-    });
+            let index = setlist.findIndex(id => id === currentId);
+            if (index === -1) {
+                index = direction > 0 ? 0 : setlist.length - 1;
+            } else {
+                index += direction;
+            }
 
-    speedSlider.addEventListener("input", () => {
-      speedValue.textContent = speedSlider.value;
-    });
+            if (index < 0) index = setlist.length - 1;
+            if (index >= setlist.length) index = 0;
 
-    function goToSongInSetlist(direction) {
-      if (!setlist.length) return;
+            const targetId = setlist[index];
+            const song = songs.find(s => s.id === targetId);
+            if (!song) return;
 
-      let index = setlist.findIndex(id => id === currentId);
-      if (index === -1) {
-        index = direction > 0 ? 0 : setlist.length - 1;
-      } else {
-        index += direction;
-      }
+            loadSongIntoFields(targetId);
+            refreshSongSelect();
+            refreshSetlistChips();
+            viewer.textContent = "";
+            currentTop = 0;
+            viewer.style.top = "0px";
+        }
 
-      if (index < 0) index = setlist.length - 1;
-      if (index >= setlist.length) index = 0;
+        prevSongBtn.addEventListener("click", () => {
+            goToSongInSetlist(-1);
+        });
 
-      const targetId = setlist[index];
-      const song = songs.find(s => s.id === targetId);
-      if (!song) return;
+        nextSongBtn.addEventListener("click", () => {
+            goToSongInSetlist(1);
+        });
 
-      loadSongIntoFields(targetId);
-      refreshSongSelect();
-      refreshSetlistChips();
-      viewer.textContent = "";
-      currentTop = 0;
-      viewer.style.top = "0px";
-    }
+        function applyGigModeFromStorage() {
+            const enabled = localStorage.getItem(GIG_MODE_KEY) === "1";
+            document.body.classList.toggle("gig-mode", enabled);
+        }
 
-    prevSongBtn.addEventListener("click", () => {
-      goToSongInSetlist(-1);
-    });
+        gigModeBtn.addEventListener("click", () => {
+            const enabled = !document.body.classList.contains("gig-mode");
+            document.body.classList.toggle("gig-mode", enabled);
+            localStorage.setItem(GIG_MODE_KEY, enabled ? "1" : "0");
+        });
 
-    nextSongBtn.addEventListener("click", () => {
-      goToSongInSetlist(1);
-    });
+        function applyViewerFontSize(px) {
+            viewer.style.fontSize = px + "px";
+            fontSizeSlider.value = px;
+            fontSizeValue.textContent = px;
+        }
 
-    function applyGigModeFromStorage() {
-      const enabled = localStorage.getItem(GIG_MODE_KEY) === "1";
-      document.body.classList.toggle("gig-mode", enabled);
-    }
+        function loadViewerFontSize() {
+            const stored = localStorage.getItem(FONT_SIZE_KEY);
+            const fallback = 22;
+            const size = stored ? parseInt(stored, 10) : fallback;
+            if (!isNaN(size)) applyViewerFontSize(size);
+        }
 
-    gigModeBtn.addEventListener("click", () => {
-      const enabled = !document.body.classList.contains("gig-mode");
-      document.body.classList.toggle("gig-mode", enabled);
-      localStorage.setItem(GIG_MODE_KEY, enabled ? "1" : "0");
-    });
+        fontSizeSlider.addEventListener("input", () => {
+            const size = parseInt(fontSizeSlider.value, 10);
+            if (isNaN(size)) return;
+            applyViewerFontSize(size);
+            localStorage.setItem(FONT_SIZE_KEY, String(size));
+        });
 
-    function applyViewerFontSize(px) {
-      viewer.style.fontSize = px + "px";
-      fontSizeSlider.value = px;
-      fontSizeValue.textContent = px;
-    }
+        editSetlistBtn.addEventListener("click", () => {
+            if (!songs.length) {
+                alert("No songs saved yet. Create a song first.");
+                return;
+            }
 
-    function loadViewerFontSize() {
-      const stored = localStorage.getItem(FONT_SIZE_KEY);
-      const fallback = 22;
-      const size = stored ? parseInt(stored, 10) : fallback;
-      if (!isNaN(size)) applyViewerFontSize(size);
-    }
+            const lines = songs.map((s, idx) => `${idx + 1}. ${s.title || "Untitled"}`).join("\n");
+            const currentOrder = setlist.length
+                ? setlist
+                    .map(id => songs.findIndex(s => s.id === id) + 1)
+                    .filter(n => n > 0)
+                    .join(",")
+                : "";
 
-    fontSizeSlider.addEventListener("input", () => {
-      const size = parseInt(fontSizeSlider.value, 10);
-      if (isNaN(size)) return;
-      applyViewerFontSize(size);
-      localStorage.setItem(FONT_SIZE_KEY, String(size));
-    });
+            const input = prompt(
+                "Setlist order (comma-separated numbers):\n\n" + lines + "\n\nExample: 1,3,2",
+                currentOrder
+            );
 
-    editSetlistBtn.addEventListener("click", () => {
-      if (!songs.length) {
-        alert("No songs saved yet. Create a song first.");
-        return;
-      }
+            if (!input) return;
 
-      const lines = songs.map((s, idx) => `${idx + 1}. ${s.title || "Untitled"}`).join("\n");
-      const currentOrder = setlist.length
-        ? setlist
-            .map(id => songs.findIndex(s => s.id === id) + 1)
-            .filter(n => n > 0)
-            .join(",")
-        : "";
+            const indices = input
+                .split(",")
+                .map(x => parseInt(x.trim(), 10))
+                .filter(n => !isNaN(n) && n > 0 && n <= songs.length);
 
-      const input = prompt(
-        "Setlist order (comma-separated numbers):\n\n" + lines + "\n\nExample: 1,3,2",
-        currentOrder
-      );
+            if (!indices.length) {
+                alert("No valid numbers entered.");
+                return;
+            }
 
-      if (!input) return;
+            setlist = indices.map(i => songs[i - 1].id);
+            saveSetlist();
+            refreshSetlistChips();
+        });
 
-      const indices = input
-        .split(",")
-        .map(x => parseInt(x.trim(), 10))
-        .filter(n => !isNaN(n) && n > 0 && n <= songs.length);
+        function updateSettingsLabel() {
+            const open = controls.classList.contains("settings-open");
+            toggleSettingsBtn.textContent = open ? "Hide settings" : "Show settings";
+        }
 
-      if (!indices.length) {
-        alert("No valid numbers entered.");
-        return;
-      }
+        toggleSettingsBtn.addEventListener("click", () => {
+            controls.classList.toggle("settings-open");
+            updateSettingsLabel();
+        });
 
-      setlist = indices.map(i => songs[i - 1].id);
-      saveSetlist();
-      refreshSetlistChips();
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-      loadSongs();
-      refreshSongSelect();
-      loadSetlist();
-      refreshSetlistChips();
-      applyGigModeFromStorage();
-      loadViewerFontSize();
-      autoResizeTextarea(editor);
-    });
+        document.addEventListener("DOMContentLoaded", () => {
+            loadSongs();
+            refreshSongSelect();
+            loadSetlist();
+            refreshSetlistChips();
+            applyGigModeFromStorage();
+            loadViewerFontSize();
+            autoResizeTextarea(editor);
+            updateSettingsLabel();
+        });
     </script>
 </body>
 </html>
