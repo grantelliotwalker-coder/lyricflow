@@ -861,7 +861,7 @@
             margin: 0 auto;
             color: rgba(226, 232, 240, 0.98);
             font-size: 18px;
-            line-height: 1.7;
+            line-height: 1.8;
             text-align: center;
             white-space: pre-wrap;
             word-wrap: break-word;
@@ -909,7 +909,7 @@
             right: 22%;
             height: 2px;
             border-radius: 999px;
-            background: linear-gradient(to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0) );
+            background: linear-gradient(to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0));
             box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
             opacity: 0.75;
             pointer-events: none;
@@ -1347,7 +1347,7 @@
 
         .viewer-content-line {
             display: block;
-            padding: 2px 0;
+            padding: 3px 0;
         }
 
         @media (max-width: 900px) {
@@ -1377,7 +1377,7 @@
             }
 
             .viewer {
-                font-size: 17px;
+                font-size: 19px;
             }
 
             .songs-body {
@@ -1415,7 +1415,7 @@
             }
 
             .viewer {
-                font-size: 16px;
+                font-size: 18px;
             }
         }
 
@@ -1438,7 +1438,8 @@
             }
 
             .viewer {
-                font-size: 15px;
+                font-size: 17px;
+                line-height: 1.9;
             }
 
             .songs-body {
@@ -1598,7 +1599,7 @@
                                 </div>
                             </div>
                             <div class="viewer-status-right">
-                                <span>Drag inside the window to nudge scroll speed while performing.</span>
+                                <span>Drag inside the window to nudge scroll position while performing.</span>
                             </div>
                         </div>
 
@@ -1635,9 +1636,8 @@
                                         <div class="viewer-foot-note-pill">
                                             <span>Controls:</span>
                                             <span class="viewer-foot-keys">
-                                                <span class="key-cap">Start</span>
-                                                <span class="key-cap">Pause</span>
-                                                <span class="key-cap">Reset</span>
+                                                <span class="key-cap">Space</span>
+                                                <span class="key-cap">R</span>
                                             </span>
                                         </div>
                                         <span>Use the speed slider or drag the lyrics to fine‑tune during a song.</span>
@@ -1759,6 +1759,20 @@
             timeDisplay.textContent = formatTime(elapsedTime / 1000);
         }
 
+        function clampContentY(rawY) {
+            const railRect = viewer.getBoundingClientRect();
+            const contentRect = viewerContent.getBoundingClientRect();
+            if (!railRect.height || !contentRect.height) return rawY;
+
+            const maxOffset = 40;
+            const minY = railRect.bottom - contentRect.bottom - maxOffset;
+            const maxY = railRect.top - contentRect.top + maxOffset;
+
+            if (rawY < minY) return minY;
+            if (rawY > maxY) return maxY;
+            return rawY;
+        }
+
         function autoScroll(timestamp) {
             if (!isScrolling || scrollSpeed <= 0) return;
 
@@ -1779,14 +1793,16 @@
 
             viewerContent.style.transform = viewerContent.style.transform || "translateY(0px)";
             const currentY = parseFloat(viewerContent.style.transform.replace("translateY(", "").replace("px)", "")) || 0;
-            const newY = currentY - distance;
+            const unclampedY = currentY - distance;
+            const newY = clampContentY(unclampedY);
 
             viewerContent.style.transform = "translateY(" + newY + "px)";
 
             const railRect = viewer.getBoundingClientRect();
             const contentRect = viewerContent.getBoundingClientRect();
             if (contentRect.bottom < railRect.bottom - 8) {
-                stopScroll();
+                pauseScroll();
+                setStatus("End of lyrics");
                 return;
             }
 
@@ -1833,7 +1849,6 @@
             startTime = null;
             elapsedTime = 0;
             updateTimeDisplay();
-
             setStatus("Ready");
             startBtn.disabled = false;
             pauseBtn.disabled = false;
@@ -1856,17 +1871,9 @@
             }
         });
 
-        startBtn.addEventListener("click", () => {
-            startScroll();
-        });
-
-        pauseBtn.addEventListener("click", () => {
-            pauseScroll();
-        });
-
-        resetBtn.addEventListener("click", () => {
-            resetScroll();
-        });
+        startBtn.addEventListener("click", startScroll);
+        pauseBtn.addEventListener("click", pauseScroll);
+        resetBtn.addEventListener("click", resetScroll);
 
         function handleDragStart(y) {
             isDragging = true;
@@ -1880,8 +1887,8 @@
         function handleDragMove(y) {
             if (!isDragging) return;
             const deltaY = y - dragStartY;
-            const newY = dragStartContentY + deltaY;
-
+            const unclampedY = dragStartContentY + deltaY;
+            const newY = clampContentY(unclampedY);
             viewerContent.style.transform = "translateY(" + newY + "px)";
         }
 
@@ -1929,19 +1936,49 @@
             const text = editor.value || "Send lyrics from the editor to see them here.";
             viewerContent.textContent = "";
             const lines = text.split("\n");
-            lines.forEach((line) => {
+
+            lines.forEach((rawLine, index) => {
+                const line = rawLine.replace(/\s+$/, "");
+                const isBlank = line.trim() === "";
                 const span = document.createElement("span");
                 span.className = "viewer-content-line";
-                span.textContent = line || "\u00A0";
+
+                if (isBlank) {
+                    span.textContent = "\u00A0";
+                    if (index > 0 && lines[index - 1].trim() === "") {
+                        span.style.marginTop = "10px";
+                    }
+                } else {
+                    span.textContent = line;
+                }
+
                 viewerContent.appendChild(span);
                 viewerContent.appendChild(document.createElement("br"));
             });
+
             resetScroll();
             setStatus("Viewer updated");
         });
 
         clearEditorBtn.addEventListener("click", () => {
             editor.value = "";
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.target === editor) return;
+
+            if (e.code === "Space") {
+                e.preventDefault();
+                if (isScrolling) {
+                    pauseScroll();
+                } else {
+                    startScroll();
+                }
+            }
+
+            if (e.key === "r" || e.key === "R") {
+                resetScroll();
+            }
         });
 
         function loadSongsFromStorage() {
@@ -1957,8 +1994,7 @@
         function saveSongsToStorage() {
             try {
                 localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
-            } catch (e) {
-            }
+            } catch (e) { }
         }
 
         function renderSongs() {
