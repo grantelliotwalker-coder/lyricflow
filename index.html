@@ -1,813 +1,2092 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>LyricFlow · Lyric Scroller</title>
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta charset="UTF-8">
+    <title>LyricFlow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
         :root {
-            /* Spotify‑ish dark + green accent */
-            --bg: #050814;
-            --card: #111320;
-            --panel: #f8f7ff;
-            --accent: #1db954;
-            --accent-soft: #2ddf7e;
-            --accent-strong: #7c5cff;
-            --text-main: #111321;
-            --text-soft: #b3b6d6;
-            --text-invert: #ffffff;
-            --border-subtle: rgba(12, 14, 35, 0.18);
-            --shadow-soft: 0 22px 55px rgba(0, 0, 0, 0.75);
-            --radius-lg: 22px;
-            --radius-md: 14px;
-            --radius-pill: 999px;
+            --bg: #070b10;
+            --card: #111827;
+            --card-soft: #111827;
+            --accent: #22c55e;
+            --accent-soft: rgba(34, 197, 94, 0.12);
+            --accent-strong: rgba(34, 197, 94, 0.28);
+            --accent-bright: #22c55e;
+            --accent-subtle: rgba(34, 197, 94, 0.12);
+            --accent-subtle-strong: rgba(34, 197, 94, 0.28);
+            --accent-subtle-soft: rgba(34, 197, 94, 0.18);
+            --accent-subtle-border: rgba(34, 197, 94, 0.4);
+            --accent-subtle-border-soft: rgba(34, 197, 94, 0.25);
+            --accent-subtle-border-strong: rgba(34, 197, 94, 0.55);
+            --accent-glow: rgba(34, 197, 94, 0.45);
+            --accent-glow-soft: rgba(34, 197, 94, 0.25);
+            --accent-glow-strong: rgba(34, 197, 94, 0.65);
+            --text-main: #e5e7eb;
+            --text-soft: #9ca3af;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(148, 163, 184, 0.45);
+            --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
+            --shadow-strong: 0 30px 90px rgba(0, 0, 0, 0.95);
+            --shadow-focus: 0 0 0 1px rgba(34, 197, 94, 0.6), 0 0 0 10px rgba(34, 197, 94, 0.05);
+            --danger: #f97373;
+            --danger-soft: rgba(248, 113, 113, 0.16);
+            --danger-border: rgba(248, 113, 113, 0.6);
+            --pill-bg: rgba(15, 23, 42, 0.9);
+            --radius-lg: 26px;
+            --radius-full: 999px;
+            --radius-md: 18px;
         }
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            overflow: hidden;
         }
 
         body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: radial-gradient(circle at top, #1b1f3a 0, #050814 45%, #02030a 100%);
-            color: var(--text-invert);
-            height: 100vh;
             display: flex;
-            flex-direction: column;
-            padding: 10px;
-        }
-
-            body > header,
-            .controls,
-            .main,
-            .footer {
-                max-width: 760px;
-                width: 100%;
-                margin: 0 auto;
-            }
-
-        header {
-            padding: 10px 18px;
-            margin-bottom: 8px;
-            border-radius: var(--radius-pill);
-            background: linear-gradient(120deg, rgba(29,185,84,0.24), rgba(124,92,255,0.35));
-            border: 1px solid rgba(248, 244, 255, 0.35);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            font-size: 0.9rem;
-            text-align: center;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #fefbff;
-        }
-
-        .controls {
-            padding: 10px;
-            background: rgba(8, 10, 26, 0.95);
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(72, 82, 160, 0.55);
-            box-shadow: var(--shadow-soft);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
+            align-items: stretch;
             justify-content: center;
+            padding: 14px;
         }
 
-            .controls button {
-                flex: 1 1 30%;
-                min-width: 96px;
-                border: none;
-                border-radius: var(--radius-pill);
-                padding: 9px 12px;
-                font-size: 0.9rem;
-                background: rgba(249, 245, 255, 0.04);
-                color: #f5f2ff;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 6px;
-                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
-            }
-
-                .controls button.primary {
-                    background: linear-gradient(135deg, #f050ff 0%, #7c5cff 55%, #1db954 100%);
-                    color: #120619;
-                    font-weight: 600;
-                }
-
-                .controls button:active {
-                    transform: translateY(1px) scale(0.99);
-                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7);
-                }
-
-            .controls .speed-wrap {
-                width: 100%;
-                display: flex;
-                gap: 8px;
-                align-items: center;
-                font-size: 0.8rem;
-                color: rgba(215, 213, 245, 0.9);
-            }
-
-            .controls input[type="range"] {
-                flex: 1;
-                accent-color: var(--accent);
-            }
-
-        /* Collapsible settings panel */
-        #settingsPanel {
-            width: 100%;
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 4px;
-        }
-
-        .controls.settings-open #settingsPanel {
+        .app-shell {
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 1080px;
+            max-height: 100%;
+            margin: 0 auto;
+            padding: 16px 14px 14px;
+            border-radius: 32px;
+            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
         }
 
-        #toggleSettingsBtn {
-            flex: 1 1 100%;
-            background: rgba(32, 37, 80, 0.8);
-        }
+            .app-shell::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
+                opacity: 0.85;
+                mix-blend-mode: soft-light;
+            }
 
-        .main {
-            flex: 1;
+        .app-shell-inner {
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-top: 10px;
-            max-width: 760px;
-            width: 100%;
+            height: 100%;
         }
 
-        textarea {
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 6px 2px 2px;
+        }
+
+        .branding {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-mark {
+            width: 26px;
+            height: 26px;
+            border-radius: 10px;
+            background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.95), transparent 58%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), conic-gradient(from 180deg at 50% 50%, #22c55e, #4ade80, #22d3ee, #22c55e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.92), 0 10px 25px rgba(34, 197, 94, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-inner-orbit {
+            position: absolute;
+            inset: 3px;
+            border-radius: inherit;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.86), transparent 62%), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.78), transparent 60%);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9), inset 0 0 30px rgba(15, 23, 42, 1);
+        }
+
+        .logo-glyph {
+            position: relative;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            box-shadow: 0 0 16px rgba(34, 197, 94, 0.75), 0 0 30px rgba(34, 197, 94, 0.45);
+            background: radial-gradient(circle at 30% 0%, rgba(248, 250, 252, 0.9), transparent 40%), radial-gradient(circle at 50% 70%, rgba(34, 197, 94, 0.9), transparent 55%), radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.9), transparent 45%), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.82), transparent 70%);
+        }
+
+            .logo-glyph::before,
+            .logo-glyph::after {
+                content: "";
+                position: absolute;
+                inset: 3px;
+                border-radius: inherit;
+                border: 1px solid rgba(148, 163, 184, 0.35);
+                opacity: 0.8;
+            }
+
+            .logo-glyph::after {
+                inset: 5px;
+                border-color: rgba(34, 197, 94, 0.55);
+                box-shadow: inset 0 0 12px rgba(34, 197, 94, 0.65), 0 0 18px rgba(34, 197, 94, 0.55);
+            }
+
+        .logo-orbit {
+            position: absolute;
+            inset: 1.5px;
+            border-radius: inherit;
+            border: 1px dashed rgba(148, 163, 184, 0.6);
+            opacity: 0.75;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(148, 163, 184, 0.45);
+        }
+
+            .logo-orbit::before {
+                content: "";
+                position: absolute;
+                width: 4.5px;
+                height: 4.5px;
+                border-radius: 999px;
+                background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+                top: -2px;
+                left: 50%;
+                transform: translateX(-50%);
+                box-shadow: 0 0 10px rgba(34, 197, 94, 0.85), 0 0 0 1px rgba(15, 23, 42, 0.95);
+            }
+
+        .app-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .app-title-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 620;
+            letter-spacing: 0.02em;
+            color: #e5e7eb;
+            text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
+        }
+
+        .app-pill {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            color: var(--accent-bright);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
+        }
+
+        .pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .app-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .subtitle-pill {
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            color: rgba(209, 213, 219, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.95);
+        }
+
+            .subtitle-pill span {
+                display: inline-flex;
+                align-items: center;
+                gap: 3px;
+            }
+
+        .subtitle-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.95);
+            box-shadow: 0 0 5px rgba(148, 163, 184, 0.8);
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cluster {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            box-shadow: 0 12px 22px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(18px);
+        }
+
+            .cluster label {
+                font-size: 11px;
+                color: var(--text-soft);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .cluster small {
+                font-size: 10px;
+                color: var(--text-muted);
+            }
+
+            .cluster .hint-pill {
+                padding: 2px 6px;
+                border-radius: 999px;
+                border: 1px solid rgba(75, 85, 99, 0.9);
+                color: rgba(209, 213, 219, 0.9);
+                background: rgba(15, 23, 42, 0.9);
+                font-size: 10px;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .cluster input[type="range"] {
+                width: 120px;
+                accent-color: var(--accent-bright);
+                cursor: pointer;
+            }
+
+        .transport-cluster {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 5px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(55, 65, 81, 0.85);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .transport-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .transport-label {
+            font-size: 11px;
+            color: var(--text-soft);
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.85);
+        }
+
+        .transport-time {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: rgba(209, 213, 219, 0.92);
+            min-width: 46px;
+            text-align: center;
+        }
+
+        .transport-buttons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn {
+            border: none;
+            cursor: pointer;
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 5px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
+            transition: all 0.14s ease-out;
+        }
+
+            .btn span {
+                font-size: 13px;
+            }
+
+        .btn-primary {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            color: #020617;
+            border-color: rgba(74, 222, 128, 0.6);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(22, 163, 74, 0.7), 0 0 35px rgba(34, 197, 94, 0.8);
+        }
+
+        .btn-ghost {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+        }
+
+            .btn-ghost.danger {
+                border-color: var(--danger-border);
+                color: var(--danger);
+                background: rgba(15, 23, 42, 0.95);
+                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+            }
+
+                .btn-ghost.danger:hover {
+                    background: var(--danger-soft);
+                    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(248, 113, 113, 0.8);
+                }
+
+                .btn-ghost.danger:active {
+                    transform: translateY(1px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(248, 113, 113, 0.7);
+                }
+
+        .btn:hover {
+            transform: translateY(-0.5px) translateZ(0);
+            box-shadow: 0 14px 26px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+            opacity: 0.96;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 15px 30px rgba(22, 163, 74, 0.8), 0 0 40px rgba(34, 197, 94, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.98);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.35fr);
+            gap: 10px;
+            height: calc(100% - 54px);
+            min-height: 0;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .card {
+            flex: 1;
+            min-height: 0;
+            border-radius: 22px;
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%), radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.18), transparent 50%), radial-gradient(circle at 100% 0, rgba(129, 140, 248, 0.16), transparent 54%), linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.98), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.22), transparent 52%), radial-gradient(circle at 100% 100%, rgba(51, 65, 85, 0.65), transparent 55%);
+                mix-blend-mode: soft-light;
+                opacity: 0.85;
+            }
+
+        .card-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 2px;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 550;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.98);
+        }
+
+        .card-pill {
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(71, 85, 105, 0.92);
+            color: rgba(209, 213, 219, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 10px 18px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .card-pill-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 0 0, #f9fafb, #22c55e);
+            box-shadow: 0 0 9px rgba(34, 197, 94, 0.85);
+        }
+
+        .card-subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip {
+            border-radius: 999px;
+            padding: 3px 7px;
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            background: rgba(15, 23, 42, 0.96);
+            color: rgba(209, 213, 219, 0.95);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 0.98);
+        }
+
+        .chip-icon {
+            width: 13px;
+            height: 13px;
+            border-radius: 7px;
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #020617;
+            font-size: 10px;
+            box-shadow: 0 8px 18px rgba(22, 163, 74, 0.8), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .chip-secondary {
+            background: rgba(15, 23, 42, 0.96);
+            color: var(--text-soft);
+            border-color: rgba(55, 65, 81, 0.95);
+        }
+
+            .chip-secondary .chip-icon {
+                background: radial-gradient(circle at 0 0, #e5e7eb, #9ca3af);
+                color: #020617;
+                box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+            }
+
+        .editor-wrapper {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            border-radius: 18px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(75, 85, 99, 0.92);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9), 0 16px 28px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+        }
+
+        .editor-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(55, 65, 81, 0.95);
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
+        }
+
+        .editor-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .traffic-lights {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-right: 4px;
+            border-right: 1px solid rgba(55, 65, 81, 0.85);
+            margin-right: 4px;
+        }
+
+        .dot-red,
+        .dot-yellow,
+        .dot-green {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+        }
+
+        .dot-red {
+            background: #f97373;
+        }
+
+        .dot-yellow {
+            background: #facc15;
+        }
+
+        .dot-green {
+            background: #22c55e;
+        }
+
+        .editor-label {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .editor-buttons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tiny-btn {
+            border-radius: 999px;
+            padding: 3px 7px;
+            border: 1px solid rgba(55, 65, 81, 0.98);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+            .tiny-btn:hover {
+                background: rgba(31, 41, 55, 0.98);
+            }
+
+            .tiny-btn.primary {
+                border-color: rgba(34, 197, 94, 0.8);
+                color: var(--accent-bright);
+                box-shadow: 0 10px 22px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+                background: rgba(15, 23, 42, 0.98);
+            }
+
+                .tiny-btn.primary:hover {
+                    background: rgba(22, 101, 52, 0.8);
+                    color: #ecfdf3;
+                }
+
+        #editor {
             width: 100%;
+            height: calc(100% - 32px);
+            border: none;
+            outline: none;
             resize: none;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-subtle);
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            background: var(--panel);
+            background: transparent;
             color: var(--text-main);
-            box-shadow: var(--shadow-soft);
-            min-height: 36vh;
+            padding: 8px 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
+        }
+
+            #editor::placeholder {
+                color: rgba(75, 85, 99, 0.95);
+            }
+
+        .editor-footnote {
+            padding: 3px 6px 0;
+            display: flex;
+            justify-content: flex-end;
+            font-size: 10px;
+            color: var(--text-muted);
         }
 
         .viewer-wrapper {
             flex: 1;
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(72, 82, 160, 0.6);
-            background: radial-gradient(circle at top left, rgba(29,185,84,0.22), rgba(124, 92, 255, 0.45)), linear-gradient(145deg, #050814 0%, #02030a 100%);
-            overflow: hidden;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .viewer-status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 2px;
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .viewer-status-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .viewer-status-pill {
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.96);
+            color: rgba(209, 213, 219, 0.95);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 0.98);
+        }
+
+        .viewer-status-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--accent-bright);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .viewer-status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .viewer-card {
+            flex: 1;
+            min-height: 0;
+            border-radius: 18px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.99)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.95);
+            padding: 9px;
+            display: flex;
+            flex-direction: column;
             position: relative;
-            box-shadow: var(--shadow-soft);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            overflow: hidden;
+        }
+
+            .viewer-card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.18), transparent 55%), radial-gradient(circle at 100% 100%, rgba(71, 85, 105, 0.55), transparent 52%);
+                opacity: 0.85;
+                mix-blend-mode: soft-light;
+            }
+
+        .viewer-card-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            border-radius: 14px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            overflow: hidden;
+        }
+
+        .viewer-viewport {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            background: radial-gradient(circle at 0 -25%, rgba(34, 197, 94, 0.28), transparent 60%), radial-gradient(circle at 100% 120%, rgba(59, 130, 246, 0.28), transparent 60%), linear-gradient(#020617, #020617);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.85);
+        }
+
+        .viewer-halo-top {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 90px;
+            background: radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.42), transparent 70%);
+            filter: blur(12px);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .viewer-halo-bottom {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 100px;
+            background: radial-gradient(circle at 50% 0, rgba(34, 197, 94, 0.26), transparent 70%), radial-gradient(circle at 50% 0, rgba(59, 130, 246, 0.18), transparent 70%);
+            filter: blur(14px);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        .viewer-highlight {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 42%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.26)), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.03), rgba(15, 23, 42, 0.35));
+            border-radius: 36px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 0 2px rgba(34, 197, 94, 0.16), 0 20px 40px rgba(0, 0, 0, 0.9), 0 -16px 35px rgba(15, 23, 42, 0.95), 0 0 50px rgba(34, 197, 94, 0.45);
+            pointer-events: none;
+            mix-blend-mode: screen;
+            opacity: 0.75;
+        }
+
+        .viewer-subtle-layer {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 0 50%, rgba(15, 23, 42, 0.6), transparent 60%), radial-gradient(circle at 100% 50%, rgba(15, 23, 42, 0.75), transparent 60%);
+            opacity: 0.85;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+        }
+
+        .viewer-text-rail {
+            position: absolute;
+            inset: 16px 8px 16px 8px;
+            border-radius: 28px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent 100%);
         }
 
         .viewer {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
+            color: rgba(226, 232, 240, 0.98);
+            font-size: 18px;
+            line-height: 1.7;
+            text-align: center;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 0 4px;
+            text-shadow: 0 0 20px rgba(15, 23, 42, 0.95), 0 0 40px rgba(0, 0, 0, 0.85);
+            cursor: grab;
+            touch-action: none;
+            transition: transform 0.08s ease-out;
+        }
+
+            .viewer:active {
+                cursor: grabbing;
+            }
+
+        .viewer-content {
+            position: relative;
+            display: inline-block;
+            will-change: transform;
+        }
+
+        .viewer-overlay-top,
+        .viewer-overlay-bottom {
             position: absolute;
-            top: 0;
             left: 0;
             right: 0;
-            padding: 20px 16px 48px;
-            white-space: pre-wrap;
-            font-size: 1.35rem;
-            line-height: 1.45;
-            color: #fdf7ff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+            height: 65px;
+            pointer-events: none;
+            z-index: 3;
         }
 
-        .footer {
-            padding: 6px 4px 4px;
-            margin-top: 6px;
-            font-size: 0.75rem;
-            color: rgba(219, 216, 248, 0.8);
-            text-align: center;
-            max-width: 760px;
-            width: 100%;
+        .viewer-overlay-top {
+            top: -2px;
+            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.96), rgba(2, 6, 23, 0));
         }
 
-            .footer nav a {
-                color: inherit;
-                text-decoration: none;
-                margin: 0 6px;
+        .viewer-overlay-bottom {
+            bottom: -2px;
+            background: linear-gradient(to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0));
+        }
+
+        .viewer-gradient-border-top,
+        .viewer-gradient-border-bottom {
+            position: absolute;
+            left: 22%;
+            right: 22%;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0) );
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+            opacity: 0.75;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .viewer-gradient-border-top {
+            top: 21%;
+        }
+
+        .viewer-gradient-border-bottom {
+            bottom: 18%;
+        }
+
+        .viewer-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 8px;
+            border-top: 1px solid rgba(30, 64, 175, 0.7);
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
+            box-shadow: 0 -12px 24px rgba(15, 23, 42, 0.9), inset 0 1px 0 rgba(15, 23, 42, 0.9);
+        }
+
+        .viewer-foot-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .viewer-foot-pill {
+            padding: 3px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            background: rgba(15, 23, 42, 0.96);
+            font-size: 10px;
+            color: rgba(209, 213, 219, 0.95);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .viewer-foot-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.95);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .viewer-foot-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .viewer-foot-note-pill {
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px dashed rgba(75, 85, 99, 0.9);
+            background: rgba(15, 23, 42, 0.96);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: rgba(148, 163, 184, 0.95);
+        }
+
+        .viewer-foot-keys {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .key-cap {
+            padding: 1px 4px;
+            border-radius: 6px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.96);
+            font-size: 9px;
+            color: rgba(209, 213, 219, 0.95);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        .songs-card {
+            border-radius: 22px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.95), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
+            padding: 9px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .songs-card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                background: radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.14), transparent 55%), radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.18), transparent 60%);
+                opacity: 0.9;
+                mix-blend-mode: soft-light;
             }
 
-        @media (orientation: landscape) and (min-width: 720px) {
-            .main {
-                flex-direction: row;
+        .songs-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .songs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 0 1px;
+        }
+
+        .songs-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .songs-title-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .songs-title {
+            font-size: 12px;
+            font-weight: 550;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(226, 232, 240, 0.96);
+        }
+
+        .songs-count-pill {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            color: rgba(209, 213, 219, 0.95);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .songs-count-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.98);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.95);
+        }
+
+        .songs-subtitle {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .songs-header-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .songs-hint-chip {
+            padding: 3px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: rgba(209, 213, 219, 0.95);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .songs-hint-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.95);
+        }
+
+        .songs-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .songs-body {
+            margin-top: 4px;
+            border-radius: 15px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 15px 26px rgba(0, 0, 0, 0.9);
+            max-height: 160px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .songs-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 4px 3px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 6px 8px;
+            border-radius: 11px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: rgba(15, 23, 42, 0.92);
+            transition: all 0.12s ease-out;
+            margin-bottom: 4px;
+        }
+
+            .song-item:hover {
+                border-color: rgba(75, 85, 99, 0.95);
+                background: rgba(15, 23, 42, 0.98);
+                box-shadow: 0 8px 14px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
             }
 
-            .editor-column {
-                width: 45%;
+            .song-item.active {
+                border-color: rgba(34, 197, 94, 0.9);
+                background: rgba(15, 23, 42, 0.96);
+                box-shadow: 0 8px 18px rgba(34, 197, 94, 0.35), 0 0 0 1px rgba(15, 23, 42, 1);
             }
 
-            .viewer-wrapper {
-                width: 55%;
+        .song-main {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .song-title-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 0;
+        }
+
+        .song-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(226, 232, 240, 0.96);
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .song-pill {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            color: rgba(148, 163, 184, 0.95);
+        }
+
+        .song-meta {
+            font-size: 10px;
+            color: rgba(148, 163, 184, 0.95);
+        }
+
+        .song-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .song-btn {
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: rgba(209, 213, 219, 0.96);
+            font-size: 10px;
+            padding: 3px 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+            .song-btn.danger {
+                border-color: rgba(248, 113, 113, 0.75);
+                color: #fecaca;
+                background: rgba(15, 23, 42, 0.98);
+            }
+
+            .song-btn:hover {
+                background: rgba(31, 41, 55, 0.98);
+            }
+
+            .song-btn.danger:hover {
+                background: rgba(127, 29, 29, 0.9);
+            }
+
+        .songs-empty {
+            padding: 6px 8px 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+            border-top: 1px dashed rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.96);
+        }
+
+            .songs-empty strong {
+                font-weight: 500;
+                color: rgba(229, 231, 235, 0.96);
+            }
+
+        .songs-footer {
+            padding: 4px 6px 3px;
+            font-size: 10px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(31, 41, 55, 0.95);
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
+            box-shadow: 0 -10px 20px rgba(15, 23, 42, 0.9), inset 0 1px 0 rgba(15, 23, 42, 0.98);
+        }
+
+        .songs-footer-left {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .songs-footer-pill {
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: rgba(209, 213, 219, 0.96);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .songs-footer-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.98);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.95);
+        }
+
+        .songs-footer-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .songs-footer-shortcut {
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px dashed rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: rgba(148, 163, 184, 0.95);
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .shortcut-key {
+            padding: 1px 4px;
+            border-radius: 5px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: rgba(209, 213, 219, 0.96);
+            font-size: 9px;
+        }
+
+        .viewer-status-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #020617;
+            box-shadow: 0 8px 18px rgba(22, 163, 74, 0.8), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .pill-icon {
+            font-size: 10px;
+        }
+
+        .songs-label {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+            .songs-label strong {
+                font-size: 10px;
+                color: rgba(226, 232, 240, 0.95);
+            }
+
+            .songs-label span {
+                font-size: 10px;
+                color: rgba(148, 163, 184, 0.98);
+            }
+
+        .highlight-current-line .viewer-content-line.current {
+            color: #ecfeff;
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(37, 99, 235, 0.9), 0 0 90px rgba(37, 99, 235, 1);
+            font-weight: 500;
+        }
+
+        .viewer-content-line {
+            display: block;
+            padding: 2px 0;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                padding: 10px;
+            }
+
+            .app-shell {
+                border-radius: 26px;
+                padding: 12px 10px 10px;
+            }
+
+            .layout {
+                grid-template-columns: minmax(0, 1fr);
+                height: calc(100% - 52px);
+                gap: 8px;
+            }
+
+            .header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .controls-row {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .viewer {
+                font-size: 17px;
+            }
+
+            .songs-body {
+                max-height: 150px;
             }
         }
 
-        /* Gig mode */
-        body.gig-mode {
-            background: #000;
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .controls-row {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .cluster {
+                flex: 1;
+            }
+
+            .transport-cluster {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .layout {
+                height: calc(100% - 54px);
+            }
+
+            .card,
+            .songs-card {
+                border-radius: 20px;
+            }
+
+            .viewer {
+                font-size: 16px;
+            }
         }
 
-            body.gig-mode .viewer-wrapper {
-                background: #000;
-                border-color: rgba(255, 255, 255, 0.3);
+        @media (max-width: 480px) {
+            body {
+                padding: 8px 6px;
             }
 
-            body.gig-mode .viewer {
-                font-size: 1.8rem;
-                line-height: 1.5;
+            .app-shell {
+                padding: 10px 8px 8px;
+                border-radius: 22px;
             }
 
-            body.gig-mode .controls {
-                background: #050505;
+            .app-title {
+                font-size: 17px;
             }
 
-        /* Simple hidden helper */
-        .hidden {
-            display: none !important;
+            .cluster input[type="range"] {
+                width: 100px;
+            }
+
+            .viewer {
+                font-size: 15px;
+            }
+
+            .songs-body {
+                max-height: 140px;
+            }
+        }
+
+        .viewer::-webkit-scrollbar,
+        #editor::-webkit-scrollbar,
+        .songs-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .viewer::-webkit-scrollbar-thumb,
+        #editor::-webkit-scrollbar-thumb,
+        .songs-list::-webkit-scrollbar-thumb {
+            background: rgba(75, 85, 99, 0.9);
+            border-radius: 999px;
+        }
+
+        .viewer::-webkit-scrollbar-track,
+        #editor::-webkit-scrollbar-track,
+        .songs-list::-webkit-scrollbar-track {
+            background: transparent;
         }
     </style>
 </head>
+
 <body>
+    <div class="app-shell">
+        <div class="app-shell-inner">
+            <header class="header">
+                <div class="branding">
+                    <div class="logo-mark">
+                        <div class="logo-inner-orbit"></div>
+                        <div class="logo-glyph"></div>
+                        <div class="logo-orbit"></div>
+                    </div>
+                    <div class="app-title-block">
+                        <div class="app-title-row">
+                            <div class="app-title">LyricFlow</div>
+                            <div class="app-pill">
+                                <span class="pill-dot"></span>
+                                <span>Stage‑ready lyric scroller</span>
+                            </div>
+                        </div>
+                        <div class="app-subtitle">
+                            <div class="subtitle-pill">
+                                <span class="subtitle-dot"></span>
+                                <span>Type, save, scroll – your lyrics, your pace</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <header>
-        <span style="font-weight:600;">LyricFlow</span>
-        · Smooth Lyric Scroller
-    </header>
+                <div class="controls-row">
+                    <div class="cluster">
+                        <label for="speed">
+                            <span>Scroll speed</span>
+                            <small>(0 = off)</small>
+                        </label>
+                        <input type="range" id="speed" min="0" max="10" step="1" value="4">
+                        <span class="hint-pill">
+                            <span class="subtitle-dot"></span>
+                            Drag lyrics to fine‑tune
+                        </span>
+                    </div>
 
-    <div class="controls">
-        <!-- Always visible -->
-        <button id="copyToViewer">Load Lyrics</button>
-        <button id="start" class="primary">Start</button>
-        <button id="pause">Pause</button>
-        <button id="resetBtn">Reset</button>
+                    <div class="transport-cluster">
+                        <div class="transport-left">
+                            <div class="transport-label">
+                                <span class="status-dot"></span>
+                                <span id="statusText">Ready</span>
+                            </div>
+                            <div class="transport-time">
+                                <span id="timeDisplay">0:00</span>
+                            </div>
+                        </div>
+                        <div class="transport-buttons">
+                            <button id="start" class="btn btn-primary">
+                                <span>▶</span> <span>Start</span>
+                            </button>
+                            <button id="pause" class="btn btn-ghost">
+                                <span>⏸</span> <span>Pause</span>
+                            </button>
+                            <button id="resetBtn" class="btn btn-ghost danger">
+                                <span>⟲</span> <span>Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-        <button id="toggleSettingsBtn">Show settings</button>
+            <main class="layout">
+                <section class="panel">
+                    <div class="card">
+                        <div class="card-inner">
+                            <div class="card-header">
+                                <div class="card-title-row">
+                                    <div class="card-title">Lyrics editor</div>
+                                    <div class="card-pill">
+                                        <span class="card-pill-dot"></span>
+                                        <span>Draft & tweak here</span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <div class="chip">
+                                        <div class="chip-icon">✎</div>
+                                        <span>Type raw lyrics, then send to viewer</span>
+                                    </div>
+                                    <div class="chip chip-secondary">
+                                        <div class="chip-icon">⌨</div>
+                                        <span>Enter on PC or phone</span>
+                                    </div>
+                                </div>
+                            </div>
 
-        <!-- Settings (hidden by default) -->
-        <div id="settingsPanel">
-            <!-- Setlist bar -->
-            <div style="
-            padding:6px 8px;
-            border-radius:999px;
-            background:rgba(9,10,32,0.9);
-            border:1px solid rgba(255,255,255,0.12);
-            font-size:0.8rem;
-            color:rgba(230,227,255,0.85);
-            display:flex;
-            align-items:center;
-            gap:6px;
-            overflow-x:auto;
-            white-space:nowrap;
-          ">
-                <span style="opacity:.8;margin-right:4px;">Setlist:</span>
-                <div id="setlistChips" style="display:flex;gap:6px;"></div>
-                <button id="editSetlistBtn"
-                        style="
-                  margin-left:auto;
-                  padding:4px 8px;
-                  border-radius:999px;
-                  border:none;
-                  font-size:0.75rem;
-                  background:rgba(255,255,255,0.08);
-                  color:#f7f4ff;
-                ">
-                    Edit
-                </button>
-            </div>
+                            <div class="editor-wrapper">
+                                <div class="editor-header-bar">
+                                    <div class="editor-left">
+                                        <div class="traffic-lights">
+                                            <div class="dot-red"></div>
+                                            <div class="dot-yellow"></div>
+                                            <div class="dot-green"></div>
+                                        </div>
+                                        <div class="editor-label">
+                                            Type lyrics, then tap “Send to viewer” to update the on‑stage window.
+                                        </div>
+                                    </div>
+                                    <div class="editor-buttons">
+                                        <button id="copyToViewer" class="tiny-btn primary">
+                                            <span>⇪</span>
+                                            <span>Send to viewer</span>
+                                        </button>
+                                        <button id="clearEditor" class="tiny-btn">
+                                            <span>⌫</span>
+                                            <span>Clear</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea id="editor" placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;Tap “Send to viewer” to update the scrolling window…"></textarea>
+                            </div>
+                            <div class="editor-footnote">
+                                <span>Tip: Write and edit here – the viewer always stays clean and performance‑ready.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Song picker + title -->
-            <div style="display:flex;gap:6px;align-items:center;">
-                <select id="songSelect"
-                        style="
-                  flex:1;
-                  border-radius:12px;
-                  border:1px solid rgba(12,14,35,0.15);
-                  padding:6px 10px;
-                  font-size:0.9rem;
-                ">
-                    <option value="__new__">+ New song…</option>
-                </select>
-                <button id="newSongBtn"
-                        style="
-                  padding:6px 10px;
-                  border-radius:999px;
-                  border:none;
-                  font-size:0.85rem;
-                ">
-                    New
-                </button>
-                <button id="deleteSongBtn"
-                        style="
-                  padding:6px 10px;
-                  border-radius:999px;
-                  border:none;
-                  font-size:0.85rem;
-                  background:#ff4b5c;color:#fff;
-                ">
-                    Del
-                </button>
-            </div>
+                <section class="panel">
+                    <div class="viewer-wrapper">
+                        <div class="viewer-status-row">
+                            <div class="viewer-status-left">
+                                <div class="viewer-status-pill">
+                                    <div class="viewer-status-dot"></div>
+                                    <span>Lyric window is always on screen – only the text inside moves.</span>
+                                </div>
+                            </div>
+                            <div class="viewer-status-right">
+                                <span>Drag inside the window to nudge scroll speed while performing.</span>
+                            </div>
+                        </div>
 
-            <input id="songTitle"
-                   type="text"
-                   placeholder="Song title (e.g. Wonderwall – Oasis)"
-                   style="
-               width:100%;
-               border-radius:12px;
-               border:1px solid rgba(12,14,35,0.15);
-               padding:8px 10px;
-               font-size:0.95rem;
-             " />
+                        <div class="viewer-card">
+                            <div class="viewer-card-inner">
+                                <div class="viewer-viewport">
+                                    <div class="viewer-halo-top"></div>
+                                    <div class="viewer-halo-bottom"></div>
+                                    <div class="viewer-subtle-layer"></div>
+                                    <div class="viewer-highlight"></div>
 
-            <button id="prevSongBtn">◀ Prev</button>
-            <button id="nextSongBtn">Next ▶</button>
-            <button id="gigModeBtn">Gig mode</button>
+                                    <div class="viewer-text-rail">
+                                        <div class="viewer-overlay-top"></div>
+                                        <div class="viewer-overlay-bottom"></div>
+                                        <div class="viewer-gradient-border-top"></div>
+                                        <div class="viewer-gradient-border-bottom"></div>
 
-            <div class="speed-wrap">
-                Speed:
-                <input type="range" id="speed" min="10" max="200" value="60" />
-                <span id="speedValue">60</span> px/s
-            </div>
+                                        <div class="viewer" id="viewer">
+                                            <div class="viewer-content" id="viewerContent">
+                                                <span class="viewer-content-line">Send lyrics from the editor to see them here.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-            <div class="speed-wrap">
-                Text size:
-                <input type="range" id="fontSize" min="16" max="32" value="22" />
-                <span id="fontSizeValue">22</span> px
-            </div>
+                                <div class="viewer-foot">
+                                    <div class="viewer-foot-left">
+                                        <div class="viewer-foot-pill">
+                                            <span class="viewer-foot-dot"></span>
+                                            <span>Lyric window stays anchored – text scrolls inside for consistency on any screen.</span>
+                                        </div>
+                                    </div>
+                                    <div class="viewer-foot-right">
+                                        <div class="viewer-foot-note-pill">
+                                            <span>Controls:</span>
+                                            <span class="viewer-foot-keys">
+                                                <span class="key-cap">Start</span>
+                                                <span class="key-cap">Pause</span>
+                                                <span class="key-cap">Reset</span>
+                                            </span>
+                                        </div>
+                                        <span>Use the speed slider or drag the lyrics to fine‑tune during a song.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="songs-card">
+                        <div class="songs-card-inner">
+                            <div class="songs-header">
+                                <div class="songs-header-left">
+                                    <div class="songs-title-row">
+                                        <div class="songs-title">Saved songs</div>
+                                        <div class="songs-count-pill">
+                                            <span class="songs-count-dot"></span>
+                                            <span><span id="songCount">0</span> saved</span>
+                                        </div>
+                                    </div>
+                                    <div class="songs-subtitle">
+                                        Load songs instantly and keep your favourite lyrics ready to go.
+                                    </div>
+                                </div>
+                                <div class="songs-header-right">
+                                    <div class="songs-hint-chip">
+                                        <span class="songs-hint-dot"></span>
+                                        <span>Names are saved on this device using your browser’s storage.</span>
+                                    </div>
+                                    <div class="songs-actions">
+                                        <button id="saveSong" class="tiny-btn primary">
+                                            <span>💾</span>
+                                            <span>Save current lyrics</span>
+                                        </button>
+                                        <button id="clearAllSongs" class="tiny-btn danger">
+                                            <span>🗑</span>
+                                            <span>Clear all</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="songs-body">
+                                <div id="songsList" class="songs-list"></div>
+                                <div class="songs-empty" id="songsEmpty">
+                                    <strong>No songs saved yet.</strong> Save any lyrics with “Save current lyrics” – they stay on this phone or PC until you clear them.
+                                </div>
+                            </div>
+
+                            <div class="songs-footer">
+                                <div class="songs-footer-left">
+                                    <div class="songs-footer-pill">
+                                        <span class="songs-footer-dot"></span>
+                                        <span>Storage:</span>
+                                        <span>Uses your browser’s local storage (no account needed).</span>
+                                    </div>
+                                </div>
+                                <div class="songs-footer-right">
+                                    <div class="songs-footer-shortcut">
+                                        <span>Tip:</span>
+                                        <span class="shortcut-key">Save</span>
+                                        <span>after you tweak spacing and line breaks you like.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
 
-    <main class="main" aria-label="Lyric editor and scroller">
-        <div class="editor-column"
-             style="display:flex;flex-direction:column;gap:8px;width:100%;margin:0 auto;">
-            <textarea id="editor"
-                      placeholder="Paste your lyrics here..."></textarea>
-        </div>
-
-        <section class="viewer-wrapper" aria-label="Lyric display">
-            <div id="viewer" class="viewer"></div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <div style="margin-bottom:4px;">
-            © 2026 LyricFlow • v1.0
-        </div>
-        <nav>
-            <a href="#">About</a>·
-            <a href="#">Contact</a>·
-            <a href="#">Privacy</a>
-        </nav>
-    </footer>
-
     <script>
         const editor = document.getElementById("editor");
-        const titleInput = document.getElementById("songTitle");
-        const songSelect = document.getElementById("songSelect");
-        const newSongBtn = document.getElementById("newSongBtn");
-        const deleteSongBtn = document.getElementById("deleteSongBtn");
-
         const viewer = document.getElementById("viewer");
-        const copyBtn = document.getElementById("copyToViewer");
+        const viewerContent = document.getElementById("viewerContent");
+        const copyToViewerBtn = document.getElementById("copyToViewer");
+        const clearEditorBtn = document.getElementById("clearEditor");
+
         const startBtn = document.getElementById("start");
         const pauseBtn = document.getElementById("pause");
         const resetBtn = document.getElementById("resetBtn");
         const speedSlider = document.getElementById("speed");
-        const speedValue = document.getElementById("speedValue");
+        const statusText = document.getElementById("statusText");
+        const timeDisplay = document.getElementById("timeDisplay");
 
-        const prevSongBtn = document.getElementById("prevSongBtn");
-        const nextSongBtn = document.getElementById("nextSongBtn");
+        const songsList = document.getElementById("songsList");
+        const songsEmpty = document.getElementById("songsEmpty");
+        const songCount = document.getElementById("songCount");
+        const saveSongBtn = document.getElementById("saveSong");
+        const clearAllSongsBtn = document.getElementById("clearAllSongs");
 
-        const setlistChips = document.getElementById("setlistChips");
-        const editSetlistBtn = document.getElementById("editSetlistBtn");
+        let scrollAnimationId = null;
+        let scrollSpeed = parseInt(speedSlider.value, 10);
+        let isScrolling = false;
+        let lastFrameTime = null;
+        let startTime = null;
+        let elapsedTime = 0;
 
-        const gigModeBtn = document.getElementById("gigModeBtn");
-        const fontSizeSlider = document.getElementById("fontSize");
-        const fontSizeValue = document.getElementById("fontSizeValue");
+        let isDragging = false;
+        let dragStartY = 0;
+        let dragStartContentY = 0;
 
-        const toggleSettingsBtn = document.getElementById("toggleSettingsBtn");
-        const controls = document.querySelector(".controls");
+        let savedSongs = [];
+        let activeSongId = null;
 
-        const STORAGE_KEY = "lyricflow:songs:v1";
-        const SETLIST_KEY = "lyricflow:setlist:v1";
-        const GIG_MODE_KEY = "lyricflow:gig-mode";
-        const FONT_SIZE_KEY = "lyricflow:viewer-font-size";
+        function setStatus(text) {
+            statusText.textContent = text;
+        }
 
-        let songs = [];
-        let setlist = [];
-        let currentId = null;
+        function formatTime(seconds) {
+            const whole = Math.floor(seconds);
+            const mins = Math.floor(whole / 60);
+            const secs = whole % 60;
+            return mins + ":" + String(secs).padStart(2, "0");
+        }
 
-        let scrolling = false;
-        let lastTime = null;
-        let currentTop = 0;
+        function updateTimeDisplay() {
+            timeDisplay.textContent = formatTime(elapsedTime / 1000);
+        }
 
-        function loadSongs() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                songs = raw ? JSON.parse(raw) || [] : [];
-            } catch (e) {
-                console.warn("Could not load songs", e);
-                songs = [];
+        function autoScroll(timestamp) {
+            if (!isScrolling || scrollSpeed <= 0) return;
+
+            if (lastFrameTime === null) {
+                lastFrameTime = timestamp;
+                if (!startTime) startTime = timestamp - elapsedTime;
             }
-        }
 
-        function saveSongs() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
-            } catch (e) {
-                console.warn("Could not save songs", e);
-            }
-        }
+            const delta = timestamp - lastFrameTime;
+            lastFrameTime = timestamp;
 
-        function loadSetlist() {
-            try {
-                const raw = localStorage.getItem(SETLIST_KEY);
-                setlist = raw ? JSON.parse(raw) || [] : [];
-            } catch (e) {
-                console.warn("Could not load setlist", e);
-                setlist = [];
-            }
-        }
+            elapsedTime = timestamp - startTime;
+            updateTimeDisplay();
 
-        function saveSetlist() {
-            try {
-                localStorage.setItem(SETLIST_KEY, JSON.stringify(setlist));
-            } catch (e) {
-                console.warn("Could not save setlist", e);
-            }
-        }
+            const baseSpeed = scrollSpeed;
+            const pixelsPerSecond = baseSpeed * 12;
+            const distance = (pixelsPerSecond * delta) / 1000;
 
-        function generateId() {
-            return "song_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-        }
+            viewerContent.style.transform = viewerContent.style.transform || "translateY(0px)";
+            const currentY = parseFloat(viewerContent.style.transform.replace("translateY(", "").replace("px)", "")) || 0;
+            const newY = currentY - distance;
 
-        function refreshSongSelect() {
-            const prevValue = currentId;
-            songSelect.innerHTML = "";
-            const optNew = document.createElement("option");
-            optNew.value = "__new__";
-            optNew.textContent = "+ New song…";
-            songSelect.appendChild(optNew);
+            viewerContent.style.transform = "translateY(" + newY + "px)";
 
-            songs.forEach(song => {
-                const opt = document.createElement("option");
-                opt.value = song.id;
-                opt.textContent = song.title || "(Untitled)";
-                songSelect.appendChild(opt);
-            });
-
-            if (prevValue && songs.find(s => s.id === prevValue)) {
-                songSelect.value = prevValue;
-            } else {
-                songSelect.value = "__new__";
-                currentId = null;
-            }
-        }
-
-        function refreshSetlistChips() {
-            setlistChips.innerHTML = "";
-            if (!setlist.length) {
-                const span = document.createElement("span");
-                span.style.opacity = "0.6";
-                span.textContent = "Tap ‘Edit’ to add songs.";
-                setlistChips.appendChild(span);
+            const railRect = viewer.getBoundingClientRect();
+            const contentRect = viewerContent.getBoundingClientRect();
+            if (contentRect.bottom < railRect.bottom - 8) {
+                stopScroll();
                 return;
             }
 
-            setlist.forEach(id => {
-                const song = songs.find(s => s.id === id);
-                if (!song) return;
-                const chip = document.createElement("button");
-                chip.textContent = song.title || "(Untitled)";
-                chip.style.border = "none";
-                chip.style.borderRadius = "999px";
-                chip.style.padding = "4px 10px";
-                chip.style.fontSize = "0.78rem";
-                chip.style.background = (id === currentId)
-                    ? "rgba(29,185,84,0.95)"
-                    : "rgba(255,255,255,0.08)";
-                chip.style.color = (id === currentId) ? "#050814" : "#f7f4ff";
-                chip.style.whiteSpace = "nowrap";
-
-                chip.addEventListener("click", () => {
-                    if (id !== currentId) {
-                        loadSongIntoFields(id);
-                        refreshSongSelect();
-                        refreshSetlistChips();
-                    }
-                });
-
-                setlistChips.appendChild(chip);
-            });
+            scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
-        function loadSongIntoFields(id) {
-            const song = songs.find(s => s.id === id);
-            if (!song) return;
-            currentId = id;
-            titleInput.value = song.title || "";
-            editor.value = song.lyrics || "";
-            viewer.textContent = "";
-            currentTop = 0;
-            viewer.style.top = "0px";
-            autoResizeTextarea(editor);
-            editor.classList.remove("hidden");
-        }
-
-        function clearFields() {
-            currentId = null;
-            titleInput.value = "";
-            editor.value = "";
-            viewer.textContent = "";
-            currentTop = 0;
-            viewer.style.top = "0px";
-            songSelect.value = "__new__";
-            autoResizeTextarea(editor);
-            editor.classList.remove("hidden");
-        }
-
-        function upsertCurrentSong() {
-            const title = titleInput.value.trim();
-            const lyrics = editor.value;
-
-            if (!currentId) {
-                currentId = generateId();
-                songs.push({
-                    id: currentId,
-                    title: title || "Untitled",
-                    lyrics,
-                    updatedAt: new Date().toISOString()
-                });
-            } else {
-                const idx = songs.findIndex(s => s.id === currentId);
-                if (idx !== -1) {
-                    songs[idx].title = title || "Untitled";
-                    songs[idx].lyrics = lyrics;
-                    songs[idx].updatedAt = new Date().toISOString();
-                }
-            }
-            saveSongs();
-            refreshSongSelect();
-            refreshSetlistChips();
-        }
-
-        function deleteCurrentSong() {
-            if (!currentId) return;
-            const idx = songs.findIndex(s => s.id === currentId);
-            if (idx === -1) return;
-            const deletingId = currentId;
-            songs.splice(idx, 1);
-            saveSongs();
-            setlist = setlist.filter(id => id !== deletingId);
-            saveSetlist();
-            currentId = null;
-            refreshSongSelect();
-            refreshSetlistChips();
-            clearFields();
-        }
-
-        songSelect.addEventListener("change", () => {
-            const value = songSelect.value;
-            if (value === "__new__") {
-                clearFields();
-            } else {
-                loadSongIntoFields(value);
-                refreshSetlistChips();
-            }
-        });
-
-        newSongBtn.addEventListener("click", () => {
-            clearFields();
-            titleInput.focus();
-        });
-
-        deleteSongBtn.addEventListener("click", () => {
-            if (!currentId) return;
-            const ok = confirm("Delete this song from LyricFlow?");
-            if (!ok) return;
-            deleteCurrentSong();
-        });
-
-        let saveTimer;
-        function queueSave() {
-            clearTimeout(saveTimer);
-            saveTimer = setTimeout(() => {
-                if (titleInput.value.trim() === "" && editor.value.trim() === "") {
-                    return;
-                }
-                upsertCurrentSong();
-            }, 400);
-        }
-
-        titleInput.addEventListener("input", queueSave);
-        editor.addEventListener("input", () => {
-            queueSave();
-            autoResizeTextarea(editor);
-        });
-
-        function autoResizeTextarea(el) {
-            el.style.height = "auto";
-            el.style.height = el.scrollHeight + "px";
-        }
-
-        copyBtn.addEventListener("click", () => {
-            viewer.textContent = editor.value || "No lyrics loaded.";
-            currentTop = 0;
-            viewer.style.top = "0px";
-
-            // Hide editor after loading so you just see the lyric window
-            editor.classList.add("hidden");
-            viewer.parentElement.scrollIntoView({ behavior: "smooth", block: "center" });
-        });
-
-        function step(timestamp) {
-            if (!scrolling) {
-                lastTime = null;
+        function startScroll() {
+            if (scrollSpeed <= 0) {
+                setStatus("Speed is 0 – drag or raise slider");
                 return;
             }
-            if (!lastTime) lastTime = timestamp;
-            const delta = (timestamp - lastTime) / 1000;
-            lastTime = timestamp;
 
-            const speed = Number(speedSlider.value);
-            currentTop -= speed * delta;
-            viewer.style.top = currentTop + "px";
+            if (isScrolling) return;
 
-            const wrapperHeight = viewer.parentElement.clientHeight;
-            const viewerHeight = viewer.scrollHeight;
+            isScrolling = true;
+            setStatus("Scrolling");
 
-            if (-currentTop > viewerHeight + 40) {
-                currentTop = wrapperHeight;
-            }
-            requestAnimationFrame(step);
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+
+            lastFrameTime = null;
+            if (!startTime) startTime = performance.now() - elapsedTime;
+            scrollAnimationId = requestAnimationFrame(autoScroll);
         }
+
+        function pauseScroll() {
+            if (!isScrolling) return;
+            isScrolling = false;
+
+            setStatus("Paused");
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+                scrollAnimationId = null;
+            }
+        }
+
+        function resetScroll() {
+            isScrolling = false;
+            scrollSpeed = parseInt(speedSlider.value, 10);
+            lastFrameTime = null;
+            startTime = null;
+            elapsedTime = 0;
+            updateTimeDisplay();
+
+            setStatus("Ready");
+            startBtn.disabled = false;
+            pauseBtn.disabled = false;
+
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+                scrollAnimationId = null;
+            }
+
+            viewerContent.style.transform = "translateY(0px)";
+        }
+
+        speedSlider.addEventListener("input", () => {
+            scrollSpeed = parseInt(speedSlider.value, 10);
+            if (scrollSpeed === 0) {
+                setStatus("Speed set to 0 – scrolling off");
+                pauseScroll();
+            } else {
+                setStatus(isScrolling ? "Scrolling" : "Ready");
+            }
+        });
 
         startBtn.addEventListener("click", () => {
-            if (!scrolling) {
-                scrolling = true;
-                requestAnimationFrame(step);
-            }
+            startScroll();
         });
 
         pauseBtn.addEventListener("click", () => {
-            scrolling = false;
+            pauseScroll();
         });
 
         resetBtn.addEventListener("click", () => {
-            scrolling = false;
-            lastTime = null;
-            currentTop = 0;
-            viewer.style.top = "0px";
+            resetScroll();
+        });
+
+        function handleDragStart(y) {
+            isDragging = true;
+            viewerContent.style.transition = "none";
+            dragStartY = y;
+            const currentTransform = viewerContent.style.transform || "translateY(0px)";
+            dragStartContentY = parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
+            setStatus("Manual drag");
+        }
+
+        function handleDragMove(y) {
+            if (!isDragging) return;
+            const deltaY = y - dragStartY;
+            const newY = dragStartContentY + deltaY;
+
+            viewerContent.style.transform = "translateY(" + newY + "px)";
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            viewerContent.style.transition = "transform 0.08s ease-out";
+            setStatus(scrollSpeed > 0 ? "Ready (speed set)" : "Ready");
+        }
+
+        viewer.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            pauseScroll();
+            handleDragStart(e.clientY);
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            handleDragMove(e.clientY);
+        });
+
+        window.addEventListener("mouseup", () => {
+            handleDragEnd();
+        });
+
+        viewer.addEventListener("touchstart", (e) => {
+            const touch = e.touches[0];
+            e.preventDefault();
+            pauseScroll();
+            handleDragStart(touch.clientY);
+        }, { passive: false });
+
+        window.addEventListener("touchmove", (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            e.preventDefault();
+            handleDragMove(touch.clientY);
+        }, { passive: false });
+
+        window.addEventListener("touchend", () => {
+            handleDragEnd();
+        });
+
+        copyToViewerBtn.addEventListener("click", () => {
+            const text = editor.value || "Send lyrics from the editor to see them here.";
+            viewerContent.textContent = "";
+            const lines = text.split("\n");
+            lines.forEach((line) => {
+                const span = document.createElement("span");
+                span.className = "viewer-content-line";
+                span.textContent = line || "\u00A0";
+                viewerContent.appendChild(span);
+                viewerContent.appendChild(document.createElement("br"));
+            });
+            resetScroll();
+            setStatus("Viewer updated");
+        });
+
+        clearEditorBtn.addEventListener("click", () => {
             editor.value = "";
-            viewer.textContent = "";
-            editor.classList.remove("hidden");
-            songSelect.value = "__new__";
-            titleInput.value = "";
-            autoResizeTextarea(editor);
         });
 
-        speedSlider.addEventListener("input", () => {
-            speedValue.textContent = speedSlider.value;
-        });
-
-        function goToSongInSetlist(direction) {
-            if (!setlist.length) return;
-
-            let index = setlist.findIndex(id => id === currentId);
-            if (index === -1) {
-                index = direction > 0 ? 0 : setlist.length - 1;
-            } else {
-                index += direction;
+        function loadSongsFromStorage() {
+            try {
+                const stored = localStorage.getItem("lyricflow-songs");
+                savedSongs = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                savedSongs = [];
             }
+            renderSongs();
+        }
 
-            if (index < 0) index = setlist.length - 1;
-            if (index >= setlist.length) index = 0;
+        function saveSongsToStorage() {
+            try {
+                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
+            } catch (e) {
+            }
+        }
 
-            const targetId = setlist[index];
-            const song = songs.find(s => s.id === targetId);
+        function renderSongs() {
+            songsList.innerHTML = "";
+            songCount.textContent = savedSongs.length.toString();
+
+            if (savedSongs.length === 0) {
+                songsEmpty.style.display = "block";
+                return;
+            }
+            songsEmpty.style.display = "none";
+
+            savedSongs.forEach((song) => {
+                const item = document.createElement("div");
+                item.className = "song-item" + (song.id === activeSongId ? " active" : "");
+
+                const main = document.createElement("div");
+                main.className = "song-main";
+
+                const titleRow = document.createElement("div");
+                titleRow.className = "song-title-row";
+
+                const title = document.createElement("div");
+                title.className = "song-title";
+                title.textContent = song.name || "(Untitled)";
+
+                const pill = document.createElement("div");
+                pill.className = "song-pill";
+                pill.textContent = "Local";
+
+                titleRow.appendChild(title);
+                titleRow.appendChild(pill);
+
+                const meta = document.createElement("div");
+                meta.className = "song-meta";
+                meta.textContent = song.createdAt
+                    ? new Date(song.createdAt).toLocaleString()
+                    : "Saved locally";
+
+                main.appendChild(titleRow);
+                main.appendChild(meta);
+
+                const actions = document.createElement("div");
+                actions.className = "song-actions";
+
+                const loadBtn = document.createElement("button");
+                loadBtn.className = "song-btn";
+                loadBtn.innerHTML = "<span>↪</span><span>Load</span>";
+                loadBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    loadSong(song.id);
+                });
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "song-btn danger";
+                deleteBtn.innerHTML = "<span>✕</span>";
+                deleteBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    deleteSong(song.id);
+                });
+
+                actions.appendChild(loadBtn);
+                actions.appendChild(deleteBtn);
+
+                item.appendChild(main);
+                item.appendChild(actions);
+
+                item.addEventListener("click", () => {
+                    loadSong(song.id);
+                });
+
+                songsList.appendChild(item);
+            });
+        }
+
+        function saveCurrentSong() {
+            const text = editor.value.trim();
+            if (!text) {
+                alert("Type some lyrics in the editor before saving.");
+                return;
+            }
+            const name = prompt("Song title:");
+            if (name === null) return;
+
+            const song = {
+                id: Date.now().toString(),
+                name: name.trim() || "Untitled",
+                content: text,
+                createdAt: new Date().toISOString(),
+            };
+
+            savedSongs.push(song);
+            activeSongId = song.id;
+            saveSongsToStorage();
+            renderSongs();
+        }
+
+        function loadSong(id) {
+            const song = savedSongs.find((s) => s.id === id);
             if (!song) return;
-
-            loadSongIntoFields(targetId);
-            refreshSongSelect();
-            refreshSetlistChips();
-            viewer.textContent = "";
-            currentTop = 0;
-            viewer.style.top = "0px";
+            activeSongId = id;
+            editor.value = song.content;
+            copyToViewerBtn.click();
+            renderSongs();
         }
 
-        prevSongBtn.addEventListener("click", () => {
-            goToSongInSetlist(-1);
-        });
-
-        nextSongBtn.addEventListener("click", () => {
-            goToSongInSetlist(1);
-        });
-
-        function applyGigModeFromStorage() {
-            const enabled = localStorage.getItem(GIG_MODE_KEY) === "1";
-            document.body.classList.toggle("gig-mode", enabled);
-        }
-
-        gigModeBtn.addEventListener("click", () => {
-            const enabled = !document.body.classList.contains("gig-mode");
-            document.body.classList.toggle("gig-mode", enabled);
-            localStorage.setItem(GIG_MODE_KEY, enabled ? "1" : "0");
-        });
-
-        function applyViewerFontSize(px) {
-            viewer.style.fontSize = px + "px";
-            fontSizeSlider.value = px;
-            fontSizeValue.textContent = px;
-        }
-
-        function loadViewerFontSize() {
-            const stored = localStorage.getItem(FONT_SIZE_KEY);
-            const fallback = 22;
-            const size = stored ? parseInt(stored, 10) : fallback;
-            if (!isNaN(size)) applyViewerFontSize(size);
-        }
-
-        fontSizeSlider.addEventListener("input", () => {
-            const size = parseInt(fontSizeSlider.value, 10);
-            if (isNaN(size)) return;
-            applyViewerFontSize(size);
-            localStorage.setItem(FONT_SIZE_KEY, String(size));
-        });
-
-        editSetlistBtn.addEventListener("click", () => {
-            if (!songs.length) {
-                alert("No songs saved yet. Create a song first.");
-                return;
+        function deleteSong(id) {
+            if (!confirm("Delete this song?")) return;
+            savedSongs = savedSongs.filter((s) => s.id !== id);
+            if (activeSongId === id) {
+                activeSongId = null;
             }
-
-            const lines = songs.map((s, idx) => `${idx + 1}. ${s.title || "Untitled"}`).join("\n");
-            const currentOrder = setlist.length
-                ? setlist
-                    .map(id => songs.findIndex(s => s.id === id) + 1)
-                    .filter(n => n > 0)
-                    .join(",")
-                : "";
-
-            const input = prompt(
-                "Setlist order (comma-separated numbers):\n\n" + lines + "\n\nExample: 1,3,2",
-                currentOrder
-            );
-
-            if (!input) return;
-
-            const indices = input
-                .split(",")
-                .map(x => parseInt(x.trim(), 10))
-                .filter(n => !isNaN(n) && n > 0 && n <= songs.length);
-
-            if (!indices.length) {
-                alert("No valid numbers entered.");
-                return;
-            }
-
-            setlist = indices.map(i => songs[i - 1].id);
-            saveSetlist();
-            refreshSetlistChips();
-        });
-
-        function updateSettingsLabel() {
-            const open = controls.classList.contains("settings-open");
-            toggleSettingsBtn.textContent = open ? "Hide settings" : "Show settings";
-            if (open) {
-                editor.classList.remove("hidden");
-            }
+            saveSongsToStorage();
+            renderSongs();
         }
 
-        toggleSettingsBtn.addEventListener("click", () => {
-            controls.classList.toggle("settings-open");
-            updateSettingsLabel();
-        });
+        function clearAllSongs() {
+            if (!confirm("Clear all saved songs from this device?")) return;
+            savedSongs = [];
+            activeSongId = null;
+            saveSongsToStorage();
+            renderSongs();
+        }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            loadSongs();
-            refreshSongSelect();
-            loadSetlist();
-            refreshSetlistChips();
-            applyGigModeFromStorage();
-            loadViewerFontSize();
-            autoResizeTextarea(editor);
-            updateSettingsLabel();
-        });
+        saveSongBtn.addEventListener("click", saveCurrentSong);
+        clearAllSongsBtn.addEventListener("click", clearAllSongs);
+
+        loadSongsFromStorage();
     </script>
 </body>
 </html>
