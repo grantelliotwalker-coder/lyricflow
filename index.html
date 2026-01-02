@@ -604,7 +604,49 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            cursor: pointer;
+            position: relative;
         }
+
+            .pill-label strong {
+                font-weight: 600;
+            }
+
+        .pill-dropdown {
+            position: absolute;
+            left: 0;
+            top: 120%;
+            min-width: 180px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.95);
+            padding: 4px 0;
+            z-index: 50;
+        }
+
+            .pill-dropdown.hidden {
+                display: none;
+            }
+
+        .pill-dropdown-item {
+            padding: 5px 10px;
+            font-size: 11px;
+            color: var(--text-soft);
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+            .pill-dropdown-item:hover {
+                background: rgba(31, 41, 55, 0.95);
+                color: var(--text-main);
+            }
+
+            .pill-dropdown-item span:first-child {
+                opacity: 0.8;
+            }
 
         /* Popovers and modals */
 
@@ -727,7 +769,8 @@
                 color: var(--text-soft);
             }
 
-            .form-field input {
+            .form-field input,
+            .form-field select {
                 border-radius: 999px;
                 border: 1px solid rgba(75, 85, 99, 0.95);
                 background: rgba(15, 23, 42, 1);
@@ -743,6 +786,48 @@
             color: #020617;
             margin-left: 6px;
         }
+
+        .playlist-edit-list {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 6px;
+            padding-right: 4px;
+        }
+
+        .playlist-edit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 4px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+            .playlist-edit-item:last-child {
+                border-bottom: none;
+            }
+
+        .playlist-edit-name {
+            flex: 1;
+            color: var(--text-main);
+        }
+
+        .playlist-edit-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            .playlist-edit-controls button {
+                border-radius: 999px;
+                border: 1px solid rgba(75, 85, 99, 0.95);
+                background: rgba(15, 23, 42, 1);
+                color: var(--text-soft);
+                font-size: 10px;
+                padding: 2px 6px;
+                cursor: pointer;
+            }
 
         .viewer::-webkit-scrollbar,
         #editor::-webkit-scrollbar {
@@ -883,6 +968,7 @@
                                 <button class="tiny-btn" id="editorInfoBtn">i</button>
                                 <button class="tiny-btn primary" id="saveSongBtn">Save</button>
                                 <button class="tiny-btn" id="loadSongBtn">Load</button>
+                                <button class="tiny-btn" id="editPlaylistBtn">Edit playlist</button>
                                 <button class="tiny-btn tiny-btn-danger" id="clearEditorBtn">Clear</button>
                             </div>
                         </div>
@@ -912,8 +998,9 @@
                 </div>
                 <div class="bottom-tools">
                     <span id="playlistPill" class="pill-label hidden">
-                        <span>Playlist:</span>
-                        <strong id="playlistPillName">Set 1</strong>
+                        <span id="playlistPillText">Playlist: Set 1</span>
+                        <span id="playlistPillIndex">1/1</span>
+                        <div id="playlistDropdown" class="pill-dropdown hidden"></div>
                     </span>
                     <button class="pill-btn" id="speedBtn">Speed</button>
                     <button class="pill-btn" id="stageInfoBtn">Info</button>
@@ -1010,6 +1097,25 @@
         </div>
     </div>
 
+    <div class="overlay hidden" id="editPlaylistOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit playlist</div>
+                <button class="modal-close" data-close-edit-playlist>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="editPlaylistSelect">Playlist</label>
+                    <select id="editPlaylistSelect"></select>
+                </div>
+                <div class="playlist-edit-list" id="playlistEditList"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-edit-playlist>Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const viewer = document.getElementById("viewer");
         const viewerContent = document.getElementById("viewerContent");
@@ -1029,7 +1135,9 @@
         const prevSongBtn = document.getElementById("prevSongBtn");
         const nextSongBtn = document.getElementById("nextSongBtn");
         const playlistPill = document.getElementById("playlistPill");
-        const playlistPillName = document.getElementById("playlistPillName");
+        const playlistPillText = document.getElementById("playlistPillText");
+        const playlistPillIndex = document.getElementById("playlistPillIndex");
+        const playlistDropdown = document.getElementById("playlistDropdown");
 
         const speedBtn = document.getElementById("speedBtn");
         const speedPopover = document.getElementById("speedPopover");
@@ -1046,6 +1154,8 @@
 
         const saveSongBtn = document.getElementById("saveSongBtn");
         const loadSongBtn = document.getElementById("loadSongBtn");
+        const editPlaylistBtn = document.getElementById("editPlaylistBtn");
+
         const saveOverlay = document.getElementById("saveOverlay");
         const songTitleInput = document.getElementById("songTitleInput");
         const playlistInput = document.getElementById("playlistInput");
@@ -1055,6 +1165,10 @@
         const playlistSelect = document.getElementById("playlistSelect");
         const songSelect = document.getElementById("songSelect");
         const loadConfirmBtn = document.getElementById("loadConfirmBtn");
+
+        const editPlaylistOverlay = document.getElementById("editPlaylistOverlay");
+        const editPlaylistSelect = document.getElementById("editPlaylistSelect");
+        const playlistEditList = document.getElementById("playlistEditList");
 
         let isStageMode = true;
 
@@ -1100,33 +1214,33 @@
             const topLimit = railRect.top + railRect.height * 0.2;
             const bottomLimit = railRect.top + railRect.height * 0.8;
 
-            const currentRectOffset = contentRect.top - railRect.top;
+            const currentTransform = viewerContent.style.transform || "translateY(0px)";
             const currentY =
-                parseFloat(
-                    (viewerContent.style.transform || "translateY(0px)")
-                        .replace("translateY(", "")
-                        .replace("px)", "")
-                ) || 0;
+                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
             const deltaY = rawY - currentY;
-            const newTop = currentRectOffset + (rawY - currentY);
+            const newTop = contentRect.top + deltaY;
+            const newBottom = contentRect.bottom + deltaY;
 
             let clampedY = rawY;
 
             if (contentRect.height <= railRect.height * 0.6) {
-                const snapCenter = (topLimit + bottomLimit) / 2;
-                const lineRect = contentRect;
-                const glowCenter = snapCenter;
-                const lineCenter = lineRect.top + lineRect.height / 2;
-                const diff = glowCenter - lineCenter;
-                clampedY = currentY + diff;
-            } else {
-                if (contentRect.bottom + (rawY - currentY) < bottomLimit) {
-                    clampedY = currentY + (bottomLimit - (contentRect.bottom + (rawY - currentY)));
+                const glowBand = document.querySelector(".viewer-highlight");
+                if (glowBand) {
+                    const glowRect = glowBand.getBoundingClientRect();
+                    const glowCenter = glowRect.top + glowRect.height / 2;
+                    const contentCenter = contentRect.top + contentRect.height / 2;
+                    const diff = glowCenter - contentCenter;
+                    clampedY = currentY + diff;
                 }
-                if (contentRect.top + (rawY - currentY) > topLimit) {
-                    clampedY = currentY + (topLimit - (contentRect.top + (rawY - currentY)));
+            } else {
+                if (newBottom < bottomLimit) {
+                    clampedY = currentY + (bottomLimit - newBottom);
+                }
+                if (newTop > topLimit) {
+                    clampedY = currentY + (topLimit - newTop);
                 }
             }
+
             return clampedY;
         }
 
@@ -1134,9 +1248,7 @@
             const firstLine = document.querySelector(".viewer-content-line");
             const glowBand = document.querySelector(".viewer-highlight");
 
-            if (!firstLine || !glowBand) {
-                return;
-            }
+            if (!firstLine || !glowBand) return;
 
             const glowRect = glowBand.getBoundingClientRect();
             const lineRect = firstLine.getBoundingClientRect();
@@ -1154,7 +1266,7 @@
 
             if (lastFrameTime === null) {
                 lastFrameTime = timestamp;
-                if (!startTime) startTime = timestamp - elapsedTime;
+                if (!startTime) startTime = timestamp;
             }
 
             const delta = timestamp - lastFrameTime;
@@ -1206,7 +1318,7 @@
             pauseBtn.disabled = false;
 
             lastFrameTime = null;
-            if (!startTime) startTime = performance.now() - elapsedTime;
+            startTime = performance.now();
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
@@ -1408,6 +1520,28 @@
                 el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
             );
 
+        editPlaylistBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildEditPlaylistSelect();
+            buildEditPlaylistList();
+            editPlaylistOverlay.classList.remove("hidden");
+        });
+
+        editPlaylistOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeEditPlaylist !== undefined ||
+                e.target === editPlaylistOverlay
+            ) {
+                editPlaylistOverlay.classList.add("hidden");
+            }
+        });
+
+        editPlaylistOverlay
+            .querySelectorAll("[data-close-edit-playlist]")
+            .forEach((el) =>
+                el.addEventListener("click", () => editPlaylistOverlay.classList.add("hidden"))
+            );
+
         function makeSongId() {
             return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
         }
@@ -1437,27 +1571,32 @@
                 alert("Lyrics are empty – nothing to save.");
                 return;
             }
+
             const existingIndex = savedSongs.findIndex(
-                (s) => s.name === title && s.playlist === playlistName
+                (s) => s.name === title && (s.playlist || "Set 1") === playlistName
             );
-            const songData = {
+
+            const song = {
                 id: existingIndex >= 0 ? savedSongs[existingIndex].id : makeSongId(),
                 name: title,
                 playlist: playlistName,
                 content,
                 speed: scrollSpeed,
-                createdAt: existingIndex >= 0
-                    ? savedSongs[existingIndex].createdAt
-                    : new Date().toISOString()
+                createdAt:
+                    existingIndex >= 0
+                        ? savedSongs[existingIndex].createdAt
+                        : new Date().toISOString()
             };
+
             if (existingIndex >= 0) {
-                savedSongs[existingIndex] = songData;
+                savedSongs[existingIndex] = song;
             } else {
-                savedSongs.push(songData);
+                savedSongs.push(song);
             }
+
             saveSongsToStorage();
             currentPlaylistName = playlistName;
-            buildCurrentPlaylistOrder(playlistName, songData.id);
+            buildCurrentPlaylistOrder(playlistName, song.id);
             updateStagePlaylistUI();
             saveOverlay.classList.add("hidden");
             setStatus("Saved: " + title);
@@ -1468,6 +1607,9 @@
             viewerContent.textContent = "";
 
             if (!text.trim()) {
+                introLoopActive = true;
+                startIntroLoop();
+
                 const defaultLines = [
                     "Welcome to LyricFlow – stage‑ready lyric scroller.",
                     "Tap Edit to paste or type lyrics.",
@@ -1486,6 +1628,9 @@
                 resetScroll();
                 return;
             }
+
+            introLoopActive = false;
+            stopIntroLoop();
 
             const lines = text.split("\n");
             lines.forEach((rawLine, index) => {
@@ -1559,9 +1704,13 @@
         });
 
         function updateStagePlaylistUI() {
-            if (currentPlaylistName && currentSongId) {
+            if (currentPlaylistName && currentSongId && currentPlaylistSongIds.length > 0) {
                 playlistPill.classList.remove("hidden");
-                playlistPillName.textContent = currentPlaylistName;
+                const total = currentPlaylistSongIds.length;
+                const index = currentPlaylistSongIds.indexOf(currentSongId);
+                const currentNum = index >= 0 ? index + 1 : 1;
+                playlistPillText.textContent = "Playlist: " + currentPlaylistName;
+                playlistPillIndex.textContent = currentNum + "/" + total;
                 prevSongBtn.classList.remove("hidden");
                 nextSongBtn.classList.remove("hidden");
             } else {
@@ -1573,13 +1722,16 @@
 
         function buildCurrentPlaylistOrder(playlistName, songIdToFocus) {
             const songsInPlaylist = savedSongs
-                .filter((s) => s.playlist === playlistName)
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             currentPlaylistSongIds = songsInPlaylist.map((s) => s.id);
             currentSongId = songIdToFocus || (songsInPlaylist[0] && songsInPlaylist[0].id) || null;
         }
 
         function loadSongIntoUI(song) {
+            introLoopActive = false;
+            stopIntroLoop();
+
             currentPlaylistName = song.playlist || "Set 1";
             buildCurrentPlaylistOrder(currentPlaylistName, song.id);
             updateStagePlaylistUI();
@@ -1664,6 +1816,159 @@
             loadSongIntoUI(song);
         });
 
+        function buildPlaylistPillDropdown() {
+            playlistDropdown.innerHTML = "";
+            if (!currentPlaylistName || !currentPlaylistSongIds.length) {
+                playlistDropdown.classList.add("hidden");
+                return;
+            }
+            const total = currentPlaylistSongIds.length;
+            currentPlaylistSongIds.forEach((id, idx) => {
+                const song = savedSongs.find((s) => s.id === id);
+                if (!song) return;
+                const item = document.createElement("div");
+                item.className = "pill-dropdown-item";
+                const left = document.createElement("span");
+                left.textContent = (idx + 1) + "/" + total;
+                const right = document.createElement("span");
+                right.textContent = song.name;
+                item.appendChild(left);
+                item.appendChild(right);
+                item.addEventListener("click", () => {
+                    playlistDropdown.classList.add("hidden");
+                    loadSongIntoUI(song);
+                });
+                playlistDropdown.appendChild(item);
+            });
+        }
+
+        playlistPill.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (playlistDropdown.classList.contains("hidden")) {
+                buildPlaylistPillDropdown();
+                playlistDropdown.classList.remove("hidden");
+            } else {
+                playlistDropdown.classList.add("hidden");
+            }
+        });
+
+        document.addEventListener("click", () => {
+            playlistDropdown.classList.add("hidden");
+        });
+
+        function buildEditPlaylistSelect() {
+            const playlists = Array.from(
+                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
+            ).sort();
+            editPlaylistSelect.innerHTML = "";
+            playlists.forEach((p) => {
+                const opt = document.createElement("option");
+                opt.value = p;
+                opt.textContent = p;
+                editPlaylistSelect.appendChild(opt);
+            });
+            if (!playlists.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No playlists";
+                editPlaylistSelect.appendChild(opt);
+            }
+        }
+
+        function buildEditPlaylistList() {
+            const playlistName = editPlaylistSelect.value;
+            playlistEditList.innerHTML = "";
+            if (!playlistName) return;
+
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            songs.forEach((s, idx) => {
+                const row = document.createElement("div");
+                row.className = "playlist-edit-item";
+
+                const nameSpan = document.createElement("span");
+                nameSpan.className = "playlist-edit-name";
+                nameSpan.textContent = (idx + 1) + ". " + s.name;
+
+                const controls = document.createElement("div");
+                controls.className = "playlist-edit-controls";
+
+                const upBtn = document.createElement("button");
+                upBtn.textContent = "↑";
+                upBtn.disabled = idx === 0;
+                upBtn.addEventListener("click", () => {
+                    swapSongOrder(playlistName, s.id, -1);
+                    buildEditPlaylistList();
+                    if (playlistName === currentPlaylistName) {
+                        buildCurrentPlaylistOrder(playlistName, currentSongId);
+                        updateStagePlaylistUI();
+                    }
+                });
+
+                const downBtn = document.createElement("button");
+                downBtn.textContent = "↓";
+                downBtn.disabled = idx === songs.length - 1;
+                downBtn.addEventListener("click", () => {
+                    swapSongOrder(playlistName, s.id, 1);
+                    buildEditPlaylistList();
+                    if (playlistName === currentPlaylistName) {
+                        buildCurrentPlaylistOrder(playlistName, currentSongId);
+                        updateStagePlaylistUI();
+                    }
+                });
+
+                const delBtn = document.createElement("button");
+                delBtn.textContent = "✕";
+                delBtn.addEventListener("click", () => {
+                    if (!confirm("Delete \"" + s.name + "\" from this playlist?")) return;
+                    savedSongs = savedSongs.filter((song) => song.id !== s.id);
+                    saveSongsToStorage();
+                    buildEditPlaylistList();
+                    if (s.id === currentSongId) {
+                        currentSongId = null;
+                        currentPlaylistSongIds = [];
+                        updateStagePlaylistUI();
+                    } else if (playlistName === currentPlaylistName) {
+                        buildCurrentPlaylistOrder(playlistName, currentSongId);
+                        updateStagePlaylistUI();
+                    }
+                });
+
+                controls.appendChild(upBtn);
+                controls.appendChild(downBtn);
+                controls.appendChild(delBtn);
+
+                row.appendChild(nameSpan);
+                row.appendChild(controls);
+                playlistEditList.appendChild(row);
+            });
+        }
+
+        editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
+
+        function swapSongOrder(playlistName, songId, direction) {
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            const index = songs.findIndex((s) => s.id === songId);
+            const newIndex = index + direction;
+            if (index < 0 || newIndex < 0 || newIndex >= songs.length) return;
+
+            const tempTime = songs[index].createdAt;
+            songs[index].createdAt = songs[newIndex].createdAt;
+            songs[newIndex].createdAt = tempTime;
+
+            songs.forEach((updated) => {
+                const idx = savedSongs.findIndex((s) => s.id === updated.id);
+                if (idx >= 0) savedSongs[idx] = updated;
+            });
+
+            saveSongsToStorage();
+        }
+
         document.addEventListener("keydown", (e) => {
             if (!isStageMode) return;
             if (e.target === editor) return;
@@ -1683,7 +1988,7 @@
         });
 
         function startIntroLoop() {
-            introLoopActive = true;
+            if (!introLoopActive) return;
             let lastIntroTime = null;
 
             function stepIntro(ts) {
@@ -1704,7 +2009,7 @@
 
                 const railRect = viewer.getBoundingClientRect();
                 const contentRect = viewerContent.getBoundingClientRect();
-                const newY = currentY - distance;
+                let newY = currentY - distance;
                 viewerContent.style.transform = "translateY(" + newY + "px)";
 
                 if (contentRect.bottom + newY <= railRect.top + railRect.height * 0.4) {
@@ -1733,6 +2038,7 @@
 
         window.addEventListener("load", () => {
             requestAnimationFrame(snapFirstLineIntoGlow);
+            introLoopActive = true;
             startIntroLoop();
         });
     </script>
