@@ -278,6 +278,20 @@
                 font-size: 11px;
             }
 
+        .pill-btn {
+            border-radius: 999px;
+            padding: 4px 10px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
         /* Central viewer / editor */
 
         .main-stack {
@@ -628,19 +642,15 @@
             gap: 6px;
         }
 
-        .pill-btn {
-            border-radius: 999px;
-            padding: 4px 10px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        /* NEW: bigger Settings button in transport bar */
+        #settingsBtnBottom.btn {
+            padding: 7px 16px;
+            font-size: 11px;
         }
+
+            #settingsBtnBottom.btn span:first-child {
+                font-size: 15px;
+            }
 
         /* Modals */
 
@@ -992,6 +1002,10 @@
                     <button id="resetBtn" class="btn btn-reset">
                         <span>⟲</span><span>Reset</span>
                     </button>
+                    <!-- NEW: bigger settings button in transport bar -->
+                    <button id="settingsBtnBottom" class="btn">
+                        <span>⚙︎</span><span>Settings</span>
+                    </button>
                 </div>
                 <div class="bottom-tools">
                     <!-- reserved for future tools -->
@@ -1000,7 +1014,7 @@
         </div>
     </div>
 
-    <!-- Stage info modal -->
+    <!-- Modals (unchanged HTML) -->
 
     <div class="overlay hidden" id="stageInfoOverlay">
         <div class="modal">
@@ -1020,8 +1034,6 @@
         </div>
     </div>
 
-    <!-- Edit info modal -->
-
     <div class="overlay hidden" id="editInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1039,8 +1051,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Save modal -->
 
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
@@ -1065,8 +1075,6 @@
         </div>
     </div>
 
-    <!-- Load modal -->
-
     <div class="overlay hidden" id="loadOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1090,8 +1098,6 @@
         </div>
     </div>
 
-    <!-- Edit playlist modal -->
-
     <div class="overlay hidden" id="editPlaylistOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1111,8 +1117,6 @@
         </div>
     </div>
 
-    <!-- Settings modal (speed etc.) -->
-
     <div class="overlay hidden" id="settingsOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1130,8 +1134,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Playlist track picker modal -->
 
     <div class="overlay hidden" id="playlistSelectOverlay">
         <div class="modal">
@@ -1172,6 +1174,7 @@
         const playlistPillIndex = document.getElementById("playlistPillIndex");
 
         const settingsBtn = document.getElementById("settingsBtn");
+        const settingsBtnBottom = document.getElementById("settingsBtnBottom");
 
         const stageInfoBtn = document.getElementById("stageInfoBtn");
         const stageInfoOverlay = document.getElementById("stageInfoOverlay");
@@ -1278,7 +1281,6 @@
                     clampedY = currentY + (topLimit - newTop);
                 }
             }
-
             return clampedY;
         }
 
@@ -1375,6 +1377,7 @@
             }
         }
 
+        // CHANGED: resetScroll now fully resets to top, no snap
         function resetScroll() {
             isScrolling = false;
             lastFrameTime = null;
@@ -1390,10 +1393,8 @@
                 scrollAnimationId = null;
             }
 
+            baseContentY = 0;
             viewerContent.style.transform = "translateY(0px)";
-            requestAnimationFrame(() => {
-                snapFirstLineIntoGlow();
-            });
         }
 
         function handleDragStart(y) {
@@ -1471,10 +1472,20 @@
 
         /* Settings (speed) */
 
-        settingsBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
+        function openSettings() {
             speedSliderModal.value = scrollSpeed;
             settingsOverlay.classList.remove("hidden");
+        }
+
+        settingsBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            openSettings();
+        });
+
+        // NEW: bottom settings button uses same behaviour, stage only
+        settingsBtnBottom.addEventListener("click", () => {
+            if (!isStageMode) return;
+            openSettings();
         });
 
         settingsOverlay.addEventListener("click", (e) => {
@@ -1947,7 +1958,6 @@
             if (!text.trim()) {
                 introLoopActive = true;
                 startIntroLoop();
-
                 const defaultLines = [
                     "Welcome to LyricFlow – stage‑ready lyric scroller.",
                     "Tap Edit to paste or type lyrics.",
@@ -2021,6 +2031,7 @@
                 requestAnimationFrame(() => {
                     snapFirstLineIntoGlow();
                 });
+                settingsBtnBottom.classList.remove("hidden");
             } else {
                 pauseScroll();
                 viewerCard.classList.add("hidden");
@@ -2029,6 +2040,7 @@
                 modeToggle.querySelector("span").innerHTML =
                     "<strong>Edit mode</strong> <small>· tap for stage</small>";
                 setStatus("Edit lyrics – viewer mirrors automatically");
+                settingsBtnBottom.classList.add("hidden");
             }
         });
 
