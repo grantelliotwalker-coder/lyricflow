@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>LyricFlow</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <style>
         :root {
@@ -43,7 +43,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             height: 100%;
@@ -223,38 +224,32 @@
             box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
         }
 
-        .app-subtitle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            color: var(--text-soft);
-        }
-
-        .subtitle-pill {
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.75);
-            border: 1px solid rgba(51, 65, 85, 0.8);
-            color: rgba(209, 213, 219, 0.9);
+        .mode-toggle {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.95);
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            color: var(--text-soft);
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
         }
 
-            .subtitle-pill span {
-                display: inline-flex;
-                align-items: center;
-                gap: 3px;
-            }
-
-        .subtitle-dot {
-            width: 4px;
-            height: 4px;
+        .mode-dot {
+            width: 6px;
+            height: 6px;
             border-radius: 999px;
-            background: rgba(148, 163, 184, 0.95);
-            box-shadow: 0 0 5px rgba(148, 163, 184, 0.8);
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .mode-toggle span strong {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 10px;
         }
 
         .controls-row {
@@ -365,7 +360,7 @@
             cursor: pointer;
             border-radius: 999px;
             font-size: 11px;
-            padding: 5px 10px;
+            padding: 6px 14px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -399,16 +394,6 @@
                 box-shadow: 0 10px 20px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
             }
 
-                .btn-ghost.danger:hover {
-                    background: var(--danger-soft);
-                    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(248, 113, 113, 0.8);
-                }
-
-                .btn-ghost.danger:active {
-                    transform: translateY(1px);
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(248, 113, 113, 0.7);
-                }
-
         .btn:hover {
             transform: translateY(-0.5px) translateZ(0);
             box-shadow: 0 14px 26px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
@@ -423,6 +408,15 @@
         .btn:active {
             transform: translateY(1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
+        }
+
+        .btn-small {
+            padding: 4px 9px;
+            font-size: 10px;
+        }
+
+        .btn-attention {
+            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.85), 0 0 18px rgba(34, 197, 94, 0.8), 0 0 45px rgba(34, 197, 94, 0.85);
         }
 
         .layout {
@@ -514,11 +508,6 @@
             border-radius: 999px;
             background: radial-gradient(circle at 0 0, #f9fafb, #22c55e);
             box-shadow: 0 0 9px rgba(34, 197, 94, 0.85);
-        }
-
-        .card-subtext {
-            font-size: 11px;
-            color: var(--text-muted);
         }
 
         .card-actions {
@@ -646,21 +635,12 @@
             box-shadow: 0 10px 18px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
         }
 
-            .tiny-btn:hover {
-                background: rgba(31, 41, 55, 0.98);
-            }
-
             .tiny-btn.primary {
                 border-color: rgba(34, 197, 94, 0.8);
                 color: var(--accent-bright);
                 box-shadow: 0 10px 22px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
                 background: rgba(15, 23, 42, 0.98);
             }
-
-                .tiny-btn.primary:hover {
-                    background: rgba(22, 101, 52, 0.8);
-                    color: #ecfdf3;
-                }
 
         #editor {
             width: 100%;
@@ -737,12 +717,6 @@
             box-shadow: 0 0 8px rgba(34, 197, 94, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
         }
 
-        .viewer-status-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
         .viewer-card {
             flex: 1;
             min-height: 0;
@@ -756,16 +730,6 @@
             position: relative;
             overflow: hidden;
         }
-
-            .viewer-card::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                pointer-events: none;
-                background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.18), transparent 55%), radial-gradient(circle at 100% 100%, rgba(71, 85, 105, 0.55), transparent 52%);
-                opacity: 0.85;
-                mix-blend-mode: soft-light;
-            }
 
         .viewer-card-inner {
             position: relative;
@@ -790,6 +754,13 @@
             box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.85);
         }
 
+        .viewer-halo-top,
+        .viewer-halo-bottom,
+        .viewer-highlight,
+        .viewer-subtle-layer {
+            pointer-events: none;
+        }
+
         .viewer-halo-top {
             position: absolute;
             top: -40px;
@@ -800,7 +771,6 @@
             background: radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.42), transparent 70%);
             filter: blur(12px);
             opacity: 0.8;
-            pointer-events: none;
         }
 
         .viewer-halo-bottom {
@@ -813,7 +783,6 @@
             background: radial-gradient(circle at 50% 0, rgba(34, 197, 94, 0.26), transparent 70%), radial-gradient(circle at 50% 0, rgba(59, 130, 246, 0.18), transparent 70%);
             filter: blur(14px);
             opacity: 0.9;
-            pointer-events: none;
         }
 
         .viewer-highlight {
@@ -827,7 +796,6 @@
             border-radius: 36px;
             border: 1px solid rgba(148, 163, 184, 0.28);
             box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 0 2px rgba(34, 197, 94, 0.16), 0 20px 40px rgba(0, 0, 0, 0.9), 0 -16px 35px rgba(15, 23, 42, 0.95), 0 0 50px rgba(34, 197, 94, 0.45);
-            pointer-events: none;
             mix-blend-mode: screen;
             opacity: 0.75;
         }
@@ -838,7 +806,6 @@
             background: radial-gradient(circle at 0 50%, rgba(15, 23, 42, 0.6), transparent 60%), radial-gradient(circle at 100% 50%, rgba(15, 23, 42, 0.75), transparent 60%);
             opacity: 0.85;
             mix-blend-mode: multiply;
-            pointer-events: none;
         }
 
         .viewer-text-rail {
@@ -880,6 +847,7 @@
             position: relative;
             display: inline-block;
             will-change: transform;
+            transform: translateY(0px);
         }
 
         .viewer-overlay-top,
@@ -909,7 +877,7 @@
             right: 22%;
             height: 2px;
             border-radius: 999px;
-            background: linear-gradient(to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0));
+            background: linear-gradient( to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0) );
             box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
             opacity: 0.75;
             pointer-events: none;
@@ -996,6 +964,19 @@
             color: rgba(209, 213, 219, 0.95);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
         }
+
+        .viewer-content-line {
+            display: block;
+            padding: 3px 0;
+        }
+
+        .highlight-current-line .viewer-content-line.current {
+            color: #ecfeff;
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(37, 99, 235, 0.9), 0 0 90px rgba(37, 99, 235, 1);
+            font-weight: 500;
+        }
+
+        /* Songs card */
 
         .songs-card {
             border-radius: 22px;
@@ -1306,49 +1287,29 @@
             font-size: 9px;
         }
 
-        .viewer-status-icon {
-            width: 14px;
-            height: 14px;
-            border-radius: 7px;
-            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
-            color: #020617;
-            box-shadow: 0 8px 18px rgba(22, 163, 74, 0.8), 0 0 0 1px rgba(15, 23, 42, 1);
+        /* Stage vs edit mode visibility */
+
+        .edit-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.35fr);
+            gap: 10px;
+            height: calc(100% - 54px);
+            min-height: 0;
         }
 
-        .pill-icon {
-            font-size: 10px;
-        }
+            .edit-shell.hidden {
+                display: none;
+            }
 
-        .songs-label {
+        .viewer-shell {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 8px;
+            height: calc(100% - 54px);
+            min-height: 0;
         }
 
-            .songs-label strong {
-                font-size: 10px;
-                color: rgba(226, 232, 240, 0.95);
-            }
-
-            .songs-label span {
-                font-size: 10px;
-                color: rgba(148, 163, 184, 0.98);
-            }
-
-        .highlight-current-line .viewer-content-line.current {
-            color: #ecfeff;
-            text-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(37, 99, 235, 0.9), 0 0 90px rgba(37, 99, 235, 1);
-            font-weight: 500;
-        }
-
-        .viewer-content-line {
-            display: block;
-            padding: 3px 0;
-        }
+        /* Responsive */
 
         @media (max-width: 900px) {
             body {
@@ -1360,20 +1321,9 @@
                 padding: 12px 10px 10px;
             }
 
-            .layout {
-                grid-template-columns: minmax(0, 1fr);
-                height: calc(100% - 52px);
-                gap: 8px;
-            }
-
             .header {
                 flex-wrap: wrap;
                 gap: 8px;
-            }
-
-            .controls-row {
-                flex-wrap: wrap;
-                justify-content: flex-end;
             }
 
             .viewer {
@@ -1383,17 +1333,27 @@
             .songs-body {
                 max-height: 150px;
             }
+
+            .edit-shell {
+                grid-template-columns: minmax(0, 1fr);
+            }
         }
 
         @media (max-width: 600px) {
             .header {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .branding {
+                max-width: 65%;
             }
 
             .controls-row {
                 width: 100%;
                 justify-content: space-between;
+                flex-wrap: wrap;
             }
 
             .cluster {
@@ -1405,10 +1365,6 @@
                 justify-content: flex-end;
             }
 
-            .layout {
-                height: calc(100% - 54px);
-            }
-
             .card,
             .songs-card {
                 border-radius: 20px;
@@ -1416,6 +1372,10 @@
 
             .viewer {
                 font-size: 18px;
+            }
+
+            .viewer-shell {
+                height: calc(100% - 54px);
             }
         }
 
@@ -1481,59 +1441,133 @@
                     <div class="app-title-block">
                         <div class="app-title-row">
                             <div class="app-title">LyricFlow</div>
-                            <div class="app-pill">
-                                <span class="pill-dot"></span>
-                                <span>Stage‑ready lyric scroller</span>
-                            </div>
                         </div>
                         <div class="app-subtitle">
                             <div class="subtitle-pill">
                                 <span class="subtitle-dot"></span>
-                                <span>Type, save, scroll – your lyrics, your pace</span>
+                                <span>Stage‑ready lyric scroller</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="controls-row">
-                    <div class="cluster">
-                        <label for="speed">
-                            <span>Scroll speed</span>
-                            <small>(0 = off)</small>
-                        </label>
-                        <input type="range" id="speed" min="0" max="10" step="1" value="4">
-                        <span class="hint-pill">
-                            <span class="subtitle-dot"></span>
-                            Drag lyrics to fine‑tune
-                        </span>
-                    </div>
-
-                    <div class="transport-cluster">
-                        <div class="transport-left">
-                            <div class="transport-label">
-                                <span class="status-dot"></span>
-                                <span id="statusText">Ready</span>
-                            </div>
-                            <div class="transport-time">
-                                <span id="timeDisplay">0:00</span>
-                            </div>
-                        </div>
-                        <div class="transport-buttons">
-                            <button id="start" class="btn btn-primary">
-                                <span>▶</span> <span>Start</span>
-                            </button>
-                            <button id="pause" class="btn btn-ghost">
-                                <span>⏸</span> <span>Pause</span>
-                            </button>
-                            <button id="resetBtn" class="btn btn-ghost danger">
-                                <span>⟲</span> <span>Reset</span>
-                            </button>
-                        </div>
-                    </div>
+                <div class="mode-toggle" id="modeToggle">
+                    <div class="mode-dot"></div>
+                    <span><strong>Stage mode</strong> · tap for edit & songs</span>
                 </div>
             </header>
 
-            <main class="layout">
+            <div class="controls-row">
+                <div class="cluster">
+                    <label for="speed">
+                        <span>Scroll speed</span>
+                        <small>(0 = off)</small>
+                    </label>
+                    <input type="range" id="speed" min="0" max="10" step="1" value="4" />
+                    <span class="hint-pill">
+                        <span class="subtitle-dot"></span>
+                        Drag lyrics to fine‑tune
+                    </span>
+                </div>
+
+                <div class="transport-cluster">
+                    <div class="transport-left">
+                        <div class="transport-label">
+                            <span class="status-dot"></span>
+                            <span id="statusText">Ready</span>
+                        </div>
+                        <div class="transport-time">
+                            <span id="timeDisplay">0:00</span>
+                        </div>
+                    </div>
+                    <div class="transport-buttons">
+                        <button id="start" class="btn btn-primary">
+                            <span>▶</span>
+                            <span>Start</span>
+                        </button>
+                        <button id="pause" class="btn btn-ghost">
+                            <span>⏸</span>
+                            <span>Pause</span>
+                        </button>
+                        <button id="resetBtn" class="btn btn-ghost danger btn-small">
+                            <span>⟲</span>
+                            <span>Reset</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage viewer shell (always visible) -->
+            <div class="viewer-shell">
+                <div class="viewer-status-row">
+                    <div class="viewer-status-left">
+                        <div class="viewer-status-pill">
+                            <div class="viewer-status-dot"></div>
+                            <span>Lyric window is always on screen – only the text inside moves.</span>
+                        </div>
+                    </div>
+                    <div class="viewer-status-right">
+                        <span>Drag inside the window to nudge scroll position while performing.</span>
+                    </div>
+                </div>
+
+                <div class="viewer-card">
+                    <div class="viewer-card-inner">
+                        <div class="viewer-viewport">
+                            <div class="viewer-halo-top"></div>
+                            <div class="viewer-halo-bottom"></div>
+                            <div class="viewer-subtle-layer"></div>
+                            <div class="viewer-highlight"></div>
+
+                            <div class="viewer-text-rail">
+                                <div class="viewer-overlay-top"></div>
+                                <div class="viewer-overlay-bottom"></div>
+                                <div class="viewer-gradient-border-top"></div>
+                                <div class="viewer-gradient-border-bottom"></div>
+
+                                <div class="viewer" id="viewer">
+                                    <div class="viewer-content" id="viewerContent">
+                                        <span class="viewer-content-line">
+                                            Welcome to LyricFlow – stage‑ready lyric scroller.
+                                        </span><br />
+                                        <span class="viewer-content-line">
+                                            1. Tap “Stage mode · tap for edit & songs”.
+                                        </span><br />
+                                        <span class="viewer-content-line">
+                                            2. Type or load lyrics, then tap “Send to viewer”.
+                                        </span><br />
+                                        <span class="viewer-content-line">
+                                            3. Back in Stage mode: press Start, set a speed, drag to fine‑tune.
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="viewer-foot">
+                            <div class="viewer-foot-left">
+                                <div class="viewer-foot-pill">
+                                    <span class="viewer-foot-dot"></span>
+                                    <span>Lyric window stays anchored – text scrolls inside for consistency on any screen.</span>
+                                </div>
+                            </div>
+                            <div class="viewer-foot-right">
+                                <div class="viewer-foot-note-pill">
+                                    <span>Controls:</span>
+                                    <span class="viewer-foot-keys">
+                                        <span class="key-cap">Space</span>
+                                        <span class="key-cap">R</span>
+                                    </span>
+                                </div>
+                                <span>Use the speed slider or drag the lyrics to fine‑tune during a song.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit & songs shell (hidden in stage mode) -->
+            <main class="edit-shell hidden" id="editShell">
                 <section class="panel">
                     <div class="card">
                         <div class="card-inner">
@@ -1552,7 +1586,7 @@
                                     </div>
                                     <div class="chip chip-secondary">
                                         <div class="chip-icon">⌨</div>
-                                        <span>Enter on PC or phone</span>
+                                        <span>Works on phone & desktop</span>
                                     </div>
                                 </div>
                             </div>
@@ -1580,7 +1614,8 @@
                                         </button>
                                     </div>
                                 </div>
-                                <textarea id="editor" placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;Tap “Send to viewer” to update the scrolling window…"></textarea>
+                                <textarea id="editor"
+                                          placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;Tap “Send to viewer” to update the scrolling window…"></textarea>
                             </div>
                             <div class="editor-footnote">
                                 <span>Tip: Write and edit here – the viewer always stays clean and performance‑ready.</span>
@@ -1590,63 +1625,6 @@
                 </section>
 
                 <section class="panel">
-                    <div class="viewer-wrapper">
-                        <div class="viewer-status-row">
-                            <div class="viewer-status-left">
-                                <div class="viewer-status-pill">
-                                    <div class="viewer-status-dot"></div>
-                                    <span>Lyric window is always on screen – only the text inside moves.</span>
-                                </div>
-                            </div>
-                            <div class="viewer-status-right">
-                                <span>Drag inside the window to nudge scroll position while performing.</span>
-                            </div>
-                        </div>
-
-                        <div class="viewer-card">
-                            <div class="viewer-card-inner">
-                                <div class="viewer-viewport">
-                                    <div class="viewer-halo-top"></div>
-                                    <div class="viewer-halo-bottom"></div>
-                                    <div class="viewer-subtle-layer"></div>
-                                    <div class="viewer-highlight"></div>
-
-                                    <div class="viewer-text-rail">
-                                        <div class="viewer-overlay-top"></div>
-                                        <div class="viewer-overlay-bottom"></div>
-                                        <div class="viewer-gradient-border-top"></div>
-                                        <div class="viewer-gradient-border-bottom"></div>
-
-                                        <div class="viewer" id="viewer">
-                                            <div class="viewer-content" id="viewerContent">
-                                                <span class="viewer-content-line">Send lyrics from the editor to see them here.</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="viewer-foot">
-                                    <div class="viewer-foot-left">
-                                        <div class="viewer-foot-pill">
-                                            <span class="viewer-foot-dot"></span>
-                                            <span>Lyric window stays anchored – text scrolls inside for consistency on any screen.</span>
-                                        </div>
-                                    </div>
-                                    <div class="viewer-foot-right">
-                                        <div class="viewer-foot-note-pill">
-                                            <span>Controls:</span>
-                                            <span class="viewer-foot-keys">
-                                                <span class="key-cap">Space</span>
-                                                <span class="key-cap">R</span>
-                                            </span>
-                                        </div>
-                                        <span>Use the speed slider or drag the lyrics to fine‑tune during a song.</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="songs-card">
                         <div class="songs-card-inner">
                             <div class="songs-header">
@@ -1683,7 +1661,8 @@
                             <div class="songs-body">
                                 <div id="songsList" class="songs-list"></div>
                                 <div class="songs-empty" id="songsEmpty">
-                                    <strong>No songs saved yet.</strong> Save any lyrics with “Save current lyrics” – they stay on this phone or PC until you clear them.
+                                    <strong>No songs saved yet.</strong>
+                                    Save any lyrics with “Save current lyrics” – they stay on this phone or PC until you clear them.
                                 </div>
                             </div>
 
@@ -1730,6 +1709,15 @@
         const saveSongBtn = document.getElementById("saveSong");
         const clearAllSongsBtn = document.getElementById("clearAllSongs");
 
+        const modeToggle = document.getElementById("modeToggle");
+        const editShell = document.getElementById("editShell");
+
+        const defaultViewerScript =
+            "Welcome to LyricFlow – stage‑ready lyric scroller.\n" +
+            "1. Tap “Stage mode · tap for edit & songs”.\n" +
+            "2. Type or load lyrics, then tap “Send to viewer”.\n" +
+            "3. Back in Stage mode: press Start, set a speed, drag to fine‑tune.";
+
         let scrollAnimationId = null;
         let scrollSpeed = parseInt(speedSlider.value, 10);
         let isScrolling = false;
@@ -1743,6 +1731,8 @@
 
         let savedSongs = [];
         let activeSongId = null;
+        let lastSpaceTime = 0;
+        let isStageMode = true;
 
         function setStatus(text) {
             statusText.textContent = text;
@@ -1764,7 +1754,7 @@
             const contentRect = viewerContent.getBoundingClientRect();
             if (!railRect.height || !contentRect.height) return rawY;
 
-            const maxOffset = 40;
+            const maxOffset = 10;
             const minY = railRect.bottom - contentRect.bottom - maxOffset;
             const maxY = railRect.top - contentRect.top + maxOffset;
 
@@ -1791,8 +1781,9 @@
             const pixelsPerSecond = baseSpeed * 12;
             const distance = (pixelsPerSecond * delta) / 1000;
 
-            viewerContent.style.transform = viewerContent.style.transform || "translateY(0px)";
-            const currentY = parseFloat(viewerContent.style.transform.replace("translateY(", "").replace("px)", "")) || 0;
+            const currentTransform = viewerContent.style.transform || "translateY(0px)";
+            const currentY =
+                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
             const unclampedY = currentY - distance;
             const newY = clampContentY(unclampedY);
 
@@ -1803,6 +1794,8 @@
             if (contentRect.bottom < railRect.bottom - 8) {
                 pauseScroll();
                 setStatus("End of lyrics");
+                resetBtn.classList.add("btn-attention");
+                setTimeout(() => resetBtn.classList.remove("btn-attention"), 900);
                 return;
             }
 
@@ -1844,7 +1837,7 @@
 
         function resetScroll() {
             isScrolling = false;
-            scrollSpeed = parseInt(speedSlider.value, 10);
+            scrollSpeed = parseInt(speedSlider.value, 10) || 0;
             lastFrameTime = null;
             startTime = null;
             elapsedTime = 0;
@@ -1862,12 +1855,12 @@
         }
 
         speedSlider.addEventListener("input", () => {
-            scrollSpeed = parseInt(speedSlider.value, 10);
+            scrollSpeed = parseInt(speedSlider.value, 10) || 0;
             if (scrollSpeed === 0) {
-                setStatus("Speed set to 0 – scrolling off");
                 pauseScroll();
+                setStatus("Speed set to 0 – drag or raise slider");
             } else {
-                setStatus(isScrolling ? "Scrolling" : "Ready");
+                setStatus(isScrolling ? "Scrolling" : "Ready (speed set)");
             }
         });
 
@@ -1880,7 +1873,8 @@
             viewerContent.style.transition = "none";
             dragStartY = y;
             const currentTransform = viewerContent.style.transform || "translateY(0px)";
-            dragStartContentY = parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
+            dragStartContentY =
+                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
             setStatus("Manual drag");
         }
 
@@ -1914,32 +1908,42 @@
             handleDragEnd();
         });
 
-        viewer.addEventListener("touchstart", (e) => {
-            const touch = e.touches[0];
-            e.preventDefault();
-            pauseScroll();
-            handleDragStart(touch.clientY);
-        }, { passive: false });
+        viewer.addEventListener(
+            "touchstart",
+            (e) => {
+                const touch = e.touches[0];
+                e.preventDefault();
+                pauseScroll();
+                handleDragStart(touch.clientY);
+            },
+            { passive: false }
+        );
 
-        window.addEventListener("touchmove", (e) => {
-            if (!isDragging) return;
-            const touch = e.touches[0];
-            e.preventDefault();
-            handleDragMove(touch.clientY);
-        }, { passive: false });
+        window.addEventListener(
+            "touchmove",
+            (e) => {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                e.preventDefault();
+                handleDragMove(touch.clientY);
+            },
+            { passive: false }
+        );
 
         window.addEventListener("touchend", () => {
             handleDragEnd();
         });
 
         copyToViewerBtn.addEventListener("click", () => {
-            const text = editor.value || "Send lyrics from the editor to see them here.";
+            const text = editor.value || defaultViewerScript;
+
             viewerContent.textContent = "";
             const lines = text.split("\n");
 
             lines.forEach((rawLine, index) => {
                 const line = rawLine.replace(/\s+$/, "");
                 const isBlank = line.trim() === "";
+
                 const span = document.createElement("span");
                 span.className = "viewer-content-line";
 
@@ -1953,8 +1957,13 @@
                 }
 
                 viewerContent.appendChild(span);
-                viewerContent.appendChild(document.createElement("br"));
+                if (index < lines.length - 1) {
+                    viewerContent.appendChild(document.createElement("br"));
+                }
             });
+
+            // NEW: start slightly below the very top
+            viewerContent.style.transform = "translateY(20px)";
 
             resetScroll();
             setStatus("Viewer updated");
@@ -1968,6 +1977,10 @@
             if (e.target === editor) return;
 
             if (e.code === "Space") {
+                const now = Date.now();
+                if (now - lastSpaceTime < 150) return;
+                lastSpaceTime = now;
+
                 e.preventDefault();
                 if (isScrolling) {
                     pauseScroll();
@@ -1994,7 +2007,9 @@
         function saveSongsToStorage() {
             try {
                 localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
-            } catch (e) { }
+            } catch (e) {
+                alert("Could not save songs – your browser storage is disabled or full.");
+            }
         }
 
         function renderSongs() {
@@ -2070,6 +2085,10 @@
             });
         }
 
+        function makeSongId() {
+            return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+        }
+
         function saveCurrentSong() {
             const text = editor.value.trim();
             if (!text) {
@@ -2080,10 +2099,10 @@
             if (name === null) return;
 
             const song = {
-                id: Date.now().toString(),
+                id: makeSongId(),
                 name: name.trim() || "Untitled",
                 content: text,
-                createdAt: new Date().toISOString(),
+                createdAt: new Date().toISOString()
             };
 
             savedSongs.push(song);
@@ -2121,6 +2140,19 @@
 
         saveSongBtn.addEventListener("click", saveCurrentSong);
         clearAllSongsBtn.addEventListener("click", clearAllSongs);
+
+        modeToggle.addEventListener("click", () => {
+            isStageMode = !isStageMode;
+            if (isStageMode) {
+                editShell.classList.add("hidden");
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Stage mode</strong> · tap for edit & songs";
+            } else {
+                editShell.classList.remove("hidden");
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Edit & songs</strong> · tap for stage view";
+            }
+        });
 
         loadSongsFromStorage();
     </script>
