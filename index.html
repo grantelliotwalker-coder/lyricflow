@@ -1214,6 +1214,8 @@
         let scrollAnimationId = null;
         let scrollSpeed = parseInt(speedSliderModal.value, 10);
         let isScrolling = false;
+        let firstScrollFrame = false;
+        let firstAutoStepAfterSnap = false; // NEW
         let lastFrameTime = null;
         let startTime = null;
         let elapsedTime = 0;
@@ -1233,6 +1235,10 @@
         let currentPlaylistName = "";
         let currentPlaylistSongIds = [];
         let currentSongId = null;
+
+        function debugLog(...args) {
+            console.log("[LyricFlow]", ...args);
+        }
 
         function setStatus(text) {
             statusText.textContent = text;
@@ -1272,15 +1278,25 @@
                     const contentCenter = contentRect.top + contentRect.height / 2;
                     const diff = glowCenter - contentCenter;
                     clampedY = currentY + diff;
+                    debugLog("clampContentY: short text, snapping center by diff", diff.toFixed(2));
                 }
             } else {
                 if (newBottom < bottomLimit) {
-                    clampedY = currentY + (bottomLimit - newBottom);
+                    const adjust = bottomLimit - newBottom;
+                    clampedY = currentY + adjust;
+                    debugLog("clampContentY: bumping up by", adjust.toFixed(2));
                 }
                 if (newTop > topLimit) {
-                    clampedY = currentY + (topLimit - newTop);
+                    const adjust = topLimit - newTop;
+                    clampedY = currentY + adjust;
+                    debugLog("clampContentY: pushing down by", adjust.toFixed(2));
                 }
             }
+
+            if (clampedY !== rawY) {
+                debugLog("clampContentY: rawY", rawY.toFixed(2), "-> clampedY", clampedY.toFixed(2));
+            }
+
             return clampedY;
         }
 
@@ -1296,10 +1312,26 @@
             const glowCenter = glowRect.top + glowRect.height / 2;
             const lineCenter = lineRect.top + lineRect.height / 2;
 
+            // Guard against layout-not-ready snaps
+            if (
+                glowRect.height === 0 ||
+                lineRect.height === 0 ||
+                (glowCenter === 0 && lineCenter === 0)
+            ) {
+                debugLog("snapFirstLineIntoGlow: layout not ready, aborting");
+                return;
+            }
+
             const delta = glowCenter - lineCenter;
 
             baseContentY = delta;
             viewerContent.style.transform = `translateY(${baseContentY}px)`;
+            firstAutoStepAfterSnap = true; // NEW
+
+            debugLog("snapFirstLineIntoGlow: glowCenter", glowCenter.toFixed(2),
+                "lineCenter", lineCenter.toFixed(2),
+                "delta", delta.toFixed(2),
+                "baseContentY", baseContentY.toFixed(2));
         }
 
         function autoScroll(timestamp) {
@@ -1308,6 +1340,8 @@
             if (lastFrameTime === null) {
                 lastFrameTime = timestamp;
                 if (!startTime) startTime = timestamp;
+                debugLog("autoScroll: first frame, bookkeeping only");
+                return (scrollAnimationId = requestAnimationFrame(autoScroll));
             }
 
             const delta = timestamp - lastFrameTime;
@@ -1319,12 +1353,36 @@
             const pixelsPerSecond = scrollSpeed * 12;
             const distance = (pixelsPerSecond * delta) / 1000;
 
-            const currentTransform = viewerContent.style.transform || `translateY(${baseContentY}px)`;
+            const currentTransform =
+                viewerContent.style.transform || `translateY(${baseContentY}px)`;
             const currentY =
                 parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
                 baseContentY;
             const unclampedY = currentY - distance;
-            const newY = clampContentY(unclampedY);
+
+            // TEMP TEST: no clamping during auto-scroll
+            const largeOffset = Math.abs(currentY - baseContentY) > 50; // still logged, not used
+            const newY = unclampedY;
+
+            debugLog(
+                "autoScroll: movement frame, TEMP no clamp. currentY",
+                currentY.toFixed(2),
+                "baseContentY",
+                baseContentY.toFixed(2),
+                "unclampedY",
+                unclampedY.toFixed(2),
+                "distance",
+                distance.toFixed(2),
+                "firstScrollFrame",
+                firstScrollFrame,
+                "firstAutoStepAfterSnap",
+                firstAutoStepAfterSnap,
+                "largeOffset",
+                largeOffset
+            );
+
+            firstScrollFrame = false;
+            firstAutoStepAfterSnap = false;
 
             viewerContent.style.transform = "translateY(" + newY + "px)";
 
@@ -1342,6 +1400,7 @@
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
+
         function startScroll() {
             introLoopActive = false;
             stopIntroLoop();
@@ -1353,6 +1412,7 @@
             if (isScrolling) return;
 
             isScrolling = true;
+            firstScrollFrame = true;
             setStatus("Scrolling");
 
             startBtn.disabled = true;
@@ -1360,6 +1420,7 @@
 
             lastFrameTime = null;
             startTime = performance.now();
+            debugLog("startScroll: begin, scrollSpeed", scrollSpeed, "baseContentY", baseContentY);
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
@@ -1375,9 +1436,11 @@
                 cancelAnimationFrame(scrollAnimationId);
                 scrollAnimationId = null;
             }
+
+            debugLog("pauseScroll: paused at transform", viewerContent.style.transform);
         }
 
-        // CHANGED: resetScroll now fully resets to top, no snap
+        // resetScroll unchanged apart from debug
         function resetScroll() {
             isScrolling = false;
             lastFrameTime = null;
@@ -1393,8 +1456,18 @@
                 scrollAnimationId = null;
             }
 
-            baseContentY = 0;
             viewerContent.style.transform = "translateY(0px)";
+            baseContentY = 0;
+            debugLog("resetScroll: transform reset to 0, baseContentY", baseContentY);
+
+            requestAnimationFrame(() => {
+                snapFirstLineIntoGlow();
+                const currentTransform = viewerContent.style.transform || "translateY(0px)";
+                baseContentY = parseFloat(
+                    currentTransform.replace("translateY(", "").replace("px)", "") || "0"
+                );
+                debugLog("resetScroll: after snap, baseContentY", baseContentY);
+            });
         }
 
         function handleDragStart(y) {
@@ -1406,6 +1479,7 @@
                 parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
                 baseContentY;
             setStatus("Manual drag");
+            debugLog("handleDragStart: dragStartContentY", dragStartContentY.toFixed(2));
         }
 
         function handleDragMove(y) {
@@ -1425,6 +1499,7 @@
                 parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
                 baseContentY;
             setStatus(scrollSpeed > 0 ? "Ready (speed set)" : "Ready");
+            debugLog("handleDragEnd: new baseContentY", baseContentY.toFixed(2));
         }
 
         viewer.addEventListener("mousedown", (e) => {
