@@ -197,7 +197,14 @@
             color: var(--text-muted);
         }
 
-        /* Status line */
+        /* Status + playlist row */
+
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
 
         .status-line {
             font-size: 11px;
@@ -230,7 +237,48 @@
             opacity: 0.8;
         }
 
-        /* Central viewer / editor area */
+        .header-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pill-label {
+            font-size: 10px;
+            color: var(--text-soft);
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+            .pill-label strong {
+                font-weight: 600;
+            }
+
+        .icon-btn {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 11px;
+            padding: 4px 7px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+            .icon-btn span {
+                font-size: 11px;
+            }
+
+        /* Central viewer / editor */
 
         .main-stack {
             flex: 1;
@@ -594,61 +642,7 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
         }
 
-        .pill-label {
-            font-size: 10px;
-            color: var(--text-soft);
-            padding: 4px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            position: relative;
-        }
-
-            .pill-label strong {
-                font-weight: 600;
-            }
-
-        .pill-dropdown {
-            position: absolute;
-            left: 0;
-            top: 120%;
-            min-width: 180px;
-            border-radius: 12px;
-            background: rgba(15, 23, 42, 0.98);
-            border: 1px solid rgba(55, 65, 81, 0.95);
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.95);
-            padding: 4px 0;
-            z-index: 50;
-        }
-
-            .pill-dropdown.hidden {
-                display: none;
-            }
-
-        .pill-dropdown-item {
-            padding: 5px 10px;
-            font-size: 11px;
-            color: var(--text-soft);
-            display: flex;
-            justify-content: space-between;
-            gap: 6px;
-            cursor: pointer;
-        }
-
-            .pill-dropdown-item:hover {
-                background: rgba(31, 41, 55, 0.95);
-                color: var(--text-main);
-            }
-
-            .pill-dropdown-item span:first-child {
-                opacity: 0.8;
-            }
-
-        /* Popovers and modals */
+        /* Modals */
 
         .overlay {
             position: fixed;
@@ -717,43 +711,6 @@
                 color: var(--text-soft);
                 font-size: 11px;
                 padding: 4px 10px;
-                cursor: pointer;
-            }
-
-        .speed-popover {
-            position: fixed;
-            left: 50%;
-            bottom: 68px;
-            transform: translateX(-50%);
-            z-index: 35;
-            border-radius: 999px;
-            padding: 6px 10px;
-            background: rgba(15, 23, 42, 0.98);
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.95);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 11px;
-            color: var(--text-soft);
-        }
-
-            .speed-popover.hidden {
-                display: none;
-            }
-
-            .speed-popover input[type="range"] {
-                width: 140px;
-                accent-color: var(--accent-bright);
-            }
-
-            .speed-popover button {
-                border-radius: 999px;
-                border: 1px solid rgba(75, 85, 99, 0.95);
-                background: rgba(15, 23, 42, 1);
-                color: var(--text-soft);
-                font-size: 10px;
-                padding: 3px 8px;
                 cursor: pointer;
             }
 
@@ -827,6 +784,34 @@
                 font-size: 10px;
                 padding: 2px 6px;
                 cursor: pointer;
+            }
+
+        .track-list {
+            max-height: 260px;
+            overflow-y: auto;
+            margin-top: 6px;
+        }
+
+        .track-item {
+            padding: 6px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+
+            .track-item span:first-child {
+                opacity: 0.8;
+            }
+
+            .track-item:hover {
+                background: rgba(30, 64, 175, 0.35);
             }
 
         .viewer::-webkit-scrollbar,
@@ -918,11 +903,29 @@
                 </div>
             </header>
 
-            <div class="status-line">
-                <div class="status-label">
-                    <span class="status-pill-dot"></span>
-                    <span id="statusText">Ready</span>
-                    <span class="status-time">· <span id="timeDisplay">0:00</span></span>
+            <div class="top-row">
+                <div class="status-line">
+                    <div class="status-label">
+                        <span class="status-pill-dot"></span>
+                        <span id="statusText">Ready</span>
+                        <span class="status-time">· <span id="timeDisplay">0:00</span></span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button id="prevSongBtn" class="icon-btn hidden" title="Previous song">
+                        <span>⏮</span>
+                    </button>
+                    <button id="nextSongBtn" class="icon-btn hidden" title="Next song">
+                        <span>⏭</span>
+                    </button>
+                    <span id="playlistPill" class="pill-label hidden">
+                        <span id="playlistPillText">Set 1</span>
+                        <span id="playlistPillIndex">1/1</span>
+                    </span>
+                    <button class="icon-btn" id="settingsBtn" title="Settings">
+                        <span>⚙︎</span>
+                    </button>
+                    <button class="pill-btn" id="stageInfoBtn">Info</button>
                 </div>
             </div>
 
@@ -989,31 +992,15 @@
                     <button id="resetBtn" class="btn btn-reset">
                         <span>⟲</span><span>Reset</span>
                     </button>
-                    <button id="prevSongBtn" class="btn hidden">
-                        <span>⏮</span><span>Prev</span>
-                    </button>
-                    <button id="nextSongBtn" class="btn hidden">
-                        <span>⏭</span><span>Next</span>
-                    </button>
                 </div>
                 <div class="bottom-tools">
-                    <span id="playlistPill" class="pill-label hidden">
-                        <span id="playlistPillText">Playlist: Set 1</span>
-                        <span id="playlistPillIndex">1/1</span>
-                        <div id="playlistDropdown" class="pill-dropdown hidden"></div>
-                    </span>
-                    <button class="pill-btn" id="speedBtn">Speed</button>
-                    <button class="pill-btn" id="stageInfoBtn">Info</button>
+                    <!-- reserved for future tools -->
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="speed-popover hidden" id="speedPopover">
-        <span>Scroll speed (0 = off)</span>
-        <input type="range" id="speed" min="0" max="10" step="1" value="4" />
-        <button id="speedDoneBtn">Done</button>
-    </div>
+    <!-- Stage info modal -->
 
     <div class="overlay hidden" id="stageInfoOverlay">
         <div class="modal">
@@ -1033,6 +1020,8 @@
         </div>
     </div>
 
+    <!-- Edit info modal -->
+
     <div class="overlay hidden" id="editInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1050,6 +1039,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Save modal -->
 
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
@@ -1074,6 +1065,8 @@
         </div>
     </div>
 
+    <!-- Load modal -->
+
     <div class="overlay hidden" id="loadOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1097,6 +1090,8 @@
         </div>
     </div>
 
+    <!-- Edit playlist modal -->
+
     <div class="overlay hidden" id="editPlaylistOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1112,6 +1107,44 @@
             </div>
             <div class="modal-footer">
                 <button data-close-edit-playlist>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings modal (speed etc.) -->
+
+    <div class="overlay hidden" id="settingsOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Settings</div>
+                <button class="modal-close" data-close-settings>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="speedSliderModal">Scroll speed (0 = off)</label>
+                    <input type="range" id="speedSliderModal" min="0" max="10" step="1" value="4" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-settings>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playlist track picker modal -->
+
+    <div class="overlay hidden" id="playlistSelectOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Select track</div>
+                <button class="modal-close" data-close-playlist-select>✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="playlistSelectTitle"></p>
+                <div class="track-list" id="trackList"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-playlist-select>Close</button>
             </div>
         </div>
     </div>
@@ -1137,12 +1170,8 @@
         const playlistPill = document.getElementById("playlistPill");
         const playlistPillText = document.getElementById("playlistPillText");
         const playlistPillIndex = document.getElementById("playlistPillIndex");
-        const playlistDropdown = document.getElementById("playlistDropdown");
 
-        const speedBtn = document.getElementById("speedBtn");
-        const speedPopover = document.getElementById("speedPopover");
-        const speedSlider = document.getElementById("speed");
-        const speedDoneBtn = document.getElementById("speedDoneBtn");
+        const settingsBtn = document.getElementById("settingsBtn");
 
         const stageInfoBtn = document.getElementById("stageInfoBtn");
         const stageInfoOverlay = document.getElementById("stageInfoOverlay");
@@ -1170,10 +1199,17 @@
         const editPlaylistSelect = document.getElementById("editPlaylistSelect");
         const playlistEditList = document.getElementById("playlistEditList");
 
+        const settingsOverlay = document.getElementById("settingsOverlay");
+        const speedSliderModal = document.getElementById("speedSliderModal");
+
+        const playlistSelectOverlay = document.getElementById("playlistSelectOverlay");
+        const playlistSelectTitle = document.getElementById("playlistSelectTitle");
+        const trackList = document.getElementById("trackList");
+
         let isStageMode = true;
 
         let scrollAnimationId = null;
-        let scrollSpeed = parseInt(speedSlider.value, 10);
+        let scrollSpeed = parseInt(speedSliderModal.value, 10);
         let isScrolling = false;
         let lastFrameTime = null;
         let startTime = null;
@@ -1182,6 +1218,8 @@
         let isDragging = false;
         let dragStartY = 0;
         let dragStartContentY = 0;
+
+        let baseContentY = 0;
 
         let savedSongs = [];
         let lastSpaceTime = 0;
@@ -1258,7 +1296,8 @@
 
             const delta = glowCenter - lineCenter;
 
-            viewerContent.style.transform = `translateY(${delta}px)`;
+            baseContentY = delta;
+            viewerContent.style.transform = `translateY(${baseContentY}px)`;
         }
 
         function autoScroll(timestamp) {
@@ -1275,13 +1314,13 @@
             elapsedTime = timestamp - startTime;
             updateTimeDisplay();
 
-            const baseSpeed = scrollSpeed;
-            const pixelsPerSecond = baseSpeed * 12;
+            const pixelsPerSecond = scrollSpeed * 12;
             const distance = (pixelsPerSecond * delta) / 1000;
 
-            const currentTransform = viewerContent.style.transform || "translateY(0px)";
+            const currentTransform = viewerContent.style.transform || `translateY(${baseContentY}px)`;
             const currentY =
-                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
+                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
+                baseContentY;
             const unclampedY = currentY - distance;
             const newY = clampContentY(unclampedY);
 
@@ -1306,7 +1345,7 @@
             stopIntroLoop();
 
             if (scrollSpeed <= 0) {
-                setStatus("Speed is 0 – open Speed to scroll");
+                setStatus("Speed is 0 – open Settings to scroll");
                 return;
             }
             if (isScrolling) return;
@@ -1338,7 +1377,6 @@
 
         function resetScroll() {
             isScrolling = false;
-            scrollSpeed = parseInt(speedSlider.value, 10) || 0;
             lastFrameTime = null;
             startTime = null;
             elapsedTime = 0;
@@ -1353,16 +1391,19 @@
             }
 
             viewerContent.style.transform = "translateY(0px)";
-            requestAnimationFrame(snapFirstLineIntoGlow);
+            requestAnimationFrame(() => {
+                snapFirstLineIntoGlow();
+            });
         }
 
         function handleDragStart(y) {
             isDragging = true;
             viewerContent.style.transition = "none";
+            const currentTransform = viewerContent.style.transform || `translateY(${baseContentY}px)`;
             dragStartY = y;
-            const currentTransform = viewerContent.style.transform || "translateY(0px)";
             dragStartContentY =
-                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
+                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
+                baseContentY;
             setStatus("Manual drag");
         }
 
@@ -1378,6 +1419,10 @@
             if (!isDragging) return;
             isDragging = false;
             viewerContent.style.transition = "transform 0.08s ease-out";
+            const currentTransform = viewerContent.style.transform || `translateY(${baseContentY}px)`;
+            baseContentY =
+                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
+                baseContentY;
             setStatus(scrollSpeed > 0 ? "Ready (speed set)" : "Ready");
         }
 
@@ -1424,24 +1469,37 @@
             handleDragEnd();
         });
 
-        speedBtn.addEventListener("click", () => {
+        /* Settings (speed) */
+
+        settingsBtn.addEventListener("click", () => {
             if (!isStageMode) return;
-            speedPopover.classList.toggle("hidden");
+            speedSliderModal.value = scrollSpeed;
+            settingsOverlay.classList.remove("hidden");
         });
 
-        speedDoneBtn.addEventListener("click", () => {
-            speedPopover.classList.add("hidden");
+        settingsOverlay.addEventListener("click", (e) => {
+            if (e.target.dataset.closeSettings !== undefined || e.target === settingsOverlay) {
+                settingsOverlay.classList.add("hidden");
+            }
         });
 
-        speedSlider.addEventListener("input", () => {
-            scrollSpeed = parseInt(speedSlider.value, 10) || 0;
+        settingsOverlay
+            .querySelectorAll("[data-close-settings]")
+            .forEach((el) =>
+                el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
+            );
+
+        speedSliderModal.addEventListener("input", () => {
+            scrollSpeed = parseInt(speedSliderModal.value, 10) || 0;
             if (scrollSpeed === 0) {
                 pauseScroll();
-                setStatus("Speed set to 0 – drag or open Speed");
+                setStatus("Speed set to 0 – drag or open Settings");
             } else {
                 setStatus(isScrolling ? "Scrolling" : "Ready (speed set)");
             }
         });
+
+        /* Info modals */
 
         stageInfoBtn.addEventListener("click", () => {
             if (!isStageMode) return;
@@ -1477,6 +1535,29 @@
                 el.addEventListener("click", () => editInfoOverlay.classList.add("hidden"))
             );
 
+        /* Save / load / playlists */
+
+        function makeSongId() {
+            return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+        }
+
+        function saveSongsToStorage() {
+            try {
+                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
+            } catch (e) {
+                alert("Could not save songs – your browser storage is disabled or full.");
+            }
+        }
+
+        function loadSongsFromStorage() {
+            try {
+                const stored = localStorage.getItem("lyricflow-songs");
+                savedSongs = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                savedSongs = [];
+            }
+        }
+
         saveSongBtn.addEventListener("click", () => {
             if (isStageMode) return;
             if (!editor.value.trim()) {
@@ -1500,68 +1581,6 @@
             .forEach((el) =>
                 el.addEventListener("click", () => saveOverlay.classList.add("hidden"))
             );
-
-        loadSongBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            buildPlaylistSelect();
-            buildSongSelect();
-            loadOverlay.classList.remove("hidden");
-        });
-
-        loadOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeLoad !== undefined || e.target === loadOverlay) {
-                loadOverlay.classList.add("hidden");
-            }
-        });
-
-        loadOverlay
-            .querySelectorAll("[data-close-load]")
-            .forEach((el) =>
-                el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
-            );
-
-        editPlaylistBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            buildEditPlaylistSelect();
-            buildEditPlaylistList();
-            editPlaylistOverlay.classList.remove("hidden");
-        });
-
-        editPlaylistOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeEditPlaylist !== undefined ||
-                e.target === editPlaylistOverlay
-            ) {
-                editPlaylistOverlay.classList.add("hidden");
-            }
-        });
-
-        editPlaylistOverlay
-            .querySelectorAll("[data-close-edit-playlist]")
-            .forEach((el) =>
-                el.addEventListener("click", () => editPlaylistOverlay.classList.add("hidden"))
-            );
-
-        function makeSongId() {
-            return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-        }
-
-        function saveSongsToStorage() {
-            try {
-                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
-            } catch (e) {
-                alert("Could not save songs – your browser storage is disabled or full.");
-            }
-        }
-
-        function loadSongsFromStorage() {
-            try {
-                const stored = localStorage.getItem("lyricflow-songs");
-                savedSongs = stored ? JSON.parse(stored) : [];
-            } catch (e) {
-                savedSongs = [];
-            }
-        }
 
         saveConfirmBtn.addEventListener("click", () => {
             const title = songTitleInput.value.trim() || "Untitled";
@@ -1602,167 +1621,24 @@
             setStatus("Saved: " + title);
         });
 
-        function rebuildViewerFromEditor() {
-            const text = editor.value || "";
-            viewerContent.textContent = "";
-
-            if (!text.trim()) {
-                introLoopActive = true;
-                startIntroLoop();
-
-                const defaultLines = [
-                    "Welcome to LyricFlow – stage‑ready lyric scroller.",
-                    "Tap Edit to paste or type lyrics.",
-                    "Come back to Stage, set a speed, press Start.",
-                    "Drag lines during the song to fine‑tune your pace."
-                ];
-                defaultLines.forEach((line, index) => {
-                    const span = document.createElement("span");
-                    span.className = "viewer-content-line";
-                    span.textContent = line;
-                    viewerContent.appendChild(span);
-                    if (index < defaultLines.length - 1) {
-                        viewerContent.appendChild(document.createElement("br"));
-                    }
-                });
-                resetScroll();
-                return;
-            }
-
-            introLoopActive = false;
-            stopIntroLoop();
-
-            const lines = text.split("\n");
-            lines.forEach((rawLine, index) => {
-                const line = rawLine.replace(/\s+$/, "");
-                const isBlank = line.trim() === "";
-
-                const span = document.createElement("span");
-                span.className = "viewer-content-line";
-
-                if (isBlank) {
-                    span.textContent = "\u00A0";
-                    if (index > 0 && lines[index - 1].trim() === "") {
-                        span.style.marginTop = "10px";
-                    }
-                } else {
-                    span.textContent = line;
-                }
-
-                viewerContent.appendChild(span);
-                if (index < lines.length - 1) {
-                    viewerContent.appendChild(document.createElement("br"));
-                }
-            });
-
-            viewerContent.style.transform = "translateY(0px)";
-            requestAnimationFrame(snapFirstLineIntoGlow);
-            setStatus("Viewer mirrored from editor");
-        }
-
-        editor.addEventListener("input", rebuildViewerFromEditor);
-
-        clearEditorBtn.addEventListener("click", () => {
-            editor.value = "";
-            rebuildViewerFromEditor();
+        loadSongBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildPlaylistSelect();
+            buildSongSelect();
+            loadOverlay.classList.remove("hidden");
         });
 
-        modeToggle.addEventListener("click", () => {
-            isStageMode = !isStageMode;
-            if (isStageMode) {
-                viewerCard.classList.remove("hidden");
-                editorCard.classList.add("hidden");
-                bottomBar.classList.remove("hidden");
-                modeToggle.querySelector("span").innerHTML =
-                    "<strong>Stage mode</strong> <small>· tap for edit</small>";
-                setStatus("Ready");
-                requestAnimationFrame(snapFirstLineIntoGlow);
-            } else {
-                pauseScroll();
-                viewerCard.classList.add("hidden");
-                editorCard.classList.remove("hidden");
-                bottomBar.classList.add("hidden");
-                modeToggle.querySelector("span").innerHTML =
-                    "<strong>Edit mode</strong> <small>· tap for stage</small>";
-                setStatus("Edit lyrics – viewer mirrors automatically");
+        loadOverlay.addEventListener("click", (e) => {
+            if (e.target.dataset.closeLoad !== undefined || e.target === loadOverlay) {
+                loadOverlay.classList.add("hidden");
             }
         });
 
-        startBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            startScroll();
-        });
-
-        pauseBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            pauseScroll();
-        });
-
-        resetBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            resetScroll();
-        });
-
-        function updateStagePlaylistUI() {
-            if (currentPlaylistName && currentSongId && currentPlaylistSongIds.length > 0) {
-                playlistPill.classList.remove("hidden");
-                const total = currentPlaylistSongIds.length;
-                const index = currentPlaylistSongIds.indexOf(currentSongId);
-                const currentNum = index >= 0 ? index + 1 : 1;
-                playlistPillText.textContent = "Playlist: " + currentPlaylistName;
-                playlistPillIndex.textContent = currentNum + "/" + total;
-                prevSongBtn.classList.remove("hidden");
-                nextSongBtn.classList.remove("hidden");
-            } else {
-                playlistPill.classList.add("hidden");
-                prevSongBtn.classList.add("hidden");
-                nextSongBtn.classList.add("hidden");
-            }
-        }
-
-        function buildCurrentPlaylistOrder(playlistName, songIdToFocus) {
-            const songsInPlaylist = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            currentPlaylistSongIds = songsInPlaylist.map((s) => s.id);
-            currentSongId = songIdToFocus || (songsInPlaylist[0] && songsInPlaylist[0].id) || null;
-        }
-
-        function loadSongIntoUI(song) {
-            introLoopActive = false;
-            stopIntroLoop();
-
-            currentPlaylistName = song.playlist || "Set 1";
-            buildCurrentPlaylistOrder(currentPlaylistName, song.id);
-            updateStagePlaylistUI();
-
-            editor.value = song.content || "";
-            scrollSpeed = typeof song.speed === "number" ? song.speed : scrollSpeed;
-            speedSlider.value = scrollSpeed;
-            rebuildViewerFromEditor();
-            resetScroll();
-            setStatus("Loaded: " + song.name);
-        }
-
-        prevSongBtn.addEventListener("click", () => {
-            if (!currentPlaylistName || !currentSongId) return;
-            const index = currentPlaylistSongIds.indexOf(currentSongId);
-            if (index > 0) {
-                const prevId = currentPlaylistSongIds[index - 1];
-                const song = savedSongs.find((s) => s.id === prevId);
-                if (song) loadSongIntoUI(song);
-            }
-        });
-
-        nextSongBtn.addEventListener("click", () => {
-            if (!currentPlaylistName || !currentSongId) return;
-            const index = currentPlaylistSongIds.indexOf(currentSongId);
-            if (index >= 0 && index < currentPlaylistSongIds.length - 1) {
-                const nextId = currentPlaylistSongIds[index + 1];
-                const song = savedSongs.find((s) => s.id === nextId);
-                if (song) loadSongIntoUI(song);
-            }
-        });
+        loadOverlay
+            .querySelectorAll("[data-close-load]")
+            .forEach((el) =>
+                el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
+            );
 
         function buildPlaylistSelect() {
             const playlists = Array.from(
@@ -1816,45 +1692,29 @@
             loadSongIntoUI(song);
         });
 
-        function buildPlaylistPillDropdown() {
-            playlistDropdown.innerHTML = "";
-            if (!currentPlaylistName || !currentPlaylistSongIds.length) {
-                playlistDropdown.classList.add("hidden");
-                return;
-            }
-            const total = currentPlaylistSongIds.length;
-            currentPlaylistSongIds.forEach((id, idx) => {
-                const song = savedSongs.find((s) => s.id === id);
-                if (!song) return;
-                const item = document.createElement("div");
-                item.className = "pill-dropdown-item";
-                const left = document.createElement("span");
-                left.textContent = (idx + 1) + "/" + total;
-                const right = document.createElement("span");
-                right.textContent = song.name;
-                item.appendChild(left);
-                item.appendChild(right);
-                item.addEventListener("click", () => {
-                    playlistDropdown.classList.add("hidden");
-                    loadSongIntoUI(song);
-                });
-                playlistDropdown.appendChild(item);
-            });
-        }
+        /* Edit playlist */
 
-        playlistPill.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (playlistDropdown.classList.contains("hidden")) {
-                buildPlaylistPillDropdown();
-                playlistDropdown.classList.remove("hidden");
-            } else {
-                playlistDropdown.classList.add("hidden");
+        editPlaylistBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildEditPlaylistSelect();
+            buildEditPlaylistList();
+            editPlaylistOverlay.classList.remove("hidden");
+        });
+
+        editPlaylistOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeEditPlaylist !== undefined ||
+                e.target === editPlaylistOverlay
+            ) {
+                editPlaylistOverlay.classList.add("hidden");
             }
         });
 
-        document.addEventListener("click", () => {
-            playlistDropdown.classList.add("hidden");
-        });
+        editPlaylistOverlay
+            .querySelectorAll("[data-close-edit-playlist]")
+            .forEach((el) =>
+                el.addEventListener("click", () => editPlaylistOverlay.classList.add("hidden"))
+            );
 
         function buildEditPlaylistSelect() {
             const playlists = Array.from(
@@ -1957,9 +1817,9 @@
             const newIndex = index + direction;
             if (index < 0 || newIndex < 0 || newIndex >= songs.length) return;
 
-            const tempTime = songs[index].createdAt;
+            const t = songs[index].createdAt;
             songs[index].createdAt = songs[newIndex].createdAt;
-            songs[newIndex].createdAt = tempTime;
+            songs[newIndex].createdAt = t;
 
             songs.forEach((updated) => {
                 const idx = savedSongs.findIndex((s) => s.id === updated.id);
@@ -1968,6 +1828,228 @@
 
             saveSongsToStorage();
         }
+
+        /* Playlist state helpers */
+
+        function buildCurrentPlaylistOrder(playlistName, songIdToFocus) {
+            const songsInPlaylist = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            currentPlaylistSongIds = songsInPlaylist.map((s) => s.id);
+            currentSongId = songIdToFocus || (songsInPlaylist[0] && songsInPlaylist[0].id) || null;
+        }
+
+        function updateStagePlaylistUI() {
+            if (currentPlaylistName && currentSongId && currentPlaylistSongIds.length > 0) {
+                playlistPill.classList.remove("hidden");
+                const total = currentPlaylistSongIds.length;
+                const index = currentPlaylistSongIds.indexOf(currentSongId);
+                const currentNum = index >= 0 ? index + 1 : 1;
+                playlistPillText.textContent = currentPlaylistName;
+                playlistPillIndex.textContent = currentNum + "/" + total;
+                prevSongBtn.classList.remove("hidden");
+                nextSongBtn.classList.remove("hidden");
+            } else {
+                playlistPill.classList.add("hidden");
+                prevSongBtn.classList.add("hidden");
+                nextSongBtn.classList.add("hidden");
+            }
+        }
+
+        function loadSongIntoUI(song) {
+            introLoopActive = false;
+            stopIntroLoop();
+
+            currentPlaylistName = song.playlist || "Set 1";
+            buildCurrentPlaylistOrder(currentPlaylistName, song.id);
+            updateStagePlaylistUI();
+
+            editor.value = song.content || "";
+
+            scrollSpeed = typeof song.speed === "number" ? song.speed : scrollSpeed;
+            speedSliderModal.value = scrollSpeed;
+
+            rebuildViewerFromEditor();
+            resetScroll();
+            setStatus("Loaded: " + song.name);
+        }
+
+        prevSongBtn.addEventListener("click", () => {
+            if (!currentPlaylistName || !currentSongId) return;
+            const index = currentPlaylistSongIds.indexOf(currentSongId);
+            if (index > 0) {
+                const prevId = currentPlaylistSongIds[index - 1];
+                const song = savedSongs.find((s) => s.id === prevId);
+                if (song) loadSongIntoUI(song);
+            }
+        });
+
+        nextSongBtn.addEventListener("click", () => {
+            if (!currentPlaylistName || !currentSongId) return;
+            const index = currentPlaylistSongIds.indexOf(currentSongId);
+            if (index >= 0 && index < currentPlaylistSongIds.length - 1) {
+                const nextId = currentPlaylistSongIds[index + 1];
+                const song = savedSongs.find((s) => s.id === nextId);
+                if (song) loadSongIntoUI(song);
+            }
+        });
+
+        /* Playlist pill track picker (modal) */
+
+        playlistPill.addEventListener("click", () => {
+            if (!currentPlaylistName || !currentPlaylistSongIds.length) return;
+            playlistSelectTitle.textContent = "Playlist: " + currentPlaylistName;
+            trackList.innerHTML = "";
+            const total = currentPlaylistSongIds.length;
+            currentPlaylistSongIds.forEach((id, idx) => {
+                const song = savedSongs.find((s) => s.id === id);
+                if (!song) return;
+                const row = document.createElement("div");
+                row.className = "track-item";
+                const left = document.createElement("span");
+                left.textContent = (idx + 1) + "/" + total;
+                const right = document.createElement("span");
+                right.textContent = song.name;
+                row.appendChild(left);
+                row.appendChild(right);
+                row.addEventListener("click", () => {
+                    playlistSelectOverlay.classList.add("hidden");
+                    loadSongIntoUI(song);
+                });
+                trackList.appendChild(row);
+            });
+            playlistSelectOverlay.classList.remove("hidden");
+        });
+
+        playlistSelectOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closePlaylistSelect !== undefined ||
+                e.target === playlistSelectOverlay
+            ) {
+                playlistSelectOverlay.classList.add("hidden");
+            }
+        });
+
+        playlistSelectOverlay
+            .querySelectorAll("[data-close-playlist-select]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    playlistSelectOverlay.classList.add("hidden")
+                )
+            );
+
+        /* Viewer rebuild */
+
+        function rebuildViewerFromEditor() {
+            const text = editor.value || "";
+            viewerContent.textContent = "";
+
+            if (!text.trim()) {
+                introLoopActive = true;
+                startIntroLoop();
+
+                const defaultLines = [
+                    "Welcome to LyricFlow – stage‑ready lyric scroller.",
+                    "Tap Edit to paste or type lyrics.",
+                    "Come back to Stage, set a speed, press Start.",
+                    "Drag lines during the song to fine‑tune your pace."
+                ];
+                defaultLines.forEach((line, index) => {
+                    const span = document.createElement("span");
+                    span.className = "viewer-content-line";
+                    span.textContent = line;
+                    viewerContent.appendChild(span);
+                    if (index < defaultLines.length - 1) {
+                        viewerContent.appendChild(document.createElement("br"));
+                    }
+                });
+                resetScroll();
+                return;
+            }
+
+            introLoopActive = false;
+            stopIntroLoop();
+
+            const lines = text.split("\n");
+            lines.forEach((rawLine, index) => {
+                const line = rawLine.replace(/\s+$/, "");
+                const isBlank = line.trim() === "";
+
+                const span = document.createElement("span");
+                span.className = "viewer-content-line";
+
+                if (isBlank) {
+                    span.textContent = "\u00A0";
+                    if (index > 0 && lines[index - 1].trim() === "") {
+                        span.style.marginTop = "10px";
+                    }
+                } else {
+                    span.textContent = line;
+                }
+
+                viewerContent.appendChild(span);
+                if (index < lines.length - 1) {
+                    viewerContent.appendChild(document.createElement("br"));
+                }
+            });
+
+            viewerContent.style.transform = "translateY(0px)";
+            requestAnimationFrame(() => {
+                snapFirstLineIntoGlow();
+            });
+            setStatus("Viewer mirrored from editor");
+        }
+
+        editor.addEventListener("input", rebuildViewerFromEditor);
+
+        clearEditorBtn.addEventListener("click", () => {
+            editor.value = "";
+            rebuildViewerFromEditor();
+        });
+
+        /* Mode toggle */
+
+        modeToggle.addEventListener("click", () => {
+            isStageMode = !isStageMode;
+            if (isStageMode) {
+                viewerCard.classList.remove("hidden");
+                editorCard.classList.add("hidden");
+                bottomBar.classList.remove("hidden");
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Stage mode</strong> <small>· tap for edit</small>";
+                setStatus("Ready");
+                requestAnimationFrame(() => {
+                    snapFirstLineIntoGlow();
+                });
+            } else {
+                pauseScroll();
+                viewerCard.classList.add("hidden");
+                editorCard.classList.remove("hidden");
+                bottomBar.classList.add("hidden");
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Edit mode</strong> <small>· tap for stage</small>";
+                setStatus("Edit lyrics – viewer mirrors automatically");
+            }
+        });
+
+        /* Transport */
+
+        startBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            startScroll();
+        });
+
+        pauseBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            pauseScroll();
+        });
+
+        resetBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            resetScroll();
+        });
+
+        /* Keyboard */
 
         document.addEventListener("keydown", (e) => {
             if (!isStageMode) return;
@@ -1986,6 +2068,8 @@
                 resetScroll();
             }
         });
+
+        /* Intro loop */
 
         function startIntroLoop() {
             if (!introLoopActive) return;
@@ -2014,14 +2098,18 @@
 
                 if (contentRect.bottom + newY <= railRect.top + railRect.height * 0.4) {
                     viewerContent.style.transform = "translateY(0px)";
-                    requestAnimationFrame(snapFirstLineIntoGlow);
+                    requestAnimationFrame(() => {
+                        snapFirstLineIntoGlow();
+                    });
                 }
 
                 introLoopId = requestAnimationFrame(stepIntro);
             }
 
             if (!introLoopId) {
-                requestAnimationFrame(snapFirstLineIntoGlow);
+                requestAnimationFrame(() => {
+                    snapFirstLineIntoGlow();
+                });
                 introLoopId = requestAnimationFrame(stepIntro);
             }
         }
@@ -2034,10 +2122,14 @@
             }
         }
 
+        /* Init */
+
         loadSongsFromStorage();
 
         window.addEventListener("load", () => {
-            requestAnimationFrame(snapFirstLineIntoGlow);
+            requestAnimationFrame(() => {
+                snapFirstLineIntoGlow();
+            });
             introLoopActive = true;
             startIntroLoop();
         });
