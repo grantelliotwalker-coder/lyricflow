@@ -327,8 +327,8 @@
             align-items: center;
             justify-content: center;
             padding: 0 10px;
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent 100%);
-            mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent 100%);
+            -webkit-mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
+            mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
         }
 
         .viewer {
@@ -407,7 +407,7 @@
             padding: 3px 0;
         }
 
-        /* Editor (edit mode only) */
+        /* Editor */
 
         .editor-card {
             flex: 1;
@@ -539,7 +539,6 @@
             color: var(--text-soft);
             border: 1px solid rgba(55, 65, 81, 0.9);
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
-            transition: all 0.14s ease-out;
         }
 
             .btn span {
@@ -704,8 +703,6 @@
                 cursor: pointer;
             }
 
-        /* Save song form modal content */
-
         .form-field {
             display: flex;
             flex-direction: column;
@@ -735,8 +732,6 @@
             margin-left: 6px;
         }
 
-        /* Scrollbars */
-
         .viewer::-webkit-scrollbar,
         #editor::-webkit-scrollbar {
             width: 8px;
@@ -752,8 +747,6 @@
         #editor::-webkit-scrollbar-track {
             background: transparent;
         }
-
-        /* Responsive */
 
         @media (max-width: 768px) {
             body {
@@ -819,7 +812,6 @@
                         <div class="app-subtitle">Stage‑ready lyric scroller</div>
                     </div>
                 </div>
-
                 <div class="mode-toggle" id="modeToggle">
                     <div class="mode-dot"></div>
                     <span>
@@ -838,7 +830,6 @@
             </div>
 
             <div class="main-stack">
-                <!-- Stage viewer -->
                 <div class="viewer-card" id="viewerCard">
                     <div class="viewer-viewport">
                         <div class="viewer-halo-top"></div>
@@ -872,7 +863,6 @@
                     </div>
                 </div>
 
-                <!-- Edit mode editor (hidden in stage mode) -->
                 <div class="editor-card hidden" id="editorCard">
                     <div class="editor-inner">
                         <div class="editor-header-bar">
@@ -889,7 +879,6 @@
                 </div>
             </div>
 
-            <!-- Bottom transport bar (stage only) -->
             <div class="bottom-bar" id="bottomBar">
                 <div class="transport-buttons">
                     <button id="start" class="btn btn-primary">
@@ -910,14 +899,12 @@
         </div>
     </div>
 
-    <!-- Speed popover -->
     <div class="speed-popover hidden" id="speedPopover">
         <span>Scroll speed (0 = off)</span>
         <input type="range" id="speed" min="0" max="10" step="1" value="4" />
         <button id="speedDoneBtn">Done</button>
     </div>
 
-    <!-- Stage info modal -->
     <div class="overlay hidden" id="stageInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -936,7 +923,6 @@
         </div>
     </div>
 
-    <!-- Edit info modal -->
     <div class="overlay hidden" id="editInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -955,7 +941,6 @@
         </div>
     </div>
 
-    <!-- Save song modal -->
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1041,22 +1026,36 @@
         }
 
         function clampContentY(rawY) {
-            const railRect = viewer.getBoundingClientRect();
-            const contentRect = viewerContent.getBoundingClientRect();
-            if (!railRect.height || !contentRect.height) return rawY;
-
-            const railHeight = railRect.height;
-            const contentHeight = contentRect.height;
-
-            const topLimit = 20; // px down from top
-            const bottomLimit = railHeight - contentHeight - 20; // px up from bottom
-
-            const minY = bottomLimit; // most negative
-            const maxY = topLimit; // most positive
-
-            if (rawY < minY) return minY;
-            if (rawY > maxY) return maxY;
             return rawY;
+        }
+
+        function snapFirstLineIntoGlow() {
+            const firstLine = document.querySelector(".viewer-content-line");
+            const glowBand = document.querySelector(".viewer-highlight");
+
+            console.log("[snap] called");
+            console.log("[snap] firstLine:", firstLine);
+            console.log("[snap] glowBand :", glowBand);
+
+            if (!firstLine || !glowBand) {
+                console.warn("[snap] missing firstLine or glowBand");
+                return;
+            }
+
+            const glowRect = glowBand.getBoundingClientRect();
+            const lineRect = firstLine.getBoundingClientRect();
+
+            const glowCenter = glowRect.top + glowRect.height / 2;
+            const lineCenter = lineRect.top + lineRect.height / 2;
+
+            const delta = glowCenter - lineCenter;
+
+            console.log("[snap] glowCenter:", glowCenter,
+                "lineCenter:", lineCenter,
+                "delta:", delta);
+
+            viewerContent.style.transform = `translateY(${delta}px)`;
+            console.log("[snap] final transform:", viewerContent.style.transform);
         }
 
         function autoScroll(timestamp) {
@@ -1087,7 +1086,8 @@
 
             const railRect = viewer.getBoundingClientRect();
             const contentRect = viewerContent.getBoundingClientRect();
-            if (contentRect.bottom < railRect.bottom - 8) {
+
+            if (contentRect.bottom <= railRect.top + railRect.height * 0.4) {
                 pauseScroll();
                 setStatus("End of lyrics");
                 resetBtn.classList.add("btn-attention");
@@ -1103,7 +1103,6 @@
                 setStatus("Speed is 0 – open Speed to scroll");
                 return;
             }
-
             if (isScrolling) return;
 
             isScrolling = true;
@@ -1148,6 +1147,8 @@
             }
 
             viewerContent.style.transform = "translateY(0px)";
+            console.log("[reset] transform reset to 0, scheduling snap…");
+            requestAnimationFrame(snapFirstLineIntoGlow);
         }
 
         function handleDragStart(y) {
@@ -1218,8 +1219,6 @@
             handleDragEnd();
         });
 
-        /* Speed popover */
-
         speedBtn.addEventListener("click", () => {
             if (!isStageMode) return;
             speedPopover.classList.toggle("hidden");
@@ -1239,8 +1238,6 @@
             }
         });
 
-        /* Stage info modal */
-
         stageInfoBtn.addEventListener("click", () => {
             if (!isStageMode) return;
             stageInfoOverlay.classList.remove("hidden");
@@ -1258,8 +1255,6 @@
                 el.addEventListener("click", () => stageInfoOverlay.classList.add("hidden"))
             );
 
-        /* Edit info modal */
-
         editorInfoBtn.addEventListener("click", () => {
             if (isStageMode) return;
             editInfoOverlay.classList.remove("hidden");
@@ -1276,8 +1271,6 @@
             .forEach((el) =>
                 el.addEventListener("click", () => editInfoOverlay.classList.add("hidden"))
             );
-
-        /* Save modal */
 
         saveSongBtn.addEventListener("click", () => {
             if (isStageMode) return;
@@ -1342,14 +1335,11 @@
             setStatus("Saved: " + title);
         });
 
-        /* Editor behaviour: mirror to viewer */
-
         function rebuildViewerFromEditor() {
             const text = editor.value || "";
             viewerContent.textContent = "";
 
             if (!text.trim()) {
-                // Show default instructions when editor empty
                 const defaultLines = [
                     "Welcome to LyricFlow – stage‑ready lyric scroller.",
                     "Tap Edit to paste or type lyrics.",
@@ -1392,7 +1382,9 @@
                 }
             });
 
-            resetScroll();
+            viewerContent.style.transform = "translateY(0px)";
+            console.log("[rebuild] transform reset to 0, scheduling snap…");
+            requestAnimationFrame(snapFirstLineIntoGlow);
             setStatus("Viewer mirrored from editor");
         }
 
@@ -1403,31 +1395,26 @@
             rebuildViewerFromEditor();
         });
 
-        /* Mode toggle */
-
         modeToggle.addEventListener("click", () => {
             isStageMode = !isStageMode;
             if (isStageMode) {
                 viewerCard.classList.remove("hidden");
                 editorCard.classList.add("hidden");
                 bottomBar.classList.remove("hidden");
-                modeToggle.querySelector(
-                    "span"
-                ).innerHTML = "<strong>Stage mode</strong> <small>· tap for edit</small>";
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Stage mode</strong> <small>· tap for edit</small>";
                 setStatus("Ready");
+                requestAnimationFrame(snapFirstLineIntoGlow);
             } else {
                 pauseScroll();
                 viewerCard.classList.add("hidden");
                 editorCard.classList.remove("hidden");
                 bottomBar.classList.add("hidden");
-                modeToggle.querySelector(
-                    "span"
-                ).innerHTML = "<strong>Edit mode</strong> <small>· tap for stage</small>";
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Edit mode</strong> <small>· tap for stage</small>";
                 setStatus("Edit lyrics – viewer mirrors automatically");
             }
         });
-
-        /* Transport buttons */
 
         startBtn.addEventListener("click", () => {
             if (!isStageMode) return;
@@ -1443,8 +1430,6 @@
             if (!isStageMode) return;
             resetScroll();
         });
-
-        /* Keyboard shortcuts: Stage only */
 
         document.addEventListener("keydown", (e) => {
             if (!isStageMode) return;
@@ -1465,6 +1450,11 @@
         });
 
         loadSongsFromStorage();
+
+        window.addEventListener("load", () => {
+            console.log("[load] window loaded, initial snap");
+            requestAnimationFrame(snapFirstLineIntoGlow);
+        });
     </script>
 </body>
 </html>
