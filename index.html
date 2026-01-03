@@ -434,12 +434,12 @@
 
         .viewer-overlay-top {
             top: -4px;
-            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0));
+            background: linear-gradient( to bottom, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
         }
 
         .viewer-overlay-bottom {
             bottom: -4px;
-            background: linear-gradient(to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0));
+            background: linear-gradient( to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
         }
 
         .viewer-gradient-border-top,
@@ -561,7 +561,7 @@
             scrollbar-width: thin;
             scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            background-image: radial-gradient( circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98) );
+            background-image: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
         }
 
             #editor::placeholder {
@@ -1125,8 +1125,12 @@
             </div>
             <div class="modal-body">
                 <div class="form-field">
-                    <label for="speedSliderModal">Scroll speed (0 = off)</label>
-                    <input type="range" id="speedSliderModal" min="0" max="10" step="1" value="4" />
+                    <label for="speedSliderModal">Scroll speed (0 = off)</label><input type="range"
+       id="speedSliderModal"
+       min="1"
+       max="10"
+       step="1"
+       value="4" />
                 </div>
             </div>
             <div class="modal-footer">
@@ -1205,24 +1209,23 @@
         const settingsOverlay = document.getElementById("settingsOverlay");
         const speedSliderModal = document.getElementById("speedSliderModal");
 
+
         const playlistSelectOverlay = document.getElementById("playlistSelectOverlay");
         const playlistSelectTitle = document.getElementById("playlistSelectTitle");
         const trackList = document.getElementById("trackList");
 
         let isStageMode = true;
-
         let scrollAnimationId = null;
-        let scrollSpeed = parseInt(speedSliderModal.value, 10);
         let isScrolling = false;
         let firstScrollFrame = false;
-        let firstAutoStepAfterSnap = false; // NEW
+        let firstAutoStepAfterSnap = false;
         let lastFrameTime = null;
         let startTime = null;
         let elapsedTime = 0;
 
         let isDragging = false;
         let dragStartY = 0;
-        let dragStartContentY = 0;
+        let dragStartBaseY = 0;
 
         let baseContentY = 0;
 
@@ -1232,12 +1235,29 @@
         let introLoopActive = true;
         let introLoopId = null;
 
-        let currentPlaylistName = "";
-        let currentPlaylistSongIds = [];
+        let currentPlaylistName = null;
+        let currentPlaylistSongIds = null;
         let currentSongId = null;
 
+        let snapPending = false;
+
+        let wasScrollingBeforeDrag = false;
+
+        let dragClampArmed = false;
+
+        let dragFromCenteredStart = false;
+        let dragHasPassedThreshold = false;
+        const DRAG_ACTIVATE_THRESHOLD = 200; // px before any manual scroll is allowed
+
+        let firstLineHasExited = false;
+
+        const DEFAULT_SCROLL_SPEED = 4;
+        let scrollSpeed = DEFAULT_SCROLL_SPEED;
+
+        speedSliderModal.value = String(scrollSpeed);
+
         function debugLog(...args) {
-            console.log("[LyricFlow]", ...args);
+            console.log("LyricFlow", ...args);
         }
 
         function setStatus(text) {
@@ -1255,56 +1275,36 @@
             timeDisplay.textContent = formatTime(elapsedTime / 1000);
         }
 
-        function clampContentY(rawY) {
-            const railRect = viewer.getBoundingClientRect();
-            const contentRect = viewerContent.getBoundingClientRect();
-            const topLimit = railRect.top + railRect.height * 0.2;
-            const bottomLimit = railRect.top + railRect.height * 0.8;
-
-            const currentTransform = viewerContent.style.transform || "translateY(0px)";
-            const currentY =
-                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
-            const deltaY = rawY - currentY;
-            const newTop = contentRect.top + deltaY;
-            const newBottom = contentRect.bottom + deltaY;
-
-            let clampedY = rawY;
-
-            if (contentRect.height <= railRect.height * 0.6) {
-                const glowBand = document.querySelector(".viewer-highlight");
-                if (glowBand) {
-                    const glowRect = glowBand.getBoundingClientRect();
-                    const glowCenter = glowRect.top + glowRect.height / 2;
-                    const contentCenter = contentRect.top + contentRect.height / 2;
-                    const diff = glowCenter - contentCenter;
-                    clampedY = currentY + diff;
-                    debugLog("clampContentY: short text, snapping center by diff", diff.toFixed(2));
-                }
-            } else {
-                if (newBottom < bottomLimit) {
-                    const adjust = bottomLimit - newBottom;
-                    clampedY = currentY + adjust;
-                    debugLog("clampContentY: bumping up by", adjust.toFixed(2));
-                }
-                if (newTop > topLimit) {
-                    const adjust = topLimit - newTop;
-                    clampedY = currentY + adjust;
-                    debugLog("clampContentY: pushing down by", adjust.toFixed(2));
-                }
-            }
-
-            if (clampedY !== rawY) {
-                debugLog("clampContentY: rawY", rawY.toFixed(2), "-> clampedY", clampedY.toFixed(2));
-            }
-
-            return clampedY;
+        function applyScroll() {
+            viewerContent.style.transform = `translateY(${baseContentY}px)`;
         }
 
-        function snapFirstLineIntoGlow() {
-            const firstLine = document.querySelector(".viewer-content-line");
-            const glowBand = document.querySelector(".viewer-highlight");
 
-            if (!firstLine || !glowBand) return;
+        function scheduleSnap() {
+            if (snapPending) return;
+            snapPending = true;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    snapPending = false;
+                    snapFirstLineIntoGlow();
+                });
+            });
+        }
+
+
+        function snapFirstLineIntoGlow() {
+            const lines = document.querySelectorAll(".viewer-content-line");
+            const glowBand = document.querySelector(".viewer-highlight");
+            if (!lines.length || !glowBand) return;
+
+            // Use the first non-blank line as the start line
+            let firstLine = lines[0];
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].textContent.trim() !== "") {
+                    firstLine = lines[i];
+                    break;
+                }
+            }
 
             const glowRect = glowBand.getBoundingClientRect();
             const lineRect = firstLine.getBoundingClientRect();
@@ -1312,79 +1312,47 @@
             const glowCenter = glowRect.top + glowRect.height / 2;
             const lineCenter = lineRect.top + lineRect.height / 2;
 
-            // Guard against layout-not-ready snaps
             if (
-                glowRect.height === 0 ||
-                lineRect.height === 0 ||
-                (glowCenter === 0 && lineCenter === 0)
+                glowRect.height <= 0 ||
+                lineRect.height <= 0 ||
+                glowCenter === 0 ||
+                lineCenter === 0
             ) {
-                debugLog("snapFirstLineIntoGlow: layout not ready, aborting");
+                // layout not ready – just skip this frame
                 return;
             }
 
             const delta = glowCenter - lineCenter;
-
-            baseContentY = delta;
-            viewerContent.style.transform = `translateY(${baseContentY}px)`;
-            firstAutoStepAfterSnap = true; // NEW
-
-            debugLog("snapFirstLineIntoGlow: glowCenter", glowCenter.toFixed(2),
-                "lineCenter", lineCenter.toFixed(2),
-                "delta", delta.toFixed(2),
-                "baseContentY", baseContentY.toFixed(2));
+            baseContentY += delta;
+            applyScroll();
+            firstAutoStepAfterSnap = true;
         }
 
-        function autoScroll(timestamp) {
-            if (!isScrolling || scrollSpeed <= 0) return;
 
-            if (lastFrameTime === null) {
+
+
+
+        function autoScroll(timestamp) {
+            if (!isScrolling || scrollSpeed === 0) return;
+
+            if (lastFrameTime == null) {
                 lastFrameTime = timestamp;
                 if (!startTime) startTime = timestamp;
-                debugLog("autoScroll: first frame, bookkeeping only");
-                return (scrollAnimationId = requestAnimationFrame(autoScroll));
+                debugLog("autoScroll first frame, baseContentY", baseContentY.toFixed(2));
+                scrollAnimationId = requestAnimationFrame(autoScroll);
+                return;
             }
 
             const delta = timestamp - lastFrameTime;
             lastFrameTime = timestamp;
-
             elapsedTime = timestamp - startTime;
             updateTimeDisplay();
 
             const pixelsPerSecond = scrollSpeed * 12;
             const distance = (pixelsPerSecond * delta) / 1000;
 
-            const currentTransform =
-                viewerContent.style.transform || `translateY(${baseContentY}px)`;
-            const currentY =
-                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
-                baseContentY;
-            const unclampedY = currentY - distance;
-
-            // TEMP TEST: no clamping during auto-scroll
-            const largeOffset = Math.abs(currentY - baseContentY) > 50; // still logged, not used
-            const newY = unclampedY;
-
-            debugLog(
-                "autoScroll: movement frame, TEMP no clamp. currentY",
-                currentY.toFixed(2),
-                "baseContentY",
-                baseContentY.toFixed(2),
-                "unclampedY",
-                unclampedY.toFixed(2),
-                "distance",
-                distance.toFixed(2),
-                "firstScrollFrame",
-                firstScrollFrame,
-                "firstAutoStepAfterSnap",
-                firstAutoStepAfterSnap,
-                "largeOffset",
-                largeOffset
-            );
-
-            firstScrollFrame = false;
-            firstAutoStepAfterSnap = false;
-
-            viewerContent.style.transform = "translateY(" + newY + "px)";
+            baseContentY -= distance;
+            applyScroll();
 
             const railRect = viewer.getBoundingClientRect();
             const contentRect = viewerContent.getBoundingClientRect();
@@ -1397,15 +1365,28 @@
                 return;
             }
 
+            // Allow manual drag once the first line is above the 40% band
+            if (!firstLineHasExited) {
+                const lines = document.querySelectorAll(".viewer-content-line");
+                if (lines.length) {
+                    const firstRect = lines[0].getBoundingClientRect();
+                    const bandTop = railRect.top + railRect.height * 0.4;
+                    if (firstRect.bottom < bandTop) {
+                        firstLineHasExited = true;
+                        console.log("First line passed 40% band – drag now enabled");
+                    }
+                }
+            }
+
+
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
-
 
         function startScroll() {
             introLoopActive = false;
             stopIntroLoop();
 
-            if (scrollSpeed <= 0) {
+            if (scrollSpeed === 0) {
                 setStatus("Speed is 0 – open Settings to scroll");
                 return;
             }
@@ -1414,33 +1395,27 @@
             isScrolling = true;
             firstScrollFrame = true;
             setStatus("Scrolling");
-
             startBtn.disabled = true;
             pauseBtn.disabled = false;
-
             lastFrameTime = null;
             startTime = performance.now();
-            debugLog("startScroll: begin, scrollSpeed", scrollSpeed, "baseContentY", baseContentY);
+            debugLog("startScroll begin, scrollSpeed", scrollSpeed, "baseContentY", baseContentY.toFixed(2));
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
         function pauseScroll() {
             if (!isScrolling) return;
             isScrolling = false;
-
             setStatus("Paused");
             startBtn.disabled = false;
             pauseBtn.disabled = true;
-
             if (scrollAnimationId) {
                 cancelAnimationFrame(scrollAnimationId);
                 scrollAnimationId = null;
             }
-
-            debugLog("pauseScroll: paused at transform", viewerContent.style.transform);
+            debugLog("pauseScroll paused at transform", viewerContent.style.transform);
         }
 
-        // resetScroll unchanged apart from debug
         function resetScroll() {
             isScrolling = false;
             lastFrameTime = null;
@@ -1456,601 +1431,200 @@
                 scrollAnimationId = null;
             }
 
-            viewerContent.style.transform = "translateY(0px)";
             baseContentY = 0;
-            debugLog("resetScroll: transform reset to 0, baseContentY", baseContentY);
+            firstLineHasExited = false;
+            applyScroll();
 
-            requestAnimationFrame(() => {
-                snapFirstLineIntoGlow();
-                const currentTransform = viewerContent.style.transform || "translateY(0px)";
-                baseContentY = parseFloat(
-                    currentTransform.replace("translateY(", "").replace("px)", "") || "0"
-                );
-                debugLog("resetScroll: after snap, baseContentY", baseContentY);
-            });
+            // Let snapping put the first line back into the glow
+            scheduleSnap();
         }
 
-        function handleDragStart(y) {
-            isDragging = true;
-            viewerContent.style.transition = "none";
-            const currentTransform = viewerContent.style.transform || `translateY(${baseContentY}px)`;
-            dragStartY = y;
-            dragStartContentY =
-                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
-                baseContentY;
-            setStatus("Manual drag");
-            debugLog("handleDragStart: dragStartContentY", dragStartContentY.toFixed(2));
-        }
-
-        function handleDragMove(y) {
-            if (!isDragging) return;
-            const deltaY = y - dragStartY;
-            const unclampedY = dragStartContentY + deltaY;
-            const newY = clampContentY(unclampedY);
-            viewerContent.style.transform = "translateY(" + newY + "px)";
-        }
-
-        function handleDragEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            viewerContent.style.transition = "transform 0.08s ease-out";
-            const currentTransform = viewerContent.style.transform || `translateY(${baseContentY}px)`;
-            baseContentY =
-                parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) ||
-                baseContentY;
-            setStatus(scrollSpeed > 0 ? "Ready (speed set)" : "Ready");
-            debugLog("handleDragEnd: new baseContentY", baseContentY.toFixed(2));
-        }
-
-        viewer.addEventListener("mousedown", (e) => {
+        // Drag wiring for stage viewer
+        viewer.addEventListener("pointerdown", (e) => {
             if (!isStageMode) return;
             e.preventDefault();
-            pauseScroll();
+            viewer.setPointerCapture(e.pointerId);
             handleDragStart(e.clientY);
         });
 
-        window.addEventListener("mousemove", (e) => {
+        viewer.addEventListener("pointermove", (e) => {
+            if (!isStageMode) return;
             if (!isDragging) return;
             handleDragMove(e.clientY);
         });
 
-        window.addEventListener("mouseup", () => {
+        viewer.addEventListener("pointerup", (e) => {
+            if (!isStageMode) return;
             handleDragEnd();
         });
 
-        viewer.addEventListener(
-            "touchstart",
-            (e) => {
-                if (!isStageMode) return;
-                const touch = e.touches[0];
-                e.preventDefault();
-                pauseScroll();
-                handleDragStart(touch.clientY);
-            },
-            { passive: false }
-        );
-
-        window.addEventListener(
-            "touchmove",
-            (e) => {
-                if (!isDragging) return;
-                const touch = e.touches[0];
-                e.preventDefault();
-                handleDragMove(touch.clientY);
-            },
-            { passive: false }
-        );
-
-        window.addEventListener("touchend", () => {
+        viewer.addEventListener("pointercancel", (e) => {
+            if (!isStageMode) return;
             handleDragEnd();
         });
 
-        /* Settings (speed) */
 
-        function openSettings() {
-            speedSliderModal.value = scrollSpeed;
-            settingsOverlay.classList.remove("hidden");
-        }
 
-        settingsBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            openSettings();
-        });
+        function handleDragStart(y) {
+            console.log("DRAG START");
+            console.log("Starting drag at Y", y);
 
-        // NEW: bottom settings button uses same behaviour, stage only
-        settingsBtnBottom.addEventListener("click", () => {
-            if (!isStageMode) return;
-            openSettings();
-        });
-
-        settingsOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeSettings !== undefined || e.target === settingsOverlay) {
-                settingsOverlay.classList.add("hidden");
+            // Block drag until first line has gone past the band
+            if (!firstLineHasExited) {
+                console.log("Drag ignored – first line not past band yet");
+                return;
             }
-        });
 
-        settingsOverlay
-            .querySelectorAll("[data-close-settings]")
-            .forEach((el) =>
-                el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
-            );
-
-        speedSliderModal.addEventListener("input", () => {
-            scrollSpeed = parseInt(speedSliderModal.value, 10) || 0;
-            if (scrollSpeed === 0) {
+            wasScrollingBeforeDrag = isScrolling;
+            if (isScrolling) {
                 pauseScroll();
-                setStatus("Speed set to 0 – drag or open Settings");
+            }
+
+            isDragging = true;
+            dragClampArmed = false;
+
+            viewerContent.style.transition = "none";
+            viewer.style.cursor = "grabbing";
+            viewerContent.style.opacity = 0.8;
+
+            dragStartY = y;
+            dragStartBaseY = baseContentY;
+
+            setStatus("Manual drag");
+        }
+
+
+
+
+
+
+
+
+        function clampDragY(rawY) {
+            const glowBand = document.querySelector(".viewer-highlight");
+            const lines = document.querySelectorAll(".viewer-content-line");
+            if (!glowBand || !lines.length) {
+                return rawY;
+            }
+
+            const glowRect = glowBand.getBoundingClientRect();
+            const glowTop = glowRect.top;
+            const glowBottom = glowRect.bottom;
+            const glowHeight = glowRect.height;
+
+            const firstRect = lines[0].getBoundingClientRect();
+            const lastRect = lines[lines.length - 1].getBoundingClientRect();
+
+            const currentY = baseContentY;
+            const deltaY = rawY - currentY;
+
+            const newFirstTop = firstRect.top + deltaY;
+            const newLastBottom = lastRect.bottom + deltaY;
+
+            const allowedOverflow = glowHeight * 0.5;
+
+            let clampedY = rawY;
+
+            // CLAMP TOP: do NOT push up if we started from a centred state
+            if (!dragFromCenteredStart && newFirstTop > glowTop - allowedOverflow) {
+                const adjust = glowTop - allowedOverflow - newFirstTop;
+                clampedY = rawY + adjust;
+            }
+
+            // CLAMP BOTTOM: always allowed, so you can't drag past the bottom
+            if (newLastBottom < glowBottom + allowedOverflow) {
+                const adjust = glowBottom + allowedOverflow - newLastBottom;
+                clampedY = rawY + adjust;
+            }
+
+            return clampedY;
+        }
+
+
+        function handleDragMove(y) {
+            if (!isDragging) return;
+
+            const deltaY = y - dragStartY;
+
+            // Until we’ve moved at least 200px, completely ignore drag
+            if (!dragHasPassedThreshold) {
+                if (Math.abs(deltaY) < DRAG_ACTIVATE_THRESHOLD) {
+                    // No change at all – first line stays centred, no jump
+                    return;
+                }
+
+                // Just crossed the threshold: unlock drag and reset baseline
+                dragHasPassedThreshold = true;
+                dragStartY = y;
+                dragStartBaseY = baseContentY;
+                return; // next move frame will start real dragging
+            }
+
+            // Normal drag behavior once threshold passed
+            const dampedDelta = deltaY * 0.8;
+            const unclampedY = dragStartBaseY + dampedDelta;
+
+            console.log("DRAG MOVE DEBUG");
+            console.log("Raw deltaY", deltaY.toFixed(2));
+            console.log("Damped delta", dampedDelta.toFixed(2));
+            console.log("dragStartBaseY", dragStartBaseY.toFixed(2));
+            console.log("unclampedY", unclampedY.toFixed(2));
+
+            const newY = clampDragY(unclampedY);
+            console.log("Final newY after clamp", newY.toFixed(2));
+
+            baseContentY = newY;
+            applyScroll();
+        }
+
+
+
+
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+
+            console.log("DRAG END");
+            console.log("Final baseContentY", baseContentY.toFixed(2));
+
+            isDragging = false;
+            viewer.style.cursor = "grab";
+            viewerContent.style.opacity = 1;
+            viewerContent.style.transition = "transform 0.08s ease-out";
+            dragFromCenteredStart = false;
+            dragHasPassedThreshold = false;
+
+
+
+            // if we were auto-scrolling before the drag, and speed > 0, resume
+            if (wasScrollingBeforeDrag && scrollSpeed > 0 && isStageMode) {
+                startScroll();
             } else {
-                setStatus(isScrolling ? "Scrolling" : "Ready (speed set)");
-            }
-        });
-
-        /* Info modals */
-
-        stageInfoBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            stageInfoOverlay.classList.remove("hidden");
-        });
-
-        stageInfoOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeStageInfo !== undefined || e.target === stageInfoOverlay) {
-                stageInfoOverlay.classList.add("hidden");
-            }
-        });
-
-        stageInfoOverlay
-            .querySelectorAll("[data-close-stage-info]")
-            .forEach((el) =>
-                el.addEventListener("click", () => stageInfoOverlay.classList.add("hidden"))
-            );
-
-        editorInfoBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            editInfoOverlay.classList.remove("hidden");
-        });
-
-        editInfoOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeEditInfo !== undefined || e.target === editInfoOverlay) {
-                editInfoOverlay.classList.add("hidden");
-            }
-        });
-
-        editInfoOverlay
-            .querySelectorAll("[data-close-edit-info]")
-            .forEach((el) =>
-                el.addEventListener("click", () => editInfoOverlay.classList.add("hidden"))
-            );
-
-        /* Save / load / playlists */
-
-        function makeSongId() {
-            return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
-        }
-
-        function saveSongsToStorage() {
-            try {
-                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
-            } catch (e) {
-                alert("Could not save songs – your browser storage is disabled or full.");
+                setStatus(scrollSpeed === 0 ? "Ready (speed set)" : "Ready");
             }
         }
 
-        function loadSongsFromStorage() {
-            try {
-                const stored = localStorage.getItem("lyricflow-songs");
-                savedSongs = stored ? JSON.parse(stored) : [];
-            } catch (e) {
-                savedSongs = [];
-            }
+
+        function isFirstLineStillVisible() {
+            const glowBand = document.querySelector(".viewer-highlight");
+            const lines = document.querySelectorAll(".viewer-content-line");
+            if (!glowBand || !lines.length) return false;
+
+            const railRect = viewer.getBoundingClientRect();
+            const firstRect = lines[0].getBoundingClientRect();
+
+            // “Visible” = any overlap between first line and rail
+            const firstBottomAboveRailTop = firstRect.bottom < railRect.top;
+            const firstTopBelowRailBottom = firstRect.top > railRect.bottom;
+
+            // If it's completely above or below, it's NOT visible
+            const fullyOutOfView = firstBottomAboveRailTop || firstTopBelowRailBottom;
+            return !fullyOutOfView;
         }
-
-        saveSongBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            if (!editor.value.trim()) {
-                alert("Type or paste some lyrics before saving.");
-                return;
-            }
-            songTitleInput.value = "";
-            playlistInput.value = currentPlaylistName || "Set 1";
-            saveOverlay.classList.remove("hidden");
-            songTitleInput.focus();
-        });
-
-        saveOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeSave !== undefined || e.target === saveOverlay) {
-                saveOverlay.classList.add("hidden");
-            }
-        });
-
-        saveOverlay
-            .querySelectorAll("[data-close-save]")
-            .forEach((el) =>
-                el.addEventListener("click", () => saveOverlay.classList.add("hidden"))
-            );
-
-        saveConfirmBtn.addEventListener("click", () => {
-            const title = songTitleInput.value.trim() || "Untitled";
-            const playlistName = playlistInput.value.trim() || "Set 1";
-            const content = editor.value.trim();
-            if (!content) {
-                alert("Lyrics are empty – nothing to save.");
-                return;
-            }
-
-            const existingIndex = savedSongs.findIndex(
-                (s) => s.name === title && (s.playlist || "Set 1") === playlistName
-            );
-
-            const song = {
-                id: existingIndex >= 0 ? savedSongs[existingIndex].id : makeSongId(),
-                name: title,
-                playlist: playlistName,
-                content,
-                speed: scrollSpeed,
-                createdAt:
-                    existingIndex >= 0
-                        ? savedSongs[existingIndex].createdAt
-                        : new Date().toISOString()
-            };
-
-            if (existingIndex >= 0) {
-                savedSongs[existingIndex] = song;
-            } else {
-                savedSongs.push(song);
-            }
-
-            saveSongsToStorage();
-            currentPlaylistName = playlistName;
-            buildCurrentPlaylistOrder(playlistName, song.id);
-            updateStagePlaylistUI();
-            saveOverlay.classList.add("hidden");
-            setStatus("Saved: " + title);
-        });
-
-        loadSongBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            buildPlaylistSelect();
-            buildSongSelect();
-            loadOverlay.classList.remove("hidden");
-        });
-
-        loadOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeLoad !== undefined || e.target === loadOverlay) {
-                loadOverlay.classList.add("hidden");
-            }
-        });
-
-        loadOverlay
-            .querySelectorAll("[data-close-load]")
-            .forEach((el) =>
-                el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
-            );
-
-        function buildPlaylistSelect() {
-            const playlists = Array.from(
-                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
-            ).sort();
-            playlistSelect.innerHTML = "";
-            playlists.forEach((p) => {
-                const opt = document.createElement("option");
-                opt.value = p;
-                opt.textContent = p;
-                playlistSelect.appendChild(opt);
-            });
-            if (!playlists.length) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No playlists";
-                playlistSelect.appendChild(opt);
-            }
-        }
-
-        function buildSongSelect() {
-            const playlistName = playlistSelect.value;
-            songSelect.innerHTML = "";
-            const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            songs.forEach((s) => {
-                const opt = document.createElement("option");
-                opt.value = s.id;
-                opt.textContent = s.name;
-                songSelect.appendChild(opt);
-            });
-            if (!songs.length) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No songs";
-                songSelect.appendChild(opt);
-            }
-        }
-
-        playlistSelect.addEventListener("change", buildSongSelect);
-
-        loadConfirmBtn.addEventListener("click", () => {
-            const songId = songSelect.value;
-            const song = savedSongs.find((s) => s.id === songId);
-            if (!song) {
-                alert("No song selected.");
-                return;
-            }
-            loadOverlay.classList.add("hidden");
-            loadSongIntoUI(song);
-        });
-
-        /* Edit playlist */
-
-        editPlaylistBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            buildEditPlaylistSelect();
-            buildEditPlaylistList();
-            editPlaylistOverlay.classList.remove("hidden");
-        });
-
-        editPlaylistOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeEditPlaylist !== undefined ||
-                e.target === editPlaylistOverlay
-            ) {
-                editPlaylistOverlay.classList.add("hidden");
-            }
-        });
-
-        editPlaylistOverlay
-            .querySelectorAll("[data-close-edit-playlist]")
-            .forEach((el) =>
-                el.addEventListener("click", () => editPlaylistOverlay.classList.add("hidden"))
-            );
-
-        function buildEditPlaylistSelect() {
-            const playlists = Array.from(
-                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
-            ).sort();
-            editPlaylistSelect.innerHTML = "";
-            playlists.forEach((p) => {
-                const opt = document.createElement("option");
-                opt.value = p;
-                opt.textContent = p;
-                editPlaylistSelect.appendChild(opt);
-            });
-            if (!playlists.length) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No playlists";
-                editPlaylistSelect.appendChild(opt);
-            }
-        }
-
-        function buildEditPlaylistList() {
-            const playlistName = editPlaylistSelect.value;
-            playlistEditList.innerHTML = "";
-            if (!playlistName) return;
-
-            const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            songs.forEach((s, idx) => {
-                const row = document.createElement("div");
-                row.className = "playlist-edit-item";
-
-                const nameSpan = document.createElement("span");
-                nameSpan.className = "playlist-edit-name";
-                nameSpan.textContent = (idx + 1) + ". " + s.name;
-
-                const controls = document.createElement("div");
-                controls.className = "playlist-edit-controls";
-
-                const upBtn = document.createElement("button");
-                upBtn.textContent = "↑";
-                upBtn.disabled = idx === 0;
-                upBtn.addEventListener("click", () => {
-                    swapSongOrder(playlistName, s.id, -1);
-                    buildEditPlaylistList();
-                    if (playlistName === currentPlaylistName) {
-                        buildCurrentPlaylistOrder(playlistName, currentSongId);
-                        updateStagePlaylistUI();
-                    }
-                });
-
-                const downBtn = document.createElement("button");
-                downBtn.textContent = "↓";
-                downBtn.disabled = idx === songs.length - 1;
-                downBtn.addEventListener("click", () => {
-                    swapSongOrder(playlistName, s.id, 1);
-                    buildEditPlaylistList();
-                    if (playlistName === currentPlaylistName) {
-                        buildCurrentPlaylistOrder(playlistName, currentSongId);
-                        updateStagePlaylistUI();
-                    }
-                });
-
-                const delBtn = document.createElement("button");
-                delBtn.textContent = "✕";
-                delBtn.addEventListener("click", () => {
-                    if (!confirm("Delete \"" + s.name + "\" from this playlist?")) return;
-                    savedSongs = savedSongs.filter((song) => song.id !== s.id);
-                    saveSongsToStorage();
-                    buildEditPlaylistList();
-                    if (s.id === currentSongId) {
-                        currentSongId = null;
-                        currentPlaylistSongIds = [];
-                        updateStagePlaylistUI();
-                    } else if (playlistName === currentPlaylistName) {
-                        buildCurrentPlaylistOrder(playlistName, currentSongId);
-                        updateStagePlaylistUI();
-                    }
-                });
-
-                controls.appendChild(upBtn);
-                controls.appendChild(downBtn);
-                controls.appendChild(delBtn);
-
-                row.appendChild(nameSpan);
-                row.appendChild(controls);
-                playlistEditList.appendChild(row);
-            });
-        }
-
-        editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
-
-        function swapSongOrder(playlistName, songId, direction) {
-            const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            const index = songs.findIndex((s) => s.id === songId);
-            const newIndex = index + direction;
-            if (index < 0 || newIndex < 0 || newIndex >= songs.length) return;
-
-            const t = songs[index].createdAt;
-            songs[index].createdAt = songs[newIndex].createdAt;
-            songs[newIndex].createdAt = t;
-
-            songs.forEach((updated) => {
-                const idx = savedSongs.findIndex((s) => s.id === updated.id);
-                if (idx >= 0) savedSongs[idx] = updated;
-            });
-
-            saveSongsToStorage();
-        }
-
-        /* Playlist state helpers */
-
-        function buildCurrentPlaylistOrder(playlistName, songIdToFocus) {
-            const songsInPlaylist = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            currentPlaylistSongIds = songsInPlaylist.map((s) => s.id);
-            currentSongId = songIdToFocus || (songsInPlaylist[0] && songsInPlaylist[0].id) || null;
-        }
-
-        function updateStagePlaylistUI() {
-            if (currentPlaylistName && currentSongId && currentPlaylistSongIds.length > 0) {
-                playlistPill.classList.remove("hidden");
-                const total = currentPlaylistSongIds.length;
-                const index = currentPlaylistSongIds.indexOf(currentSongId);
-                const currentNum = index >= 0 ? index + 1 : 1;
-                playlistPillText.textContent = currentPlaylistName;
-                playlistPillIndex.textContent = currentNum + "/" + total;
-                prevSongBtn.classList.remove("hidden");
-                nextSongBtn.classList.remove("hidden");
-            } else {
-                playlistPill.classList.add("hidden");
-                prevSongBtn.classList.add("hidden");
-                nextSongBtn.classList.add("hidden");
-            }
-        }
-
-        function loadSongIntoUI(song) {
-            introLoopActive = false;
-            stopIntroLoop();
-
-            currentPlaylistName = song.playlist || "Set 1";
-            buildCurrentPlaylistOrder(currentPlaylistName, song.id);
-            updateStagePlaylistUI();
-
-            editor.value = song.content || "";
-
-            scrollSpeed = typeof song.speed === "number" ? song.speed : scrollSpeed;
-            speedSliderModal.value = scrollSpeed;
-
-            rebuildViewerFromEditor();
-            resetScroll();
-            setStatus("Loaded: " + song.name);
-        }
-
-        prevSongBtn.addEventListener("click", () => {
-            if (!currentPlaylistName || !currentSongId) return;
-            const index = currentPlaylistSongIds.indexOf(currentSongId);
-            if (index > 0) {
-                const prevId = currentPlaylistSongIds[index - 1];
-                const song = savedSongs.find((s) => s.id === prevId);
-                if (song) loadSongIntoUI(song);
-            }
-        });
-
-        nextSongBtn.addEventListener("click", () => {
-            if (!currentPlaylistName || !currentSongId) return;
-            const index = currentPlaylistSongIds.indexOf(currentSongId);
-            if (index >= 0 && index < currentPlaylistSongIds.length - 1) {
-                const nextId = currentPlaylistSongIds[index + 1];
-                const song = savedSongs.find((s) => s.id === nextId);
-                if (song) loadSongIntoUI(song);
-            }
-        });
-
-        /* Playlist pill track picker (modal) */
-
-        playlistPill.addEventListener("click", () => {
-            if (!currentPlaylistName || !currentPlaylistSongIds.length) return;
-            playlistSelectTitle.textContent = "Playlist: " + currentPlaylistName;
-            trackList.innerHTML = "";
-            const total = currentPlaylistSongIds.length;
-            currentPlaylistSongIds.forEach((id, idx) => {
-                const song = savedSongs.find((s) => s.id === id);
-                if (!song) return;
-                const row = document.createElement("div");
-                row.className = "track-item";
-                const left = document.createElement("span");
-                left.textContent = (idx + 1) + "/" + total;
-                const right = document.createElement("span");
-                right.textContent = song.name;
-                row.appendChild(left);
-                row.appendChild(right);
-                row.addEventListener("click", () => {
-                    playlistSelectOverlay.classList.add("hidden");
-                    loadSongIntoUI(song);
-                });
-                trackList.appendChild(row);
-            });
-            playlistSelectOverlay.classList.remove("hidden");
-        });
-
-        playlistSelectOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closePlaylistSelect !== undefined ||
-                e.target === playlistSelectOverlay
-            ) {
-                playlistSelectOverlay.classList.add("hidden");
-            }
-        });
-
-        playlistSelectOverlay
-            .querySelectorAll("[data-close-playlist-select]")
-            .forEach((el) =>
-                el.addEventListener("click", () =>
-                    playlistSelectOverlay.classList.add("hidden")
-                )
-            );
-
-        /* Viewer rebuild */
 
         function rebuildViewerFromEditor() {
             const text = editor.value || "";
-            viewerContent.textContent = "";
-
-            if (!text.trim()) {
-                introLoopActive = true;
-                startIntroLoop();
-                const defaultLines = [
-                    "Welcome to LyricFlow – stage‑ready lyric scroller.",
-                    "Tap Edit to paste or type lyrics.",
-                    "Come back to Stage, set a speed, press Start.",
-                    "Drag lines during the song to fine‑tune your pace."
-                ];
-                defaultLines.forEach((line, index) => {
-                    const span = document.createElement("span");
-                    span.className = "viewer-content-line";
-                    span.textContent = line;
-                    viewerContent.appendChild(span);
-                    if (index < defaultLines.length - 1) {
-                        viewerContent.appendChild(document.createElement("br"));
-                    }
-                });
-                resetScroll();
-                return;
-            }
+            viewerContent.innerHTML = "";
 
             introLoopActive = false;
             stopIntroLoop();
@@ -2078,10 +1652,10 @@
                 }
             });
 
-            viewerContent.style.transform = "translateY(0px)";
-            requestAnimationFrame(() => {
-                snapFirstLineIntoGlow();
-            });
+            baseContentY = 0;
+            firstLineHasExited = false;
+            applyScroll();
+            scheduleSnap();
             setStatus("Viewer mirrored from editor");
         }
 
@@ -2103,9 +1677,7 @@
                 modeToggle.querySelector("span").innerHTML =
                     "<strong>Stage mode</strong> <small>· tap for edit</small>";
                 setStatus("Ready");
-                requestAnimationFrame(() => {
-                    snapFirstLineIntoGlow();
-                });
+                scheduleSnap();
                 settingsBtnBottom.classList.remove("hidden");
             } else {
                 pauseScroll();
@@ -2185,18 +1757,14 @@
 
                 if (contentRect.bottom + newY <= railRect.top + railRect.height * 0.4) {
                     viewerContent.style.transform = "translateY(0px)";
-                    requestAnimationFrame(() => {
-                        snapFirstLineIntoGlow();
-                    });
+                    scheduleSnap();
                 }
 
                 introLoopId = requestAnimationFrame(stepIntro);
             }
 
             if (!introLoopId) {
-                requestAnimationFrame(() => {
-                    snapFirstLineIntoGlow();
-                });
+                scheduleSnap();
                 introLoopId = requestAnimationFrame(stepIntro);
             }
         }
@@ -2209,14 +1777,562 @@
             }
         }
 
+        /* Settings (speed) */
+
+
+
+        function openSettings() {
+            speedSliderModal.value = scrollSpeed;
+            settingsOverlay.classList.remove("hidden");
+        }
+
+        settingsBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            openSettings();
+        });
+
+        settingsBtnBottom.addEventListener("click", () => {
+            if (!isStageMode) return;
+            openSettings();
+        });
+
+        settingsOverlay.addEventListener("click", (e) => {
+            if (e.target.dataset.closeSettings !== undefined || e.target === settingsOverlay) {
+                settingsOverlay.classList.add("hidden");
+            }
+        });
+
+        settingsOverlay
+            .querySelectorAll("[data-close-settings]")
+            .forEach((el) =>
+                el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
+            );
+
+        speedSliderModal.addEventListener("input", () => {
+            scrollSpeed = parseInt(speedSliderModal.value, 10);
+            setStatus(isScrolling ? "Scrolling" : "Ready (speed set)");
+        });
+
+        window.addEventListener("load", () => {
+            scrollSpeed = DEFAULT_SCROLL_SPEED;
+            speedSliderModal.value = String(DEFAULT_SCROLL_SPEED);
+        });
+
+
+        /* Info modals */
+
+        stageInfoBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            stageInfoOverlay.classList.remove("hidden");
+        });
+
+        stageInfoOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeStageInfo !== undefined ||
+                e.target === stageInfoOverlay
+            ) {
+                stageInfoOverlay.classList.add("hidden");
+            }
+        });
+
+        stageInfoOverlay
+            .querySelectorAll("[data-close-stage-info]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    stageInfoOverlay.classList.add("hidden")
+                )
+            );
+
+        editorInfoBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            editInfoOverlay.classList.remove("hidden");
+        });
+
+        editInfoOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeEditInfo !== undefined ||
+                e.target === editInfoOverlay
+            ) {
+                editInfoOverlay.classList.add("hidden");
+            }
+        });
+
+        editInfoOverlay
+            .querySelectorAll("[data-close-edit-info]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    editInfoOverlay.classList.add("hidden")
+                )
+            );
+
+        /* Save / load / playlists */
+
+        function makeSongId() {
+            return (
+                Date.now().toString(36) +
+                "-" +
+                Math.random().toString(36).slice(2, 8)
+            );
+        }
+
+        function saveSongsToStorage() {
+            try {
+                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
+            } catch (e) {
+                alert(
+                    "Could not save songs – your browser storage is disabled or full."
+                );
+            }
+        }
+
+        function loadSongsFromStorage() {
+            try {
+                const stored = localStorage.getItem("lyricflow-songs");
+                savedSongs = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                savedSongs = [];
+            }
+        }
+
+        saveSongBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            if (!editor.value.trim()) {
+                alert("Type or paste some lyrics before saving.");
+                return;
+            }
+
+            // If editing an existing loaded song, prefill its title.
+            const existingSong =
+                currentSongId && savedSongs.find((s) => s.id === currentSongId);
+
+            songTitleInput.value = existingSong ? existingSong.name : "";
+            playlistInput.value = existingSong
+                ? (existingSong.playlist || "Set 1")
+                : (currentPlaylistName || "Set 1");
+
+            saveOverlay.classList.remove("hidden");
+            songTitleInput.focus();
+        });
+
+
+        saveOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeSave !== undefined ||
+                e.target === saveOverlay
+            ) {
+                saveOverlay.classList.add("hidden");
+            }
+        });
+
+        saveOverlay
+            .querySelectorAll("[data-close-save]")
+            .forEach((el) =>
+                el.addEventListener("click", () => saveOverlay.classList.add("hidden"))
+            );
+
+        saveConfirmBtn.addEventListener("click", () => {
+            const title = songTitleInput.value.trim() || "Untitled";
+            const playlistName = playlistInput.value.trim() || "Set 1";
+            const content = editor.value.trim();
+
+            if (!content) {
+                alert("Lyrics are empty – nothing to save.");
+                return;
+            }
+
+            // Include current scrollSpeed, but never save below 1
+            const speedToSave = Math.max(1, parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10));
+
+            // If we have a currentSongId, overwrite that song
+            let existingIndex = savedSongs.findIndex(
+                (s) => s.id === currentSongId
+            );
+
+            // If not found by id, fall back to name+playlist match
+            if (existingIndex < 0) {
+                existingIndex = savedSongs.findIndex(
+                    (s) => s.name === title && (s.playlist || "Set 1") === (playlistName || "Set 1")
+                );
+            }
+
+            let song;
+            if (existingIndex >= 0) {
+                // Update existing song
+                song = savedSongs[existingIndex];
+                song.name = title;
+                song.playlist = playlistName;
+                song.content = content;
+                song.speed = speedToSave;
+                // keep createdAt as-is
+            } else {
+                // Create new song
+                song = {
+                    id: makeSongId(),
+                    name: title,
+                    playlist: playlistName,
+                    content,
+                    speed: speedToSave,
+                    createdAt: new Date().toISOString(),
+                };
+                savedSongs.push(song);
+            }
+
+            // Persist and update current context
+            saveSongsToStorage();
+            currentSongId = song.id;
+            currentPlaylistName = song.playlist || "Set 1";
+            buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
+            updateStagePlaylistUI();
+
+            saveOverlay.classList.add("hidden");
+            setStatus("Saved " + song.name);
+        });
+
+
+        loadSongBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildPlaylistSelect();
+            buildSongSelect();
+            loadOverlay.classList.remove("hidden");
+        });
+
+        loadOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeLoad !== undefined ||
+                e.target === loadOverlay
+            ) {
+                loadOverlay.classList.add("hidden");
+            }
+        });
+
+        loadOverlay
+            .querySelectorAll("[data-close-load]")
+            .forEach((el) =>
+                el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
+            );
+
+        function buildPlaylistSelect() {
+            const playlists = Array.from(
+                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
+            ).sort();
+            playlistSelect.innerHTML = "";
+            playlists.forEach((p) => {
+                const opt = document.createElement("option");
+                opt.value = p;
+                opt.textContent = p;
+                playlistSelect.appendChild(opt);
+            });
+            if (!playlists.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No playlists";
+                playlistSelect.appendChild(opt);
+            }
+        }
+
+        function buildSongSelect() {
+            const playlistName = playlistSelect.value;
+            songSelect.innerHTML = "";
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            songs.forEach((s) => {
+                const opt = document.createElement("option");
+                opt.value = s.id;
+                opt.textContent = s.name;
+                songSelect.appendChild(opt);
+            });
+
+            if (!songs.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No songs";
+                songSelect.appendChild(opt);
+            }
+        }
+
+        playlistSelect.addEventListener("change", buildSongSelect);
+
+        loadConfirmBtn.addEventListener("click", () => {
+            const songId = songSelect.value;
+            const song = savedSongs.find((s) => s.id === songId);
+            if (!song) {
+                alert("No song selected.");
+                return;
+            }
+            loadOverlay.classList.add("hidden");
+            loadSongIntoUI(song);
+        });
+
+        function loadSongIntoUI(song) {
+            currentSongId = song.id;
+            currentPlaylistName = song.playlist || "Set 1";
+
+            editor.value = song.content;
+
+            // Use song speed if > 0, otherwise fallback to default
+            const savedSpeed = typeof song.speed === "number" ? song.speed : 0;
+            scrollSpeed = savedSpeed > 0 ? savedSpeed : DEFAULT_SCROLL_SPEED;
+            speedSliderModal.value = String(scrollSpeed);
+
+            rebuildViewerFromEditor();
+            buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
+            updateStagePlaylistUI();
+            setStatus("Loaded " + song.name);
+        }
+
+
+        function buildCurrentPlaylistOrder(playlistName, focusSongId) {
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            currentPlaylistSongIds = songs.map((s) => s.id);
+            const idx = currentPlaylistSongIds.indexOf(focusSongId);
+            currentSongId = idx >= 0 ? focusSongId : songs[0]?.id || null;
+        }
+
+        function updateStagePlaylistUI() {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) {
+                playlistPill.classList.add("hidden");
+                prevSongBtn.classList.add("hidden");
+                nextSongBtn.classList.add("hidden");
+                return;
+            }
+
+            const idx = currentPlaylistSongIds.indexOf(currentSongId);
+            const total = currentPlaylistSongIds.length;
+            playlistPillText.textContent = currentPlaylistName || "Set 1";
+            playlistPillIndex.textContent = `${idx + 1}/${total}`;
+            playlistPill.classList.remove("hidden");
+
+            prevSongBtn.classList.toggle("hidden", idx <= 0);
+            nextSongBtn.classList.toggle("hidden", idx >= total - 1);
+        }
+
+        editPlaylistBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildEditPlaylistSelect();
+            buildEditPlaylistList();
+            editPlaylistOverlay.classList.remove("hidden");
+        });
+
+        editPlaylistOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeEditPlaylist !== undefined ||
+                e.target === editPlaylistOverlay
+            ) {
+                editPlaylistOverlay.classList.add("hidden");
+            }
+        });
+
+        editPlaylistOverlay
+            .querySelectorAll("[data-close-edit-playlist]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    editPlaylistOverlay.classList.add("hidden")
+                )
+            );
+
+        function buildEditPlaylistSelect() {
+            const playlists = Array.from(
+                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
+            ).sort();
+            editPlaylistSelect.innerHTML = "";
+            playlists.forEach((p) => {
+                const opt = document.createElement("option");
+                opt.value = p;
+                opt.textContent = p;
+                editPlaylistSelect.appendChild(opt);
+            });
+            if (!playlists.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No playlists";
+                editPlaylistSelect.appendChild(opt);
+            }
+        }
+
+        function buildEditPlaylistList() {
+            const playlistName = editPlaylistSelect.value;
+            playlistEditList.innerHTML = "";
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "playlist-edit-item";
+
+                const nameSpan = document.createElement("div");
+                nameSpan.className = "playlist-edit-name";
+                nameSpan.textContent = s.name;
+
+                const controls = document.createElement("div");
+                controls.className = "playlist-edit-controls";
+
+                const upBtn = document.createElement("button");
+                upBtn.textContent = "↑";
+                upBtn.disabled = index === 0;
+                upBtn.addEventListener("click", () => {
+                    if (index === 0) return;
+                    const prev = songs[index - 1];
+                    const tmp = prev.createdAt;
+                    prev.createdAt = s.createdAt;
+                    s.createdAt = tmp;
+                    saveSongsToStorage();
+                    buildEditPlaylistList();
+                });
+
+                const downBtn = document.createElement("button");
+                downBtn.textContent = "↓";
+                downBtn.disabled = index === songs.length - 1;
+                downBtn.addEventListener("click", () => {
+                    if (index === songs.length - 1) return;
+                    const next = songs[index + 1];
+                    const tmp = next.createdAt;
+                    next.createdAt = s.createdAt;
+                    s.createdAt = tmp;
+                    saveSongsToStorage();
+                    buildEditPlaylistList();
+                });
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "✕";
+                deleteBtn.addEventListener("click", () => {
+                    if (!confirm("Delete this song from the playlist?")) return;
+                    savedSongs = savedSongs.filter((song) => song.id !== s.id);
+                    saveSongsToStorage();
+                    buildEditPlaylistList();
+                });
+
+                controls.appendChild(upBtn);
+                controls.appendChild(downBtn);
+                controls.appendChild(deleteBtn);
+
+                item.appendChild(nameSpan);
+                item.appendChild(controls);
+
+                playlistEditList.appendChild(item);
+            });
+        }
+
+        editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
+
+        playlistPill.addEventListener("click", () => {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (currentPlaylistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            playlistSelectTitle.textContent = currentPlaylistName || "Set 1";
+            trackList.innerHTML = "";
+
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "track-item";
+                const label = document.createElement("span");
+                label.textContent = `${index + 1}. ${s.name}`;
+                const speedSpan = document.createElement("span");
+                speedSpan.textContent = `Speed ${s.speed || 0}`;
+                item.appendChild(label);
+                item.appendChild(speedSpan);
+                item.addEventListener("click", () => {
+                    playlistSelectOverlay.classList.add("hidden");
+                    loadSongIntoUI(s);
+                });
+                trackList.appendChild(item);
+            });
+
+            playlistSelectOverlay.classList.remove("hidden");
+        });
+
+        playlistSelectOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closePlaylistSelect !== undefined ||
+                e.target === playlistSelectOverlay
+            ) {
+                playlistSelectOverlay.classList.add("hidden");
+            }
+        });
+
+        playlistSelectOverlay
+            .querySelectorAll("[data-close-playlist-select]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    playlistSelectOverlay.classList.add("hidden")
+                )
+            );
+
+        prevSongBtn.addEventListener("click", () => {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const idx = currentPlaylistSongIds.indexOf(currentSongId);
+            if (idx <= 0) return;
+            const newId = currentPlaylistSongIds[idx - 1];
+            const song = savedSongs.find((s) => s.id === newId);
+            if (!song) return;
+            loadSongIntoUI(song);
+        });
+
+        nextSongBtn.addEventListener("click", () => {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const idx = currentPlaylistSongIds.indexOf(currentSongId);
+            if (idx >= currentPlaylistSongIds.length - 1) return;
+            const newId = currentPlaylistSongIds[idx + 1];
+            const song = savedSongs.find((s) => s.id === newId);
+            if (!song) return;
+            loadSongIntoUI(song);
+        });
+
+        viewer.addEventListener("mousedown", (e) => {
+            if (!isStageMode) return;
+            e.preventDefault();
+            pauseScroll();
+            handleDragStart(e.clientY);
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            handleDragMove(e.clientY);
+        });
+
+        window.addEventListener("mouseup", () => {
+            handleDragEnd();
+        });
+
+        viewer.addEventListener(
+            "touchstart",
+            (e) => {
+                if (!isStageMode) return;
+                const touch = e.touches[0];
+                e.preventDefault();
+                pauseScroll();
+                handleDragStart(touch.clientY);
+            },
+            { passive: false }
+        );
+
+        window.addEventListener(
+            "touchmove",
+            (e) => {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                e.preventDefault();
+                handleDragMove(touch.clientY);
+            },
+            { passive: false }
+        );
+
+        window.addEventListener("touchend", () => {
+            handleDragEnd();
+        });
+
         /* Init */
 
         loadSongsFromStorage();
 
         window.addEventListener("load", () => {
-            requestAnimationFrame(() => {
-                snapFirstLineIntoGlow();
-            });
+            scheduleSnap();
             introLoopActive = true;
             startIntroLoop();
         });
