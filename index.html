@@ -1514,7 +1514,7 @@
             setStatus("Manual drag");
         }
 
-        function clampDragY(rawY) {
+        /*function clampDragY(rawY) {
             const glowBand = document.querySelector(".viewer-highlight");
             const lines = document.querySelectorAll(".viewer-content-line");
             if (!glowBand || !lines.length) {
@@ -1555,22 +1555,26 @@
 
             return clampedY;
         }
+        */
+
+        function clampDragY(rawY) {
+            // TEMP: turn off all clamping so drag is free
+            return rawY;
+        }
 
         function handleDragMove(y) {
             if (!isDragging) return;
 
             const deltaY = y - dragStartY;
-
             const dampedDelta = deltaY * 0.8;
+
+            // free drag: no ceiling, no clamp
             let unclampedY = dragStartBaseY + dampedDelta;
 
-            // Do not allow moving above initial load position
-            unclampedY = Math.min(0, unclampedY);
-
-            const newY = clampDragY(unclampedY);
-            baseContentY = newY;
+            baseContentY = unclampedY;
             applyScroll();
         }
+
 
         function handleDragEnd() {
             if (!isDragging) return;
