@@ -1126,11 +1126,11 @@
             <div class="modal-body">
                 <div class="form-field">
                     <label for="speedSliderModal">Scroll speed (0 = off)</label><input type="range"
-       id="speedSliderModal"
-       min="1"
-       max="10"
-       step="1"
-       value="4" />
+                                                                                       id="speedSliderModal"
+                                                                                       min="1"
+                                                                                       max="10"
+                                                                                       step="1"
+                                                                                       value="4" />
                 </div>
             </div>
             <div class="modal-footer">
@@ -1163,7 +1163,6 @@
         const viewerCard = document.getElementById("viewerCard");
         const editorCard = document.getElementById("editorCard");
         const bottomBar = document.getElementById("bottomBar");
-
         const statusText = document.getElementById("statusText");
         const timeDisplay = document.getElementById("timeDisplay");
 
@@ -1218,7 +1217,6 @@
         let scrollAnimationId = null;
         let isScrolling = false;
         let firstScrollFrame = false;
-        let firstAutoStepAfterSnap = false;
         let lastFrameTime = null;
         let startTime = null;
         let elapsedTime = 0;
@@ -1243,9 +1241,6 @@
 
         let wasScrollingBeforeDrag = false;
 
-        let dragClampArmed = false;
-
-        let dragFromCenteredStart = false;
         let dragHasPassedThreshold = false;
         const DRAG_ACTIVATE_THRESHOLD = 200; // px before any manual scroll is allowed
 
@@ -1325,12 +1320,7 @@
             const delta = glowCenter - lineCenter;
             baseContentY += delta;
             applyScroll();
-            firstAutoStepAfterSnap = true;
         }
-
-
-
-
 
         function autoScroll(timestamp) {
             if (!isScrolling || scrollSpeed === 0) return;
@@ -1464,7 +1454,6 @@
         });
 
 
-
         function handleDragStart(y) {
             console.log("DRAG START");
             console.log("Starting drag at Y", y);
@@ -1481,7 +1470,6 @@
             }
 
             isDragging = true;
-            dragClampArmed = false;
 
             viewerContent.style.transition = "none";
             viewer.style.cursor = "grabbing";
@@ -1492,13 +1480,6 @@
 
             setStatus("Manual drag");
         }
-
-
-
-
-
-
-
 
         function clampDragY(rawY) {
             const glowBand = document.querySelector(".viewer-highlight");
@@ -1525,8 +1506,8 @@
 
             let clampedY = rawY;
 
-            // CLAMP TOP: do NOT push up if we started from a centred state
-            if (!dragFromCenteredStart && newFirstTop > glowTop - allowedOverflow) {
+            // CLAMP TOP
+            if (newFirstTop > glowTop - allowedOverflow) {
                 const adjust = glowTop - allowedOverflow - newFirstTop;
                 clampedY = rawY + adjust;
             }
@@ -1577,10 +1558,6 @@
             applyScroll();
         }
 
-
-
-
-
         function handleDragEnd() {
             if (!isDragging) return;
 
@@ -1591,10 +1568,7 @@
             viewer.style.cursor = "grab";
             viewerContent.style.opacity = 1;
             viewerContent.style.transition = "transform 0.08s ease-out";
-            dragFromCenteredStart = false;
             dragHasPassedThreshold = false;
-
-
 
             // if we were auto-scrolling before the drag, and speed > 0, resume
             if (wasScrollingBeforeDrag && scrollSpeed > 0 && isStageMode) {
@@ -1778,9 +1752,6 @@
         }
 
         /* Settings (speed) */
-
-
-
         function openSettings() {
             speedSliderModal.value = scrollSpeed;
             settingsOverlay.classList.remove("hidden");
@@ -1988,7 +1959,6 @@
             setStatus("Saved " + song.name);
         });
 
-
         loadSongBtn.addEventListener("click", () => {
             if (isStageMode) return;
             buildPlaylistSelect();
@@ -2081,7 +2051,6 @@
             updateStagePlaylistUI();
             setStatus("Loaded " + song.name);
         }
-
 
         function buildCurrentPlaylistOrder(playlistName, focusSongId) {
             const songs = savedSongs
@@ -2209,7 +2178,6 @@
                 controls.appendChild(upBtn);
                 controls.appendChild(downBtn);
                 controls.appendChild(deleteBtn);
-
                 item.appendChild(nameSpan);
                 item.appendChild(controls);
 
@@ -2287,7 +2255,6 @@
         viewer.addEventListener("mousedown", (e) => {
             if (!isStageMode) return;
             e.preventDefault();
-            pauseScroll();
             handleDragStart(e.clientY);
         });
 
@@ -2306,7 +2273,6 @@
                 if (!isStageMode) return;
                 const touch = e.touches[0];
                 e.preventDefault();
-                pauseScroll();
                 handleDragStart(touch.clientY);
             },
             { passive: false }
