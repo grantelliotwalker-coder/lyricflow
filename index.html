@@ -1126,11 +1126,11 @@
             <div class="modal-body">
                 <div class="form-field">
                     <label for="speedSliderModal">Scroll speed (0 = off)</label><input type="range"
-                                                                                       id="speedSliderModal"
-                                                                                       min="1"
-                                                                                       max="10"
-                                                                                       step="1"
-                                                                                       value="4" />
+       id="speedSliderModal"
+       min="1"
+       max="10"
+       step="1"
+       value="4" />
                 </div>
             </div>
             <div class="modal-footer">
@@ -1464,7 +1464,9 @@
                 return;
             }
 
+            // remember if we were auto-scrolling
             wasScrollingBeforeDrag = isScrolling;
+
             if (isScrolling) {
                 pauseScroll();
             }
@@ -1478,8 +1480,12 @@
             dragStartY = y;
             dragStartBaseY = baseContentY;
 
+            // new: reset the movement threshold for every new drag
+            dragHasPassedThreshold = false;
+
             setStatus("Manual drag");
         }
+
 
         function clampDragY(rawY) {
             const glowBand = document.querySelector(".viewer-highlight");
@@ -1568,15 +1574,21 @@
             viewer.style.cursor = "grab";
             viewerContent.style.opacity = 1;
             viewerContent.style.transition = "transform 0.08s ease-out";
+
+            const shouldResume = wasScrollingBeforeDrag && scrollSpeed > 0 && isStageMode;
+
+            // reset flags for the next drag
+            wasScrollingBeforeDrag = false;
             dragHasPassedThreshold = false;
 
             // if we were auto-scrolling before the drag, and speed > 0, resume
-            if (wasScrollingBeforeDrag && scrollSpeed > 0 && isStageMode) {
+            if (shouldResume) {
                 startScroll();
             } else {
                 setStatus(scrollSpeed === 0 ? "Ready (speed set)" : "Ready");
             }
         }
+
 
 
         function isFirstLineStillVisible() {
