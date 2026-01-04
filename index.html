@@ -1433,7 +1433,6 @@
         function startScroll() {
             if (isScrolling) return;
 
-            // if both BPM-based and legacy scrollSpeed are effectively zero
             const pixelsPerSecond = Math.max(
                 0,
                 pixelsPerSecondBase + pixelsPerSecondTrim
@@ -1659,7 +1658,7 @@
             viewerContent.innerHTML = "";
 
             const lines = text.split("\n");
-            lines.forEach((rawLine, index) => {
+            lines.forEach((rawLine) => {
                 const line = rawLine.replace(/\s+$/, "");
                 const isBlank = line.trim() === "";
 
