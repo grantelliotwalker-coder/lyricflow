@@ -466,7 +466,7 @@
 
         .viewer-content-line {
             display: block;
-            padding: 3px 0;
+            padding: 1px 0; /* tighter packing */
         }
 
         /* Editor */
@@ -955,18 +955,11 @@
 
                             <div class="viewer" id="viewer">
                                 <div class="viewer-content" id="viewerContent">
-                                    <span class="viewer-content-line">
-                                        Welcome to LyricFlow – stage‑ready lyric scroller.
-                                    </span><br />
-                                    <span class="viewer-content-line">
-                                        Tap Edit to paste or type lyrics.
-                                    </span><br />
-                                    <span class="viewer-content-line">
-                                        Come back to Stage, set a speed, press Start.
-                                    </span><br />
-                                    <span class="viewer-content-line">
-                                        Drag lines during the song to fine‑tune your pace.
-                                    </span>
+                                    <span class="viewer-content-line">Welcome to LyricFlow – stage‑ready lyric scroller.</span>
+                                    <span class="viewer-content-line">Tap Edit to paste or type lyrics.</span>
+                                    <span class="viewer-content-line">Come back to Stage, set a tempo, press Start.</span>
+                                    <span class="viewer-content-line">Drag lines during the song to fine‑tune your pace.</span>
+                                    <span class="viewer-content-line">Use Settings to set BPM, beats on screen, and font size.</span>
                                 </div>
                             </div>
                         </div>
@@ -1014,7 +1007,7 @@
         </div>
     </div>
 
-    <!-- Modals (unchanged HTML) -->
+    <!-- Modals -->
 
     <div class="overlay hidden" id="stageInfoOverlay">
         <div class="modal">
@@ -1024,7 +1017,7 @@
             </div>
             <div class="modal-body">
                 <p>• Stage shows only the live lyric window and transport controls.</p>
-                <p>• Set a scroll speed, press Start, and read 3‑4 lines ahead inside the glow.</p>
+                <p>• Set a tempo, press Start, and read 3‑4 lines ahead inside the glow.</p>
                 <p>• Drag the lyrics up or down during a song to fine‑tune position.</p>
                 <p>• Space = Start/Pause, R = Reset (desktop).</p>
             </div>
@@ -1125,12 +1118,34 @@
             </div>
             <div class="modal-body">
                 <div class="form-field">
-                    <label for="speedSliderModal">Scroll speed (0 = off)</label><input type="range"
-       id="speedSliderModal"
-       min="1"
-       max="10"
-       step="1"
-       value="4" />
+                    <label for="bpmInput">Song tempo (BPM)</label>
+                    <input id="bpmInput" type="number" min="40" max="200" step="1" value="120" />
+                </div>
+                <div class="form-field">
+                    <label for="beatsPerScreenInput">Beats shown in glow</label>
+                    <input id="beatsPerScreenInput" type="number" min="1" max="16" step="1" value="4" />
+                </div>
+                <div class="form-field">
+                    <label for="speedSliderModal">Fine speed trim</label>
+                    <input type="range"
+                           id="speedSliderModal"
+                           min="-20"
+                           max="20"
+                           step="1"
+                           value="0" />
+                </div>
+                <div class="form-field">
+                    <label for="fontSizeSlider">Font size</label>
+                    <input type="range"
+                           id="fontSizeSlider"
+                           min="14"
+                           max="28"
+                           step="1"
+                           value="20" />
+                </div>
+                <div class="form-field">
+                    <label>Current tempo & speed</label>
+                    <small id="speedSummaryText">120 BPM · 0 px/s trim</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1206,8 +1221,11 @@
         const playlistEditList = document.getElementById("playlistEditList");
 
         const settingsOverlay = document.getElementById("settingsOverlay");
+        const bpmInput = document.getElementById("bpmInput");
+        const beatsPerScreenInput = document.getElementById("beatsPerScreenInput");
         const speedSliderModal = document.getElementById("speedSliderModal");
-
+        const fontSizeSlider = document.getElementById("fontSizeSlider");
+        const speedSummaryText = document.getElementById("speedSummaryText");
 
         const playlistSelectOverlay = document.getElementById("playlistSelectOverlay");
         const playlistSelectTitle = document.getElementById("playlistSelectTitle");
@@ -1230,9 +1248,6 @@
         let savedSongs = [];
         let lastSpaceTime = 0;
 
-        let introLoopActive = true;
-        let introLoopId = null;
-
         let currentPlaylistName = null;
         let currentPlaylistSongIds = null;
         let currentSongId = null;
@@ -1241,15 +1256,20 @@
 
         let wasScrollingBeforeDrag = false;
 
-        let dragHasPassedThreshold = false;
-        const DRAG_ACTIVATE_THRESHOLD = 200; // px before any manual scroll is allowed
-
         let firstLineHasExited = false;
 
+        // legacy scrollSpeed kept for save compatibility, but BPM mapping is primary
         const DEFAULT_SCROLL_SPEED = 4;
         let scrollSpeed = DEFAULT_SCROLL_SPEED;
 
-        speedSliderModal.value = String(scrollSpeed);
+        // BPM-based speed
+        let bpm = 120;
+        let beatsPerScreen = 4;
+        let pixelsPerSecondBase = 40;
+        let pixelsPerSecondTrim = 0;
+
+        // font size
+        let viewerFontSize = 20;
 
         function debugLog(...args) {
             console.log("LyricFlow", ...args);
@@ -1274,6 +1294,9 @@
             viewerContent.style.transform = `translateY(${baseContentY}px)`;
         }
 
+        function applyFontSize() {
+            viewer.style.fontSize = viewerFontSize + "px";
+        }
 
         function scheduleSnap() {
             if (snapPending) return;
@@ -1285,7 +1308,6 @@
                 });
             });
         }
-
 
         function snapFirstLineIntoGlow() {
             const lines = document.querySelectorAll(".viewer-content-line");
@@ -1322,8 +1344,46 @@
             applyScroll();
         }
 
+        function recalcPixelsPerSecond() {
+            const glowBand = document.querySelector(".viewer-highlight");
+            if (!glowBand) {
+                pixelsPerSecondBase = 40;
+                updateSpeedSummary();
+                return;
+            }
+
+            const glowRect = glowBand.getBoundingClientRect();
+            const glowHeight = glowRect.height || 1;
+
+            bpm = parseFloat(bpmInput.value) || 120;
+            beatsPerScreen = parseFloat(beatsPerScreenInput.value) || 4;
+
+            const beatsPerSecond = bpm / 60;
+            const pixelsPerBeat = glowHeight / beatsPerScreen;
+
+            pixelsPerSecondBase = beatsPerSecond * pixelsPerBeat;
+            updateSpeedSummary();
+        }
+
+        function updateSpeedSummary() {
+            const effective = Math.max(0, pixelsPerSecondBase + pixelsPerSecondTrim);
+            speedSummaryText.textContent =
+                `${Math.round(bpm)} BPM · base ${pixelsPerSecondBase.toFixed(1)} px/s ` +
+                `(trim ${pixelsPerSecondTrim >= 0 ? "+" : ""}${pixelsPerSecondTrim.toFixed(1)} px/s, ` +
+                `effective ${effective.toFixed(1)} px/s)`;
+        }
+
         function autoScroll(timestamp) {
-            if (!isScrolling || scrollSpeed === 0) return;
+            if (!isScrolling) return;
+
+            const pixelsPerSecond = Math.max(
+                0,
+                pixelsPerSecondBase + pixelsPerSecondTrim
+            );
+            if (pixelsPerSecond === 0) {
+                pauseScroll();
+                return;
+            }
 
             if (lastFrameTime == null) {
                 lastFrameTime = timestamp;
@@ -1338,7 +1398,6 @@
             elapsedTime = timestamp - startTime;
             updateTimeDisplay();
 
-            const pixelsPerSecond = scrollSpeed * 12;
             const distance = (pixelsPerSecond * delta) / 1000;
 
             baseContentY -= distance;
@@ -1368,19 +1427,21 @@
                 }
             }
 
-
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
         function startScroll() {
-            introLoopActive = false;
-            stopIntroLoop();
+            if (isScrolling) return;
 
-            if (scrollSpeed === 0) {
-                setStatus("Speed is 0 – open Settings to scroll");
+            // if both BPM-based and legacy scrollSpeed are effectively zero
+            const pixelsPerSecond = Math.max(
+                0,
+                pixelsPerSecondBase + pixelsPerSecondTrim
+            );
+            if (pixelsPerSecond === 0) {
+                setStatus("Tempo is 0 – set BPM / beats in Settings");
                 return;
             }
-            if (isScrolling) return;
 
             isScrolling = true;
             firstScrollFrame = true;
@@ -1389,7 +1450,12 @@
             pauseBtn.disabled = false;
             lastFrameTime = null;
             startTime = performance.now();
-            debugLog("startScroll begin, scrollSpeed", scrollSpeed, "baseContentY", baseContentY.toFixed(2));
+            debugLog(
+                "startScroll begin, pixelsPerSecond",
+                pixelsPerSecond.toFixed(2),
+                "baseContentY",
+                baseContentY.toFixed(2)
+            );
             scrollAnimationId = requestAnimationFrame(autoScroll);
         }
 
@@ -1429,7 +1495,7 @@
             scheduleSnap();
         }
 
-        // Drag wiring for stage viewer
+        // Drag wiring for stage viewer (pointer)
         viewer.addEventListener("pointerdown", (e) => {
             if (!isStageMode) return;
             e.preventDefault();
@@ -1443,16 +1509,15 @@
             handleDragMove(e.clientY);
         });
 
-        viewer.addEventListener("pointerup", (e) => {
+        viewer.addEventListener("pointerup", () => {
             if (!isStageMode) return;
             handleDragEnd();
         });
 
-        viewer.addEventListener("pointercancel", (e) => {
+        viewer.addEventListener("pointercancel", () => {
             if (!isStageMode) return;
             handleDragEnd();
         });
-
 
         function handleDragStart(y) {
             console.log("DRAG START");
@@ -1480,12 +1545,8 @@
             dragStartY = y;
             dragStartBaseY = baseContentY;
 
-            // new: reset the movement threshold for every new drag
-            dragHasPassedThreshold = false;
-
             setStatus("Manual drag");
         }
-
 
         function clampDragY(rawY) {
             const glowBand = document.querySelector(".viewer-highlight");
@@ -1527,27 +1588,12 @@
             return clampedY;
         }
 
-
         function handleDragMove(y) {
             if (!isDragging) return;
 
             const deltaY = y - dragStartY;
 
-            // Until we’ve moved at least 200px, completely ignore drag
-            if (!dragHasPassedThreshold) {
-                if (Math.abs(deltaY) < DRAG_ACTIVATE_THRESHOLD) {
-                    // No change at all – first line stays centred, no jump
-                    return;
-                }
-
-                // Just crossed the threshold: unlock drag and reset baseline
-                dragHasPassedThreshold = true;
-                dragStartY = y;
-                dragStartBaseY = baseContentY;
-                return; // next move frame will start real dragging
-            }
-
-            // Normal drag behavior once threshold passed
+            // Normal drag behavior with no activation threshold
             const dampedDelta = deltaY * 0.8;
             const unclampedY = dragStartBaseY + dampedDelta;
 
@@ -1575,21 +1621,21 @@
             viewerContent.style.opacity = 1;
             viewerContent.style.transition = "transform 0.08s ease-out";
 
-            const shouldResume = wasScrollingBeforeDrag && scrollSpeed > 0 && isStageMode;
+            const shouldResume = wasScrollingBeforeDrag && isStageMode;
 
-            // reset flags for the next drag
+            // reset flag for the next drag
             wasScrollingBeforeDrag = false;
-            dragHasPassedThreshold = false;
 
-            // if we were auto-scrolling before the drag, and speed > 0, resume
             if (shouldResume) {
                 startScroll();
             } else {
-                setStatus(scrollSpeed === 0 ? "Ready (speed set)" : "Ready");
+                const effective = Math.max(
+                    0,
+                    pixelsPerSecondBase + pixelsPerSecondTrim
+                );
+                setStatus(effective === 0 ? "Ready (tempo 0)" : "Ready");
             }
         }
-
-
 
         function isFirstLineStillVisible() {
             const glowBand = document.querySelector(".viewer-highlight");
@@ -1612,9 +1658,6 @@
             const text = editor.value || "";
             viewerContent.innerHTML = "";
 
-            introLoopActive = false;
-            stopIntroLoop();
-
             const lines = text.split("\n");
             lines.forEach((rawLine, index) => {
                 const line = rawLine.replace(/\s+$/, "");
@@ -1625,17 +1668,11 @@
 
                 if (isBlank) {
                     span.textContent = "\u00A0";
-                    if (index > 0 && lines[index - 1].trim() === "") {
-                        span.style.marginTop = "10px";
-                    }
                 } else {
                     span.textContent = line;
                 }
 
                 viewerContent.appendChild(span);
-                if (index < lines.length - 1) {
-                    viewerContent.appendChild(document.createElement("br"));
-                }
             });
 
             baseContentY = 0;
@@ -1714,58 +1751,13 @@
             }
         });
 
-        /* Intro loop */
-
-        function startIntroLoop() {
-            if (!introLoopActive) return;
-            let lastIntroTime = null;
-
-            function stepIntro(ts) {
-                if (!introLoopActive) return;
-
-                if (lastIntroTime == null) lastIntroTime = ts;
-                const delta = ts - lastIntroTime;
-                lastIntroTime = ts;
-
-                const pixelsPerSecond = 12;
-                const distance = (pixelsPerSecond * delta) / 1000;
-
-                const currentTransform = viewerContent.style.transform || "translateY(0px)";
-                const currentY =
-                    parseFloat(
-                        currentTransform.replace("translateY(", "").replace("px)", "")
-                    ) || 0;
-
-                const railRect = viewer.getBoundingClientRect();
-                const contentRect = viewerContent.getBoundingClientRect();
-                let newY = currentY - distance;
-                viewerContent.style.transform = "translateY(" + newY + "px)";
-
-                if (contentRect.bottom + newY <= railRect.top + railRect.height * 0.4) {
-                    viewerContent.style.transform = "translateY(0px)";
-                    scheduleSnap();
-                }
-
-                introLoopId = requestAnimationFrame(stepIntro);
-            }
-
-            if (!introLoopId) {
-                scheduleSnap();
-                introLoopId = requestAnimationFrame(stepIntro);
-            }
-        }
-
-        function stopIntroLoop() {
-            introLoopActive = false;
-            if (introLoopId) {
-                cancelAnimationFrame(introLoopId);
-                introLoopId = null;
-            }
-        }
-
-        /* Settings (speed) */
+        /* Settings (tempo, speed trim, font) */
         function openSettings() {
-            speedSliderModal.value = scrollSpeed;
+            bpmInput.value = String(Math.round(bpm));
+            beatsPerScreenInput.value = String(beatsPerScreen);
+            speedSliderModal.value = String(pixelsPerSecondTrim); // 1 px/s per click
+            fontSizeSlider.value = String(viewerFontSize);
+            updateSpeedSummary();
             settingsOverlay.classList.remove("hidden");
         }
 
@@ -1791,16 +1783,26 @@
                 el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
             );
 
+        bpmInput.addEventListener("input", () => {
+            recalcPixelsPerSecond();
+        });
+
+        beatsPerScreenInput.addEventListener("input", () => {
+            recalcPixelsPerSecond();
+        });
+
         speedSliderModal.addEventListener("input", () => {
-            scrollSpeed = parseInt(speedSliderModal.value, 10);
-            setStatus(isScrolling ? "Scrolling" : "Ready (speed set)");
+            const raw = parseInt(speedSliderModal.value, 10) || 0; // -20..20
+            pixelsPerSecondTrim = raw * 1; // 1 px/s per step
+            updateSpeedSummary();
+            setStatus(isScrolling ? "Scrolling" : "Ready (tempo set)");
         });
 
-        window.addEventListener("load", () => {
-            scrollSpeed = DEFAULT_SCROLL_SPEED;
-            speedSliderModal.value = String(DEFAULT_SCROLL_SPEED);
+        fontSizeSlider.addEventListener("input", () => {
+            viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
+            applyFontSize();
+            scheduleSnap();
         });
-
 
         /* Info modals */
 
@@ -1897,7 +1899,6 @@
             songTitleInput.focus();
         });
 
-
         saveOverlay.addEventListener("click", (e) => {
             if (
                 e.target.dataset.closeSave !== undefined ||
@@ -1923,7 +1924,7 @@
                 return;
             }
 
-            // Include current scrollSpeed, but never save below 1
+            // For backwards compatibility, store a simple integer speed too (never below 1)
             const speedToSave = Math.max(1, parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10));
 
             // If we have a currentSongId, overwrite that song
@@ -2053,14 +2054,17 @@
 
             editor.value = song.content;
 
-            // Use song speed if > 0, otherwise fallback to default
+            // Keep legacy scrollSpeed for compatibility, but main tempo uses BPM
             const savedSpeed = typeof song.speed === "number" ? song.speed : 0;
             scrollSpeed = savedSpeed > 0 ? savedSpeed : DEFAULT_SCROLL_SPEED;
-            speedSliderModal.value = String(scrollSpeed);
+            speedSliderModal.value = "0"; // trim starts at 0
+            pixelsPerSecondTrim = 0;
 
             rebuildViewerFromEditor();
             buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
             updateStagePlaylistUI();
+            recalcPixelsPerSecond();
+            updateSpeedSummary();
             setStatus("Loaded " + song.name);
         }
 
@@ -2264,6 +2268,7 @@
             loadSongIntoUI(song);
         });
 
+        // mouse drag (fallback if pointer events are not used)
         viewer.addEventListener("mousedown", (e) => {
             if (!isStageMode) return;
             e.preventDefault();
@@ -2279,6 +2284,7 @@
             handleDragEnd();
         });
 
+        // touch drag
         viewer.addEventListener(
             "touchstart",
             (e) => {
@@ -2310,9 +2316,10 @@
         loadSongsFromStorage();
 
         window.addEventListener("load", () => {
+            applyFontSize();
+            recalcPixelsPerSecond();
+            updateSpeedSummary();
             scheduleSnap();
-            introLoopActive = true;
-            startIntroLoop();
         });
     </script>
 </body>
