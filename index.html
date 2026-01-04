@@ -1117,14 +1117,19 @@
                 <button class="modal-close" data-close-settings>✕</button>
             </div>
             <div class="modal-body">
+
                 <div class="form-field">
-                    <label for="bpmInput">Song tempo (BPM)</label>
-                    <input id="bpmInput" type="number" min="40" max="200" step="1" value="120" />
+                    <label for="bpmSlider">Song tempo (BPM)</label>
+                    <input id="bpmSlider"
+                           type="range"
+                           min="0"
+                           max="60"
+                           step="1"
+                           value="20" />
+                    <small id="bpmDisplay">80 BPM</small>
                 </div>
-                <div class="form-field">
-                    <label for="beatsPerScreenInput">Beats shown in glow</label>
-                    <input id="beatsPerScreenInput" type="number" min="1" max="16" step="1" value="4" />
-                </div>
+
+
                 <div class="form-field">
                     <label for="speedSliderModal">Fine speed trim</label>
                     <input type="range"
@@ -1134,6 +1139,12 @@
                            step="1"
                            value="0" />
                 </div>
+
+                <div class="form-field">
+                    <label for="beatsPerScreenInput">Beats on screen</label>
+                    <input id="beatsPerScreenInput" type="number" min="1" max="16" value="4">
+                </div>
+
                 <div class="form-field">
                     <label for="fontSizeSlider">Font size</label>
                     <input type="range"
@@ -1221,7 +1232,8 @@
         const playlistEditList = document.getElementById("playlistEditList");
 
         const settingsOverlay = document.getElementById("settingsOverlay");
-        const bpmInput = document.getElementById("bpmInput");
+        const bpmSlider = document.getElementById("bpmSlider");
+        const bpmDisplay = document.getElementById("bpmDisplay");
         const beatsPerScreenInput = document.getElementById("beatsPerScreenInput");
         const speedSliderModal = document.getElementById("speedSliderModal");
         const fontSizeSlider = document.getElementById("fontSizeSlider");
@@ -1355,7 +1367,10 @@
             const glowRect = glowBand.getBoundingClientRect();
             const glowHeight = glowRect.height || 1;
 
-            bpm = parseFloat(bpmInput.value) || 120;
+            // slider 0–60 → BPM 60–120
+            const sliderVal = parseInt(bpmSlider.value, 10) || 0;
+            bpm = 60 + sliderVal;
+
             beatsPerScreen = parseFloat(beatsPerScreenInput.value) || 4;
 
             const beatsPerSecond = bpm / 60;
@@ -1364,6 +1379,7 @@
             pixelsPerSecondBase = beatsPerSecond * pixelsPerBeat;
             updateSpeedSummary();
         }
+
 
         function updateSpeedSummary() {
             const effective = Math.max(0, pixelsPerSecondBase + pixelsPerSecondTrim);
@@ -1523,10 +1539,10 @@
             console.log("Starting drag at Y", y);
 
             // Block drag until first line has gone past the band
-            if (!firstLineHasExited) {
-                console.log("Drag ignored – first line not past band yet");
-                return;
-            }
+            //if (!firstLineHasExited) {
+              //  console.log("Drag ignored – first line not past band yet");
+                //return;
+            //}
 
             // remember if we were auto-scrolling
             wasScrollingBeforeDrag = isScrolling;
@@ -1572,11 +1588,14 @@
 
             let clampedY = rawY;
 
-            // CLAMP TOP
-            if (newFirstTop > glowTop - allowedOverflow) {
-                const adjust = glowTop - allowedOverflow - newFirstTop;
+            // CLAMP TOP: don't let first line go back down into the glow
+            const glowTopThreshold = glowTop; // or glowTop + glowHeight * 0.1 for a small margin
+
+            if (newFirstTop > glowTopThreshold) {
+                const adjust = glowTopThreshold - newFirstTop;
                 clampedY = rawY + adjust;
             }
+
 
             // CLAMP BOTTOM: always allowed, so you can't drag past the bottom
             if (newLastBottom < glowBottom + allowedOverflow) {
@@ -1591,23 +1610,21 @@
             if (!isDragging) return;
 
             const deltaY = y - dragStartY;
+            const movingUp = deltaY < 0; // lyrics going earlier (content moves up)
 
-            // Normal drag behavior with no activation threshold
+            // If first line hasn't cleared yet, block *upward* drag but allow down
+            if (!firstLineHasExited && movingUp) {
+                return;
+            }
+
             const dampedDelta = deltaY * 0.8;
             const unclampedY = dragStartBaseY + dampedDelta;
 
-            console.log("DRAG MOVE DEBUG");
-            console.log("Raw deltaY", deltaY.toFixed(2));
-            console.log("Damped delta", dampedDelta.toFixed(2));
-            console.log("dragStartBaseY", dragStartBaseY.toFixed(2));
-            console.log("unclampedY", unclampedY.toFixed(2));
-
             const newY = clampDragY(unclampedY);
-            console.log("Final newY after clamp", newY.toFixed(2));
-
             baseContentY = newY;
             applyScroll();
         }
+
 
         function handleDragEnd() {
             if (!isDragging) return;
@@ -1752,13 +1769,18 @@
 
         /* Settings (tempo, speed trim, font) */
         function openSettings() {
-            bpmInput.value = String(Math.round(bpm));
+            // map current bpm back to slider position
+            const sliderVal = Math.min(60, Math.max(0, Math.round(bpm - 60)));
+            bpmSlider.value = String(sliderVal);
+            bpmDisplay.textContent = `${bpm} BPM`;
+
             beatsPerScreenInput.value = String(beatsPerScreen);
-            speedSliderModal.value = String(pixelsPerSecondTrim); // 1 px/s per click
+            speedSliderModal.value = String(pixelsPerSecondTrim);
             fontSizeSlider.value = String(viewerFontSize);
             updateSpeedSummary();
             settingsOverlay.classList.remove("hidden");
         }
+
 
         settingsBtn.addEventListener("click", () => {
             if (!isStageMode) return;
@@ -1782,10 +1804,6 @@
                 el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
             );
 
-        bpmInput.addEventListener("input", () => {
-            recalcPixelsPerSecond();
-        });
-
         beatsPerScreenInput.addEventListener("input", () => {
             recalcPixelsPerSecond();
         });
@@ -1802,6 +1820,16 @@
             applyFontSize();
             scheduleSnap();
         });
+
+        // NEW: safe listener for bpmSlider
+        if (bpmSlider) {
+            bpmSlider.addEventListener("input", () => {
+                const sliderVal = parseInt(bpmSlider.value, 10) || 0;
+                bpm = 60 + sliderVal;          // 0→60 BPM, 60→120 BPM
+                bpmDisplay.textContent = `${bpm} BPM`;
+                recalcPixelsPerSecond();
+            });
+        }
 
         /* Info modals */
 
