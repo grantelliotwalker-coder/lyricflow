@@ -955,15 +955,15 @@
                             <div class="viewer-gradient-border-bottom"></div>
 
                             <div class="viewer" id="viewer">
-                                <div class="viewer-content" id="viewerContent">
-                                    <span class="viewer-content-line">
-                                        Welcome to LyricFlow – stage‑ready lyric scroller.
-                                        Tap Edit to paste or type lyrics.
-                                        Come back to Stage, set a scroll speed, press Start.
-                                        Drag lines during the song to fine‑tune your pace.
-                                        Use Settings to adjust scroll speed, font size, and line spacing.
-                                    </span>
-                                </div>
+<div class="viewer-content" id="viewerContent">
+  <span class="viewer-content-line">
+Welcome to LyricFlow – stage‑ready lyric scroller.
+Tap Edit to paste or type lyrics.
+Come back to Stage, set a scroll speed, press Start.
+Drag lines during the song to fine‑tune your pace.
+Use Settings to adjust scroll speed, font size, and line spacing.
+  </span>
+</div>
 
                             </div>
                         </div>
@@ -2082,26 +2082,23 @@
                 return;
             }
 
-            const speedToSave = Math.max(1, parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10));
+            const speedToSave = Math.max(
+                1,
+                parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10)
+            );
 
             let existingIndex = savedSongs.findIndex(
                 (s) => s.id === currentSongId
             );
 
-            if (existingIndex < 0) {
-                existingIndex = savedSongs.findIndex(
-                    (s) => s.name === title && (s.playlist || "Set 1") === (playlistName || "Set 1")
-                );
-            }
-
             let song;
             if (existingIndex >= 0) {
+                // Update the currently loaded song only
                 song = savedSongs[existingIndex];
                 song.name = title;
                 song.playlist = playlistName;
                 song.content = content;
                 song.speed = speedToSave;
-
                 song.speedPercent = speedPercent;
                 song.fontSize = viewerFontSize;
                 song.lineHeight = viewerLineHeight;
@@ -2109,6 +2106,7 @@
                 song.linesPerMeasure = linesPerMeasure;
                 song.version = 2;
             } else {
+                // Always create a new song if there is no currentSongId match
                 song = {
                     id: makeSongId(),
                     name: title,
@@ -2127,6 +2125,7 @@
             }
 
             saveSongsToStorage();
+
             currentSongId = song.id;
             currentPlaylistName = song.playlist || "Set 1";
             buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
@@ -2135,6 +2134,7 @@
             saveOverlay.classList.add("hidden");
             setStatus("Saved " + song.name);
         });
+
 
         loadSongBtn.addEventListener("click", () => {
             if (isStageMode) return;
