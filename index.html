@@ -1517,8 +1517,32 @@
 
 
         function clampDragY(rawY) {
-            return rawY; // TEMP: no clamp at all
+            const viewerRect = viewer.getBoundingClientRect();
+            const contentRect = viewerContent.getBoundingClientRect();
+
+            const viewerHeight = viewerRect.height;
+            const contentHeight = contentRect.height;
+
+            // If content is shorter than the window, just pin it
+            if (contentHeight <= viewerHeight) {
+                return 0;
+            }
+
+            // rawY is the translateY we want to apply (baseContentY).
+            // Top limit: don't let the content go down so far that its top
+            // drops below the top of the viewer.
+            const topLimit = 0;
+
+            // Bottom limit: don't let the content go up so far that its bottom
+            // goes above the bottom of the viewer.
+            const bottomLimit = viewerHeight - contentHeight; // this will be negative
+
+            if (rawY > topLimit) rawY = topLimit;
+            if (rawY < bottomLimit) rawY = bottomLimit;
+
+            return rawY;
         }
+
 
 
 
