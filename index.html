@@ -1517,42 +1517,35 @@
 
 
         function clampDragY(rawY) {
-            const lines = document.querySelectorAll(".viewer-content-line");
-            if (!lines.length || !viewer) {
-                return rawY;
-            }
-
             const viewerRect = viewer.getBoundingClientRect();
-            const centerY = viewerRect.top + viewerRect.height / 2;
-            const bottomLimit = viewerRect.bottom;
+            const contentRect = viewerContent.getBoundingClientRect();
 
-            const firstRect = lines[0].getBoundingClientRect();
-            const lastRect = lines[lines.length - 1].getBoundingClientRect();
+            // How tall things are
+            const viewerHeight = viewerRect.height;
+            const contentHeight = contentRect.height;
 
-            const currentY = baseContentY;
-            const deltaY = rawY - currentY;
-
-            let newFirstTop = firstRect.top + deltaY;
-            let newLastBottom = lastRect.bottom + deltaY;
-
-            let clampedY = rawY;
-
-            // 1) TOP: don't let first line go ABOVE centre (too far up)
-            if (newFirstTop < centerY) {
-                const adjust = centerY - newFirstTop;
-                clampedY = rawY + adjust;
-                newFirstTop += adjust;
-                newLastBottom += adjust;
+            // If content shorter than window, just pin it
+            if (contentHeight <= viewerHeight) {
+                return 0;
             }
 
-            // 2) BOTTOM: don't let last line go BELOW viewer bottom (too far down)
-            if (newLastBottom > bottomLimit) {
-                const adjust = bottomLimit - newLastBottom;
-                clampedY = clampedY + adjust;
-            }
+            // We’re controlling translateY via baseContentY.
+            // rawY is the new translateY we want.
+            // Top limit: do NOT let content go down so far that its TOP
+            // goes below viewer top.
+            const topLimit = 0; // content fully down; top at or below viewer top
 
-            return clampedY;
+            // Bottom limit: do NOT let content go up so far that its BOTTOM
+            // goes above viewer bottom -> that’s -(contentHeight - viewerHeight)
+            const bottomLimit = viewerHeight - contentHeight; // negative value
+
+            // Clamp rawY into [bottomLimit, topLimit]
+            if (rawY > topLimit) rawY = topLimit;
+            if (rawY < bottomLimit) rawY = bottomLimit;
+
+            return rawY;
         }
+
 
 
 
