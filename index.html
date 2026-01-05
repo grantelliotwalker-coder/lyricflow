@@ -1160,6 +1160,9 @@
                 <div class="form-field hidden" id="bpmModeFields2">
                     <label for="linesPerMeasureInput">Lines per measure</label>
                     <select id="linesPerMeasureInput">
+                        <option value="0.25">1 line = 1 measure</option>
+                        <option value="0.5">1 line = 1 measure</option>
+                        <option value="0.75">1 line = 1 measure</option>
                         <option value="1">1 line = 1 measure</option>
                         <option value="2">2 lines = 1 measure</option>
                         <option value="4" selected>4 lines = 1 measure</option>
@@ -1172,8 +1175,8 @@
                     <label for="fontSizeSlider">Font size</label>
                     <input type="range"
                            id="fontSizeSlider"
-                           min="28"
-                           max="100"
+                           min="10"
+                           max="50"
                            step="1"
                            value="20" />
                 </div>
@@ -1311,14 +1314,14 @@
 
         // new scroll-speed model
         let speedPercent = 50;
-        const maxPixelsPerSecond = 20;
+        const maxPixelsPerSecond = 80;
 
         // BPM mode: null = use percentage mode
         let songBPM = null;
         let linesPerMeasure = 4;
 
         // font + spacing
-        let viewerFontSize = 28;
+        let viewerFontSize = 10;
         let viewerLineHeight = 2.4;
 
         let canonicalBaseContentY = 0;
