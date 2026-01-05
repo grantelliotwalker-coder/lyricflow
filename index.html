@@ -1360,6 +1360,8 @@
 
         let currentOffsetY = 0;
 
+        let currentSong = null;
+
 
         let isStageMode = true;
         let scrollAnimationId = null;
@@ -1710,39 +1712,41 @@
         });
 
         function goToInitialStageState(caller = "unknown") {
-            console.log(
-                "LyricFlow RESET begin",
-                "caller", caller,
-                "isStageMode", isStageMode,
-                "isScrolling", isScrolling,
-                "baseContentY", baseContentY,
-                "transform", viewerContent.style.transform
-            );
+            console.log("LyricFlow RESET begin", {
+                caller,
+                isStageMode,
+                isScrolling,
+                baseContentY,
+                transform: viewerContent.style.transform
+            });
 
+            // Always stop scroll and zero timers
             pauseScroll();
             elapsedTime = 0;
             updateTimeDisplay(0);
 
+            // Hard reset scroll position
             baseContentY = 0;
             canonicalBaseContentY = 0;
             applyScroll();
 
+            // Clear drag state
             isDragging = false;
             dragStartY = null;
             dragStartBaseY = 0;
 
-            console.log(
-                "LyricFlow RESET after zero",
-                "baseContentY", baseContentY,
-                "transform", viewerContent.style.transform
-            );
+            console.log("LyricFlow RESET after zero", {
+                baseContentY,
+                transform: viewerContent.style.transform
+            });
 
-            // One frame later, with stage fully laid out, do the exact same snap
+            // One frame later, with layout settled, always snap the first line into the glow
             requestAnimationFrame(() => {
                 console.log("LyricFlow RESET calling snapFirstLineIntoGlow");
                 snapFirstLineIntoGlow(true);
             });
         }
+
 
 
 
@@ -1852,6 +1856,8 @@
             wasScrollingBeforeDrag = false;
 
             if (shouldResume) {
+                // Always resume auto‑scroll from the new position,
+                // regardless of current speed.
                 startScroll();
             } else {
                 const effective = Math.max(0, getPixelsPerSecond());
@@ -1859,6 +1865,7 @@
                 updateResetEnabled();
             }
         }
+
 
 
         function rebuildViewerFromEditor() {
@@ -1938,28 +1945,11 @@
         });
 
         resetBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-
-            // 1) Rebuild viewer from the editor text,
-            //    like a fresh load of the current lyrics
-            rebuildViewerFromEditor();
-
-            // 2) Hard reset scroll state
-            pauseScroll();
-            elapsedTime = 0;
-            updateTimeDisplay(0);
-            baseContentY = 0;
-            canonicalBaseContentY = 0;
-            isDragging = false;
-            dragStartY = null;
-            dragStartBaseY = 0;
-            applyScroll();
-
-            // 3) One frame later, snap the first non‑blank line into the glow window
-            requestAnimationFrame(() => {
-                snapFirstLineIntoGlow(true);
-            });
+            // Always reset the current song back to start, using current settings.
+            reloadSongIntoUI();
         });
+
+
 
 
 
@@ -2347,6 +2337,9 @@
         function loadSongIntoUI(song) {
             console.log("LyricFlow LOAD: start", { song });
 
+
+            currentSong = song; // remember last loaded song
+
             currentSongId = song.id;
             currentPlaylistName = song.playlist || "Set 1";
 
@@ -2398,6 +2391,25 @@
             setStatus(`Loaded ${song.name}`);
 
         }
+
+        function reloadSongIntoUI() {
+            if (!currentSong) return;
+            const song = currentSong;
+
+            // 1) Rebuild content from the current song
+            editor.value = song.content || "";
+            rebuildViewerFromEditor(); // recreates .viewer-content-line spans
+
+            // 2) Re-apply whatever settings are currently active (do NOT overwrite them)
+            applyFontSize(); // uses viewerFontSize & viewerLineHeight as they are now
+
+            // 3) Use the same reset + snap pipeline as loadSongIntoUI
+            goToInitialStageState("reloadSongIntoUI");
+
+            setStatus(`Reset ${song.name} to start`);
+        }
+
+
 
 
 
