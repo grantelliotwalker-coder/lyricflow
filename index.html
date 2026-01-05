@@ -1524,29 +1524,36 @@
 
             const viewerRect = viewer.getBoundingClientRect();
             const centerY = viewerRect.top + viewerRect.height / 2;
+            const bottomLimit = viewerRect.bottom;
 
             const firstRect = lines[0].getBoundingClientRect();
             const lastRect = lines[lines.length - 1].getBoundingClientRect();
 
-            // how far the content would move if we used rawY
             const currentY = baseContentY;
             const deltaY = rawY - currentY;
 
-            const newFirstTop = firstRect.top + deltaY;
-            const newLastBottom = lastRect.bottom + deltaY;
+            let newFirstTop = firstRect.top + deltaY;
+            let newLastBottom = lastRect.bottom + deltaY;
 
             let clampedY = rawY;
 
-            // TOP rule: don't let first line go above the center line
+            // 1) TOP: don't let first line go ABOVE centre (too far up)
             if (newFirstTop < centerY) {
                 const adjust = centerY - newFirstTop;
                 clampedY = rawY + adjust;
+                newFirstTop += adjust;
+                newLastBottom += adjust;
             }
 
-            // BOTTOM: no special clamp, last line can go below center
+            // 2) BOTTOM: don't let last line go BELOW viewer bottom (too far down)
+            if (newLastBottom > bottomLimit) {
+                const adjust = bottomLimit - newLastBottom;
+                clampedY = clampedY + adjust;
+            }
 
             return clampedY;
         }
+
 
 
         function handleDragMove(y) {
