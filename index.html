@@ -1517,33 +1517,7 @@
 
 
         function clampDragY(rawY) {
-            const viewerRect = viewer.getBoundingClientRect();
-            const contentRect = viewerContent.getBoundingClientRect();
-
-            // How tall things are
-            const viewerHeight = viewerRect.height;
-            const contentHeight = contentRect.height;
-
-            // If content shorter than window, just pin it
-            if (contentHeight <= viewerHeight) {
-                return 0;
-            }
-
-            // We’re controlling translateY via baseContentY.
-            // rawY is the new translateY we want.
-            // Top limit: do NOT let content go down so far that its TOP
-            // goes below viewer top.
-            const topLimit = 0; // content fully down; top at or below viewer top
-
-            // Bottom limit: do NOT let content go up so far that its BOTTOM
-            // goes above viewer bottom -> that’s -(contentHeight - viewerHeight)
-            const bottomLimit = viewerHeight - contentHeight; // negative value
-
-            // Clamp rawY into [bottomLimit, topLimit]
-            if (rawY > topLimit) rawY = topLimit;
-            if (rawY < bottomLimit) rawY = bottomLimit;
-
-            return rawY;
+            return rawY; // TEMP: no clamp at all
         }
 
 
@@ -1552,13 +1526,12 @@
         function handleDragMove(y) {
             if (!isDragging) return;
 
-            const deltaY = y - dragStartY;
+            const deltaY = y - dragStartY;    // text follows finger
             const dampedDelta = deltaY * 0.8;
 
             let unclampedY = dragStartBaseY + dampedDelta;
 
-            // APPLY the centre-line clamp
-            const newY = clampDragY(unclampedY);
+            const newY = clampDragY(unclampedY); // currently just passthrough
             baseContentY = newY;
             applyScroll();
         }
