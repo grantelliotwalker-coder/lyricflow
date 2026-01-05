@@ -1558,9 +1558,37 @@
         */
 
         function clampDragY(rawY) {
-            // TEMP: turn off all clamping so drag is free
-            return rawY;
+            const lines = document.querySelectorAll(".viewer-content-line");
+            if (!lines.length || !viewer) {
+                return rawY;
+            }
+
+            const viewerRect = viewer.getBoundingClientRect();
+            const centerY = viewerRect.top + viewerRect.height / 2;
+
+            const firstRect = lines[0].getBoundingClientRect();
+            const lastRect = lines[lines.length - 1].getBoundingClientRect();
+
+            // how far the content would move if we used rawY
+            const currentY = baseContentY;
+            const deltaY = rawY - currentY;
+
+            const newFirstTop = firstRect.top + deltaY;
+            const newLastBottom = lastRect.bottom + deltaY;
+
+            let clampedY = rawY;
+
+            // TOP rule: don't let first line go above the center line
+            if (newFirstTop < centerY) {
+                const adjust = centerY - newFirstTop;
+                clampedY = rawY + adjust;
+            }
+
+            // BOTTOM: no special clamp, last line can go below center
+
+            return clampedY;
         }
+
 
         function handleDragMove(y) {
             if (!isDragging) return;
