@@ -390,8 +390,8 @@
             align-items: center;
             justify-content: center;
             padding: 0 10px;
-            -webkit-mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
-            mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
+            -webkit-mask-image: linear-gradient( to bottom, transparent, black 8%, black 92%, transparent 100% );
+            mask-image: linear-gradient( to bottom, transparent, black 8%, black 92%, transparent 100% );
         }
 
         .viewer {
@@ -518,6 +518,26 @@
             align-items: center;
             gap: 6px;
         }
+
+        .playlist-edit-details {
+            margin-top: 4px;
+            padding: 4px 6px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            font-size: 11px;
+            color: var(--text-soft);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px 8px;
+        }
+
+            .playlist-edit-details span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
 
         .tiny-btn {
             border-radius: 999px;
@@ -933,10 +953,10 @@
                         <span id="playlistPillText">Set 1</span>
                         <span id="playlistPillIndex">1/1</span>
                     </span>
-                    <button class="icon-btn" id="settingsBtn" title="Settings">
+                    <button class="icon-btn stage-only" id="settingsBtn" title="Settings">
                         <span>⚙︎</span>
                     </button>
-                    <button class="pill-btn" id="stageInfoBtn">Info</button>
+                    <button class="pill-btn stage-only" id="stageInfoBtn">Info</button>
                 </div>
             </div>
 
@@ -955,15 +975,15 @@
                             <div class="viewer-gradient-border-bottom"></div>
 
                             <div class="viewer" id="viewer">
-<div class="viewer-content" id="viewerContent">
-  <span class="viewer-content-line">
-Welcome to LyricFlow – stage‑ready lyric scroller.
-Tap Edit to paste or type lyrics.
-Come back to Stage, set a scroll speed, press Start.
-Drag lines during the song to fine‑tune your pace.
-Use Settings to adjust scroll speed, font size, and line spacing.
-  </span>
-</div>
+                                <div class="viewer-content" id="viewerContent">
+                                    <span class="viewer-content-line">
+                                        Welcome to LyricFlow – stage‑ready lyric scroller.
+                                        Tap Edit to paste or type lyrics.
+                                        Come back to Stage, set a scroll speed, press Start.
+                                        Drag lines during the song to fine‑tune your pace.
+                                        Use Settings to adjust scroll speed, font size, and line spacing.
+                                    </span>
+                                </div>
 
                             </div>
                         </div>
@@ -991,17 +1011,16 @@ Use Settings to adjust scroll speed, font size, and line spacing.
             <div class="bottom-bar" id="bottomBar">
                 <div class="transport-buttons">
                     <button id="start" class="btn btn-primary">
-                        <span>▶</span><span>Start</span>
+                        <span>Start</span>
                     </button>
                     <button id="pause" class="btn">
-                        <span>⏸</span><span>Pause</span>
+                        <span>Pause</span>
                     </button>
                     <button id="resetBtn" class="btn btn-reset">
-                        <span>⟲</span><span>Reset</span>
+                        <span>Reset</span>
                     </button>
-                    <!-- NEW: bigger settings button in transport bar -->
                     <button id="settingsBtnBottom" class="btn">
-                        <span>⚙︎</span><span>Settings</span>
+                        <span>Settings</span>
                     </button>
                 </div>
                 <div class="bottom-tools">
@@ -1084,17 +1103,52 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                     <label for="playlistSelect">Playlist</label>
                     <select id="playlistSelect"></select>
                 </div>
-                <div class="form-field">
-                    <label for="songSelect">Song</label>
-                    <select id="songSelect"></select>
-                </div>
+                <div class="track-list" id="loadSongList"></div>
             </div>
             <div class="modal-footer">
                 <button data-close-load>Cancel</button>
-                <button class="btn-primary-small" id="loadConfirmBtn">Load</button>
             </div>
         </div>
     </div>
+
+    <div class="overlay hidden" id="songInfoOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Song details</div>
+                <button class="modal-close" data-close-song-info>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Title</label>
+                    <input id="songInfoTitle" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Playlist</label>
+                    <input id="songInfoPlaylist" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Scroll mode</label>
+                    <input id="songInfoScroll" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Font size</label>
+                    <input id="songInfoFont" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Line height</label>
+                    <input id="songInfoLineHeight" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Lines per measure</label>
+                    <input id="songInfoLinesPerMeasure" type="text" readonly />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-song-info>Close</button>
+            </div>
+        </div>
+    </div>
+
 
     <div class="overlay hidden" id="editPlaylistOverlay">
         <div class="modal">
@@ -1218,6 +1272,8 @@ Use Settings to adjust scroll speed, font size, and line spacing.
     </div>
 
     <script>
+
+        //const
         const viewer = document.getElementById("viewer");
         const viewerContent = document.getElementById("viewerContent");
 
@@ -1227,6 +1283,15 @@ Use Settings to adjust scroll speed, font size, and line spacing.
         const bottomBar = document.getElementById("bottomBar");
         const statusText = document.getElementById("statusText");
         const timeDisplay = document.getElementById("timeDisplay");
+
+        const songInfoOverlay = document.getElementById("songInfoOverlay");
+        const songInfoTitle = document.getElementById("songInfoTitle");
+        const songInfoPlaylist = document.getElementById("songInfoPlaylist");
+        const songInfoScroll = document.getElementById("songInfoScroll");
+        const songInfoFont = document.getElementById("songInfoFont");
+        const songInfoLineHeight = document.getElementById("songInfoLineHeight");
+        const songInfoLinesPerMeasure = document.getElementById("songInfoLinesPerMeasure");
+
 
         const startBtn = document.getElementById("start");
         const pauseBtn = document.getElementById("pause");
@@ -1260,8 +1325,8 @@ Use Settings to adjust scroll speed, font size, and line spacing.
 
         const loadOverlay = document.getElementById("loadOverlay");
         const playlistSelect = document.getElementById("playlistSelect");
-        const songSelect = document.getElementById("songSelect");
-        const loadConfirmBtn = document.getElementById("loadConfirmBtn");
+        const loadSongList = document.getElementById("loadSongList");
+
 
         const editPlaylistOverlay = document.getElementById("editPlaylistOverlay");
         const editPlaylistSelect = document.getElementById("editPlaylistSelect");
@@ -1823,6 +1888,8 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                     "<strong>Stage mode</strong> <small>· tap for edit</small>";
                 setStatus("Ready");
                 settingsBtnBottom.classList.remove("hidden");
+                // Show stage-only buttons
+                document.querySelectorAll('.stage-only').forEach(el => el.classList.remove('hidden'));
             } else {
                 pauseScroll();
                 viewerCard.classList.add("hidden");
@@ -1832,8 +1899,12 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                     "<strong>Edit mode</strong> <small>· tap for stage</small>";
                 setStatus("Edit lyrics – viewer mirrors automatically");
                 settingsBtnBottom.classList.add("hidden");
+                // Hide stage-only buttons
+                document.querySelectorAll('.stage-only').forEach(el => el.classList.add('hidden'));
             }
         });
+
+
 
         /* Transport */
 
@@ -2155,9 +2226,10 @@ Use Settings to adjust scroll speed, font size, and line spacing.
         loadSongBtn.addEventListener("click", () => {
             if (isStageMode) return;
             buildPlaylistSelect();
-            buildSongSelect();
+            buildLoadSongList();
             loadOverlay.classList.remove("hidden");
         });
+
 
         loadOverlay.addEventListener("click", (e) => {
             if (
@@ -2193,95 +2265,45 @@ Use Settings to adjust scroll speed, font size, and line spacing.
             }
         }
 
-        function buildSongSelect() {
-            const playlistName = playlistSelect.value;
-            songSelect.innerHTML = "";
+        function buildLoadSongList() {
+            const playlistName = playlistSelect.value || "Set 1";
+            loadSongList.innerHTML = "";
             const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-            songs.forEach((s) => {
-                const opt = document.createElement("option");
-                opt.value = s.id;
-                opt.textContent = s.name;
-                songSelect.appendChild(opt);
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "track-item";
+                const label = document.createElement("span");
+                label.textContent = `${index + 1}. ${s.name}`;
+                const speedSpan = document.createElement("span");
+
+                if (typeof s.bpm === "number") {
+                    speedSpan.textContent = `${s.bpm} BPM`;
+                } else {
+                    const sp = typeof s.speedPercent === "number" ? s.speedPercent : 0;
+                    speedSpan.textContent = `${sp}%`;
+                }
+
+                item.appendChild(label);
+                item.appendChild(speedSpan);
+                item.addEventListener("click", () => {
+                    loadOverlay.classList.add("hidden");
+                    loadSongIntoUI(s);
+                });
+                loadSongList.appendChild(item);
             });
 
             if (!songs.length) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No songs";
-                songSelect.appendChild(opt);
+                loadSongList.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
             }
         }
 
-        playlistSelect.addEventListener("change", buildSongSelect);
-
-        loadConfirmBtn.addEventListener("click", () => {
-            const playlistName = playlistSelect.value || "Set 1";
-            const songId = songSelect.value;
-            if (!songId) {
-                alert("Select a song to load.");
-                return;
-            }
-
-            const song = savedSongs.find((s) => s.id === songId);
-            if (!song) {
-                alert("Song not found.");
-                return;
-            }
-
-            currentPlaylistName = playlistName;
-            currentSongId = song.id;
-
-            // Apply content and settings
-            editor.value = song.content || "";
-            scrollSpeed = song.speed || DEFAULT_SCROLL_SPEED;
-            speedPercent = song.speedPercent ?? 50;
-            viewerFontSize = song.fontSize || 28;
-            viewerLineHeight = song.lineHeight || 2.4;
-            songBPM = song.bpm ?? null;
-            linesPerMeasure = song.linesPerMeasure || 4;
-
-            // Mirror into viewer
-            rebuildViewerFromEditor();
-            applyFontSize();
-            speedPercentSlider.value = String(speedPercent);
-            speedPercentLabel.textContent = `${speedPercent}%`;
-
-            if (songBPM !== null) {
-                speedModeBPM.checked = true;
-                speedModePercent.checked = false;
-                bpmInput.value = songBPM;
-                linesPerMeasureInput.value = String(linesPerMeasure);
-            } else {
-                speedModeBPM.checked = false;
-                speedModePercent.checked = true;
-            }
-            updateSpeedModeUI();
-
-            // Use the same canonical stage reset as the Reset button
-            goToInitialStageState();
-
-            console.log("POSITION DEBUG: before load snap", {
-                baseContentY,
-                canonicalBaseContentY,
-                transform: viewerContent.style.transform
-            });
-
-            snapFirstLineIntoGlow(true);
-
-            console.log("POSITION DEBUG: after load snap", {
-                baseContentY,
-                canonicalBaseContentY,
-                transform: viewerContent.style.transform
-            });
-
-            loadOverlay.classList.add("hidden");
-            updateStagePlaylistUI();
+        playlistSelect.addEventListener("change", buildLoadSongList);
 
 
-        });
+
 
 
 
@@ -2401,6 +2423,12 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                 const item = document.createElement("div");
                 item.className = "playlist-edit-item";
 
+                const mainRow = document.createElement("div");
+                mainRow.style.display = "flex";
+                mainRow.style.alignItems = "center";
+                mainRow.style.justifyContent = "space-between";
+                mainRow.style.gap = "6px";
+
                 const nameSpan = document.createElement("span");
                 nameSpan.className = "playlist-edit-name";
                 nameSpan.textContent = s.name;
@@ -2412,11 +2440,14 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                 upBtn.textContent = "↑";
                 upBtn.disabled = index === 0;
                 upBtn.addEventListener("click", () => {
-                    if (index === 0) return;
-                    const prev = songs[index - 1];
-                    const tmp = prev.createdAt;
-                    prev.createdAt = s.createdAt;
-                    s.createdAt = tmp;
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx <= 0) return;
+                    const prevIdx = idx - 1;
+                    const prevSong = savedSongs[prevIdx];
+                    if ((prevSong.playlist || "Set 1") !== (s.playlist || "Set 1")) return;
+
+                    savedSongs.splice(idx, 1);
+                    savedSongs.splice(prevIdx, 0, s);
                     saveSongsToStorage();
                     buildEditPlaylistList();
                 });
@@ -2425,59 +2456,93 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                 downBtn.textContent = "↓";
                 downBtn.disabled = index === songs.length - 1;
                 downBtn.addEventListener("click", () => {
-                    if (index === songs.length - 1) return;
-                    const next = songs[index + 1];
-                    const tmp = next.createdAt;
-                    next.createdAt = s.createdAt;
-                    s.createdAt = tmp;
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx < 0 || idx >= savedSongs.length - 1) return;
+                    const nextIdx = idx + 1;
+                    const nextSong = savedSongs[nextIdx];
+                    if ((nextSong.playlist || "Set 1") !== (s.playlist || "Set 1")) return;
+
+                    savedSongs.splice(idx, 1);
+                    savedSongs.splice(nextIdx, 0, s);
                     saveSongsToStorage();
                     buildEditPlaylistList();
-                });
-
-                const infoBtn = document.createElement("button");
-                infoBtn.textContent = "i";
-                infoBtn.addEventListener("click", () => {
-                    const speedLabel =
-                        typeof s.bpm === "number"
-                            ? `${s.bpm} BPM`
-                            : `Speed ${s.speedPercent ?? 0}%`;
-
-                    const fontLabel = `${s.fontSize ?? 28}px, line ${s.lineHeight ?? 2.4}`;
-
-                    alert(
-                        [
-                            `Title: ${s.name}`,
-                            `Playlist: ${s.playlist || "Set 1"}`,
-                            `Scroll: ${speedLabel}`,
-                            `Font: ${fontLabel}`,
-                            `Lines/measure: ${s.linesPerMeasure ?? 4}`,
-                        ].join("\n")
-                    );
                 });
 
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "✕";
                 deleteBtn.addEventListener("click", () => {
-                    if (!confirm("Delete this song from the playlist?")) return;
-                    savedSongs = savedSongs.filter((song) => song.id !== s.id);
-                    saveSongsToStorage();
-                    buildEditPlaylistList();
+                    if (!confirm(`Delete "${s.name}" from ${s.playlist || "Set 1"}?`)) return;
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx >= 0) {
+                        savedSongs.splice(idx, 1);
+                        saveSongsToStorage();
+                        buildEditPlaylistList();
+                    }
+                });
+
+                const infoBtn = document.createElement("button");
+                infoBtn.textContent = "i";
+                infoBtn.addEventListener("click", () => {
+                    showSongInfo(s);
                 });
 
                 controls.appendChild(upBtn);
                 controls.appendChild(downBtn);
-                controls.appendChild(infoBtn);
                 controls.appendChild(deleteBtn);
+                controls.appendChild(infoBtn);
 
-                item.appendChild(nameSpan);
-                item.appendChild(controls);
+                mainRow.appendChild(nameSpan);
+                mainRow.appendChild(controls);
+                item.appendChild(mainRow);
 
                 playlistEditList.appendChild(item);
             });
+
+            if (!songs.length) {
+                playlistEditList.innerHTML =
+                    '<p style="color: var(--text-muted); text-align: center; padding: 16px;">No songs in this playlist</p>';
+            }
         }
 
 
+
+
         editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
+
+        function showSongInfo(song) {
+            songInfoTitle.value = song.name;
+            songInfoPlaylist.value = song.playlist || "Set 1";
+
+            if (typeof song.bpm === "number") {
+                songInfoScroll.value = `${song.bpm} BPM`;
+            } else {
+                songInfoScroll.value = `${song.speedPercent ?? 0}% speed`;
+            }
+
+            songInfoFont.value = `${song.fontSize ?? 28}px`;
+            songInfoLineHeight.value = song.lineHeight ?? 2.4;
+            songInfoLinesPerMeasure.value = song.linesPerMeasure ?? 4;
+
+            songInfoOverlay.classList.remove("hidden");
+        }
+
+        songInfoOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeSongInfo !== undefined ||
+                e.target === songInfoOverlay
+            ) {
+                songInfoOverlay.classList.add("hidden");
+            }
+        });
+
+        songInfoOverlay
+            .querySelectorAll("[data-close-song-info]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    songInfoOverlay.classList.add("hidden")
+                )
+            );
+
 
         playlistPill.addEventListener("click", () => {
             if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
