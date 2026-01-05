@@ -1334,7 +1334,7 @@ Use Settings to adjust scroll speed, font size, and line spacing.
 
             if (isIOS) {
                 // Bigger default on iPhone / iPad
-                viewerFontSize = 20;
+                viewerFontSize = 16;
             } else if (isWindows) {
                 // Slightly smaller default on Windows desktop
                 viewerFontSize = 18;
@@ -2389,19 +2389,19 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                 editPlaylistSelect.appendChild(opt);
             }
         }
-
         function buildEditPlaylistList() {
-            const playlistName = editPlaylistSelect.value;
-            playlistEditList.innerHTML = "";
+            const playlistName = editPlaylistSelect.value || "Set 1";
             const songs = savedSongs
                 .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            playlistEditList.innerHTML = "";
 
             songs.forEach((s, index) => {
                 const item = document.createElement("div");
                 item.className = "playlist-edit-item";
 
-                const nameSpan = document.createElement("div");
+                const nameSpan = document.createElement("span");
                 nameSpan.className = "playlist-edit-name";
                 nameSpan.textContent = s.name;
 
@@ -2434,6 +2434,27 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                     buildEditPlaylistList();
                 });
 
+                const infoBtn = document.createElement("button");
+                infoBtn.textContent = "i";
+                infoBtn.addEventListener("click", () => {
+                    const speedLabel =
+                        typeof s.bpm === "number"
+                            ? `${s.bpm} BPM`
+                            : `Speed ${s.speedPercent ?? 0}%`;
+
+                    const fontLabel = `${s.fontSize ?? 28}px, line ${s.lineHeight ?? 2.4}`;
+
+                    alert(
+                        [
+                            `Title: ${s.name}`,
+                            `Playlist: ${s.playlist || "Set 1"}`,
+                            `Scroll: ${speedLabel}`,
+                            `Font: ${fontLabel}`,
+                            `Lines/measure: ${s.linesPerMeasure ?? 4}`,
+                        ].join("\n")
+                    );
+                });
+
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "✕";
                 deleteBtn.addEventListener("click", () => {
@@ -2445,13 +2466,16 @@ Use Settings to adjust scroll speed, font size, and line spacing.
 
                 controls.appendChild(upBtn);
                 controls.appendChild(downBtn);
+                controls.appendChild(infoBtn);
                 controls.appendChild(deleteBtn);
+
                 item.appendChild(nameSpan);
                 item.appendChild(controls);
 
                 playlistEditList.appendChild(item);
             });
         }
+
 
         editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
 
