@@ -1316,6 +1316,7 @@
         }
 
         function snapFirstLineIntoGlow() {
+            if (isDragging) return;  // don’t fight the user’s drag
             const lines = document.querySelectorAll(".viewer-content-line");
             const glowBand = document.querySelector(".viewer-highlight");
             if (!lines.length || !glowBand) return;
@@ -1492,6 +1493,8 @@
         });
 
         function handleDragStart(y) {
+            snapPending = false;     // cancel any scheduled snap
+            isDragging = true;
             console.log("DRAG START");
             console.log("Starting drag at Y", y);
 
@@ -1515,7 +1518,6 @@
         }
 
 
-
         function clampDragY(rawY) {
             const viewerRect = viewer.getBoundingClientRect();
             const contentRect = viewerContent.getBoundingClientRect();
@@ -1523,25 +1525,33 @@
             const viewerHeight = viewerRect.height;
             const contentHeight = contentRect.height;
 
-            // If content is shorter than the window, just pin it
-            if (contentHeight <= viewerHeight) {
-                return 0;
-            }
+            // IMPORTANT: no early return here.
+            // Allow free drag even when content is shorter.
 
-            // rawY is the translateY we want to apply (baseContentY).
-            // Top limit: don't let the content go down so far that its top
-            // drops below the top of the viewer.
-            const topLimit = 0;
+            const topLimit = 0; // top of song cannot go below top of viewer
+            const bottomLimit = viewerHeight - contentHeight; // typically negative
 
-            // Bottom limit: don't let the content go up so far that its bottom
-            // goes above the bottom of the viewer.
-            const bottomLimit = viewerHeight - contentHeight; // this will be negative
+            const before = rawY;
 
             if (rawY > topLimit) rawY = topLimit;
             if (rawY < bottomLimit) rawY = bottomLimit;
 
+            console.log('clampDragY', {
+                before,
+                after: rawY,
+                viewerHeight,
+                contentHeight,
+                topLimit,
+                bottomLimit
+            });
+
             return rawY;
         }
+
+
+
+
+
 
 
 
@@ -1564,7 +1574,7 @@
 
         function handleDragEnd() {
             if (!isDragging) return;
-
+            console.log('DRAG END baseContentY=', baseContentY);
             console.log("DRAG END");
             console.log("Final baseContentY", baseContentY.toFixed(2));
 
