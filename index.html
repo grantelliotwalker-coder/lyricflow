@@ -1514,48 +1514,7 @@
             setStatus("Manual drag");
         }
 
-        /*function clampDragY(rawY) {
-            const glowBand = document.querySelector(".viewer-highlight");
-            const lines = document.querySelectorAll(".viewer-content-line");
-            if (!glowBand || !lines.length) {
-                return rawY;
-            }
 
-            const glowRect = glowBand.getBoundingClientRect();
-            const glowTop = glowRect.top;
-            const glowBottom = glowRect.bottom;
-            const glowHeight = glowRect.height;
-
-            const firstRect = lines[0].getBoundingClientRect();
-            const lastRect = lines[lines.length - 1].getBoundingClientRect();
-
-            const currentY = baseContentY;
-            const deltaY = rawY - currentY;
-
-            const newFirstTop = firstRect.top + deltaY;
-            const newLastBottom = lastRect.bottom + deltaY;
-
-            const allowedOverflow = glowHeight * 0.2;
-
-            let clampedY = rawY;
-
-            // CLAMP TOP: don't let first line go back down into the glow
-            const glowTopThreshold = glowTop;
-
-            if (newFirstTop > glowTopThreshold) {
-                const adjust = glowTopThreshold - newFirstTop;
-                clampedY = rawY + adjust;
-            }
-
-            // CLAMP BOTTOM: don't let last line go too far below the band
-            if (newLastBottom < glowBottom + allowedOverflow) {
-                const adjust = glowBottom + allowedOverflow - newLastBottom;
-                clampedY = rawY + adjust;
-            }
-
-            return clampedY;
-        }
-        */
 
         function clampDragY(rawY) {
             const lines = document.querySelectorAll(".viewer-content-line");
@@ -1596,12 +1555,14 @@
             const deltaY = y - dragStartY;
             const dampedDelta = deltaY * 0.8;
 
-            // free drag: no ceiling, no clamp
             let unclampedY = dragStartBaseY + dampedDelta;
 
-            baseContentY = unclampedY;
+            // APPLY the centre-line clamp
+            const newY = clampDragY(unclampedY);
+            baseContentY = newY;
             applyScroll();
         }
+
 
 
         function handleDragEnd() {
