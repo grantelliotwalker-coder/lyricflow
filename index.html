@@ -1172,8 +1172,8 @@
                     <label for="fontSizeSlider">Font size</label>
                     <input type="range"
                            id="fontSizeSlider"
-                           min="14"
-                           max="28"
+                           min="28"
+                           max="100"
                            step="1"
                            value="20" />
                 </div>
@@ -1182,8 +1182,8 @@
                     <label for="lineSpacingSlider">Line spacing</label>
                     <input type="range"
                            id="lineSpacingSlider"
-                           min="1.2"
-                           max="2.4"
+                           min="2.4"
+                           max="5"
                            step="0.1"
                            value="1.9" />
                 </div>
@@ -1279,6 +1279,8 @@
         const playlistSelectTitle = document.getElementById("playlistSelectTitle");
         const trackList = document.getElementById("trackList");
 
+        //Let
+
         let isStageMode = true;
         let scrollAnimationId = null;
         let isScrolling = false;
@@ -1316,12 +1318,25 @@
         let linesPerMeasure = 4;
 
         // font + spacing
-        let viewerFontSize = 20;
-        let viewerLineHeight = 1.9;
+        let viewerFontSize = 28;
+        let viewerLineHeight = 2.4;
+
+        let canonicalBaseContentY = 0;
+
 
         function debugLog(...args) {
             console.log("LyricFlow", ...args);
         }
+
+        function updateResetEnabled() {
+            const atStart =
+                !isScrolling &&
+                elapsedTime === 0 &&
+                baseContentY === canonicalBaseContentY;
+            resetBtn.disabled = atStart;
+        }
+
+
 
         function setStatus(text) {
             statusText.textContent = text;
@@ -1347,26 +1362,38 @@
             viewer.style.lineHeight = viewerLineHeight;
         }
 
-        function scheduleSnap() {
-            if (snapPending) return;
-            snapPending = true;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    snapPending = false;
-                    snapFirstLineIntoGlow();
-                });
-            });
-        }
+        function snapFirstLineIntoGlow(force = false) {
+            if (isDragging) {
+                console.log("SNAP DEBUG: skipped – dragging");
+                return;
+            }
 
-        function snapFirstLineIntoGlow() {
-            if (isDragging) return;
+            const currentTransform = viewerContent.style.transform;
+            if (!force) {
+                if (currentTransform && currentTransform !== "translateY(0px)") {
+                    console.log(
+                        "SNAP DEBUG: skipped – transform not reset",
+                        "currentTransform =", currentTransform
+                    );
+                    return;
+                }
+            }
+
             const lines = document.querySelectorAll(".viewer-content-line");
             const glowBand = document.querySelector(".viewer-highlight");
-            if (!lines.length || !glowBand) return;
+            console.log(
+                "SNAP DEBUG: entry",
+                { lineCount: lines.length, hasGlow: !!glowBand }
+            );
+
+            if (!lines.length || !glowBand) {
+                console.log("SNAP DEBUG: abort – no lines or glow band");
+                return;
+            }
 
             let firstLine = lines[0];
             for (let i = 0; i < lines.length; i++) {
-                if (lines[i].textContent.trim() !== "") {
+                if (lines[i].textContent.trim()) {
                     firstLine = lines[i];
                     break;
                 }
@@ -1374,23 +1401,90 @@
 
             const glowRect = glowBand.getBoundingClientRect();
             const lineRect = firstLine.getBoundingClientRect();
-
             const glowCenter = glowRect.top + glowRect.height / 2;
             const lineCenter = lineRect.top + lineRect.height / 2;
 
+            console.log("SNAP DEBUG: geometry", {
+                glowRect: {
+                    top: glowRect.top,
+                    bottom: glowRect.bottom,
+                    height: glowRect.height,
+                    left: glowRect.left,
+                    right: glowRect.right,
+                    width: glowRect.width
+                },
+                lineRect: {
+                    top: lineRect.top,
+                    bottom: lineRect.bottom,
+                    height: lineRect.height,
+                    left: lineRect.left,
+                    right: lineRect.right,
+                    width: lineRect.width
+                },
+                glowCenter,
+                lineCenter
+            });
+
             if (
-                glowRect.height <= 0 ||
-                lineRect.height <= 0 ||
-                glowCenter === 0 ||
-                lineCenter === 0
+                !Number.isFinite(glowCenter) ||
+                !Number.isFinite(lineCenter) ||
+                glowRect.height === 0 ||
+                lineRect.height === 0
             ) {
+                console.log(
+                    "SNAP DEBUG: abort – invalid geometry",
+                    { glowRect, lineRect, glowCenter, lineCenter }
+                );
                 return;
             }
 
             const delta = glowCenter - lineCenter;
+            console.log(
+                "SNAP DEBUG: applying",
+                {
+                    baseBefore: baseContentY,
+                    delta,
+                    glowCenter,
+                    lineCenter,
+                    fontSize: viewerFontSize,
+                    lineHeight: viewerLineHeight
+                }
+            );
+
             baseContentY += delta;
             applyScroll();
+
+            canonicalBaseContentY = baseContentY;
+            elapsedTime = 0;
+            updateResetEnabled();
+
+            console.log(
+                "SNAP DEBUG: result",
+                {
+                    baseAfter: baseContentY,
+                    transform: viewerContent.style.transform
+                }
+            );
         }
+
+
+
+
+
+
+
+
+
+
+        function bpmToPixelsPerSecond(bpm, linesPerMeasure) {
+            const beatsPerSecond = bpm / 60;
+            const measuresPerSecond = beatsPerSecond / 4;
+            const linesPerSecond = measuresPerSecond * linesPerMeasure;
+            const pixelsPerLine = viewerFontSize * viewerLineHeight;
+            return linesPerSecond * pixelsPerLine;
+        }
+
+
 
         function bpmToPixelsPerSecond(bpm, linesPerMeasure) {
             const beatsPerSecond = bpm / 60;
@@ -1446,6 +1540,7 @@
             }
 
             scrollAnimationId = requestAnimationFrame(autoScroll);
+            updateResetEnabled();
         }
 
         function startScroll() {
@@ -1472,6 +1567,7 @@
                 baseContentY.toFixed(2)
             );
             scrollAnimationId = requestAnimationFrame(autoScroll);
+            updateResetEnabled();
         }
 
         function pauseScroll() {
@@ -1485,28 +1581,13 @@
                 scrollAnimationId = null;
             }
             debugLog("pauseScroll paused at transform", viewerContent.style.transform);
+            updateResetEnabled();
         }
 
         function resetScroll() {
-            isScrolling = false;
-            lastFrameTime = null;
-            startTime = null;
-            elapsedTime = 0;
-            updateTimeDisplay();
-            setStatus("Ready");
-            startBtn.disabled = false;
-            pauseBtn.disabled = false;
-
-            if (scrollAnimationId) {
-                cancelAnimationFrame(scrollAnimationId);
-                scrollAnimationId = null;
-            }
-
-            baseContentY = 0;
-            applyScroll();
-
-            scheduleSnap();
+            goToInitialStageState();
         }
+
 
         // Drag wiring for stage viewer (pointer)
         viewer.addEventListener("pointerdown", (e) => {
@@ -1532,8 +1613,52 @@
             handleDragEnd();
         });
 
+        function goToInitialStageState() {
+            // Always ensure we are in Stage mode for this
+            isStageMode = true;
+            viewerCard.classList.remove("hidden");
+            editorCard.classList.add("hidden");
+            bottomBar.classList.remove("hidden");
+            modeToggle.querySelector("span").innerHTML =
+                "<strong>Stage mode</strong> <small>tap for edit</small>";
+            settingsBtnBottom.classList.remove("hidden");
+
+            // stop any scrolling
+            isScrolling = false;
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+                scrollAnimationId = null;
+            }
+            lastFrameTime = null;
+            startTime = null;
+            elapsedTime = 0;
+            updateTimeDisplay();
+
+            // reset position to canonical snapped start, not hardcoded 0
+            baseContentY = canonicalBaseContentY;
+            applyScroll();
+
+            console.log("POSITION DEBUG: reset stage", {
+                baseContentY,
+                canonicalBaseContentY,
+                transform: viewerContent.style.transform
+            });
+
+            // UI state
+            setStatus("Ready");
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+
+
+
+
+
+
+
+
         function handleDragStart(y) {
-            snapPending = false;
+            snapPending = false;           // keep this line
             wasScrollingBeforeDrag = isScrolling;
             if (isScrolling) pauseScroll();
 
@@ -1549,19 +1674,29 @@
             setStatus("Manual drag");
         }
 
+
         function clampDragY(rawY) {
-            const viewerHeight = viewer.getBoundingClientRect().height;
-            const contentHeight = viewerContent.scrollHeight;
+            const viewerRect = viewer.getBoundingClientRect();
+            const contentRect = viewerContent.getBoundingClientRect();
+            const viewerHeight = viewerRect.height;
+            const contentHeight = contentRect.height;
+
+            // How much extra room you allow beyond the natural edges
+            const padding = viewerHeight * 0.3; // 30% of screen height
 
             let topLimit, bottomLimit;
 
             if (contentHeight <= viewerHeight) {
-                const wiggle = 600;
+                // Short content: allow some wiggle but never lose it entirely
+                const wiggle = viewerHeight * 0.5;
                 topLimit = wiggle;
                 bottomLimit = -wiggle;
             } else {
-                topLimit = 0;
-                bottomLimit = viewerHeight - contentHeight;
+                // Tall content:
+                // - topLimit: you can't push content so far down that the first line goes below the bottom
+                // - bottomLimit: you can't push so far up that the last line goes above the top
+                topLimit = padding;
+                bottomLimit = viewerHeight - contentHeight - padding;
             }
 
             const clamped = Math.max(bottomLimit, Math.min(topLimit, rawY));
@@ -1577,6 +1712,13 @@
 
             return clamped;
         }
+
+
+
+
+
+
+
 
         function handleDragMove(y) {
             if (!isDragging) return;
@@ -1608,34 +1750,35 @@
                 const effective = Math.max(0, getPixelsPerSecond());
                 setStatus(effective === 0 ? "Ready (speed 0)" : "Ready");
             }
+            updateResetEnabled();
         }
 
         function rebuildViewerFromEditor() {
-            const text = editor.value || "";
-            viewerContent.innerHTML = "";
+            const text = editor.value;
+            viewerContent.innerHTML = '';
 
-            const lines = text.split("\n");
-            lines.forEach((rawLine) => {
-                const line = rawLine.replace(/\s+$/, "");
-                const isBlank = line.trim() === "";
-
-                const span = document.createElement("span");
-                span.className = "viewer-content-line";
-
-                if (isBlank) {
-                    span.textContent = "\u00A0";
-                } else {
-                    span.textContent = line;
-                }
-
+            const lines = text.split('\n');
+            lines.forEach(rawLine => {
+                const line = rawLine.replace(/\r/g, '');
+                const isBlank = !line.trim();
+                const span = document.createElement('span');
+                span.className = 'viewer-content-line';
+                span.textContent = isBlank ? '\u00A0' : line;
                 viewerContent.appendChild(span);
             });
 
+            // Keep content aligned where it is; don't zero + snap here.
+            // Stage reset / load will take care of snapping when needed.
+            // If you really want to reset when editing, you can leave baseContentY = 0,
+            // but don't call snapFirstLineIntoGlow from here.
+
             baseContentY = 0;
             applyScroll();
-            scheduleSnap();
-            setStatus("Viewer mirrored from editor");
+
+            setStatus('Viewer mirrored from editor');
         }
+
+
 
         editor.addEventListener("input", rebuildViewerFromEditor);
 
@@ -1655,7 +1798,6 @@
                 modeToggle.querySelector("span").innerHTML =
                     "<strong>Stage mode</strong> <small>· tap for edit</small>";
                 setStatus("Ready");
-                scheduleSnap();
                 settingsBtnBottom.classList.remove("hidden");
             } else {
                 pauseScroll();
@@ -1683,8 +1825,9 @@
 
         resetBtn.addEventListener("click", () => {
             if (!isStageMode) return;
-            resetScroll();
+            goToInitialStageState();
         });
+
 
         /* Keyboard */
 
@@ -1789,13 +1932,11 @@
         fontSizeSlider.addEventListener("input", () => {
             viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
             applyFontSize();
-            scheduleSnap();
         });
 
         lineSpacingSlider.addEventListener("input", () => {
             viewerLineHeight = parseFloat(lineSpacingSlider.value) || 1.9;
             applyFontSize();
-            scheduleSnap();
         });
 
         /* Info modals */
@@ -2037,15 +2178,72 @@
         playlistSelect.addEventListener("change", buildSongSelect);
 
         loadConfirmBtn.addEventListener("click", () => {
+            const playlistName = playlistSelect.value || "Set 1";
             const songId = songSelect.value;
-            const song = savedSongs.find((s) => s.id === songId);
-            if (!song) {
-                alert("No song selected.");
+            if (!songId) {
+                alert("Select a song to load.");
                 return;
             }
+
+            const song = savedSongs.find((s) => s.id === songId);
+            if (!song) {
+                alert("Song not found.");
+                return;
+            }
+
+            currentPlaylistName = playlistName;
+            currentSongId = song.id;
+
+            // Apply content and settings
+            editor.value = song.content || "";
+            scrollSpeed = song.speed || DEFAULT_SCROLL_SPEED;
+            speedPercent = song.speedPercent ?? 50;
+            viewerFontSize = song.fontSize || 28;
+            viewerLineHeight = song.lineHeight || 2.4;
+            songBPM = song.bpm ?? null;
+            linesPerMeasure = song.linesPerMeasure || 4;
+
+            // Mirror into viewer
+            rebuildViewerFromEditor();
+            applyFontSize();
+            speedPercentSlider.value = String(speedPercent);
+            speedPercentLabel.textContent = `${speedPercent}%`;
+
+            if (songBPM !== null) {
+                speedModeBPM.checked = true;
+                speedModePercent.checked = false;
+                bpmInput.value = songBPM;
+                linesPerMeasureInput.value = String(linesPerMeasure);
+            } else {
+                speedModeBPM.checked = false;
+                speedModePercent.checked = true;
+            }
+            updateSpeedModeUI();
+
+            // Use the same canonical stage reset as the Reset button
+            goToInitialStageState();
+
+            console.log("POSITION DEBUG: before load snap", {
+                baseContentY,
+                canonicalBaseContentY,
+                transform: viewerContent.style.transform
+            });
+
+            snapFirstLineIntoGlow(true);
+
+            console.log("POSITION DEBUG: after load snap", {
+                baseContentY,
+                canonicalBaseContentY,
+                transform: viewerContent.style.transform
+            });
+
             loadOverlay.classList.add("hidden");
-            loadSongIntoUI(song);
+            updateStagePlaylistUI();
+
+
         });
+
+
 
         function loadSongIntoUI(song) {
             currentSongId = song.id;
@@ -2338,8 +2536,9 @@
 
         window.addEventListener("load", () => {
             applyFontSize();
-            scheduleSnap();
+            goToInitialStageState();
         });
+
 
         // Disable double‑tap to zoom on the whole document
         let lastTouchEnd = 0;

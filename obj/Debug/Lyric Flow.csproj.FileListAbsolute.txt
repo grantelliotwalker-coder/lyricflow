@@ -1,0 +1,2 @@
+C:\Users\User\Desktop\LyricFlow\Lyric Flow\obj\Debug\Lyric Flow.csproj.AssemblyReference.cache
+C:\Users\User\Desktop\LyricFlow\Lyric Flow\obj\Debug\Lyric Flow.csproj.CoreCompileInputs.cache
