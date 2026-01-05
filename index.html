@@ -1320,9 +1320,27 @@
         let songBPM = null;
         let linesPerMeasure = 4;
 
-        // font + spacing
         let viewerFontSize = 10;
         let viewerLineHeight = 2.4;
+
+        // Platform‑specific default stage font size
+        (function setPlatformDefaultFont() {
+            const ua = navigator.userAgent || "";
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+            const isWindows = /Windows NT/i.test(ua);
+
+            if (isIOS) {
+                // Bigger default on iPhone / iPad
+                viewerFontSize = 20;
+            } else if (isWindows) {
+                // Slightly smaller default on Windows desktop
+                viewerFontSize = 18;
+            } else {
+                // Other platforms (Mac, Android, etc.)
+                viewerFontSize = 18;
+            }
+        })();
+
 
         let canonicalBaseContentY = 0;
 
