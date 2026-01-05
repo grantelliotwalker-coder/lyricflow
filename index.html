@@ -2087,45 +2087,60 @@ Use Settings to adjust scroll speed, font size, and line spacing.
                 parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10)
             );
 
-            let existingIndex = savedSongs.findIndex(
-                (s) => s.id === currentSongId
-            );
+            const performanceFields = {
+                speed: speedToSave,
+                speedPercent,
+                fontSize: viewerFontSize,
+                lineHeight: viewerLineHeight,
+                bpm: songBPM,
+                linesPerMeasure,
+                version: 2,
+            };
+
+            const loadedSong = currentSongId
+                ? savedSongs.find((s) => s.id === currentSongId)
+                : null;
 
             let song;
-            if (existingIndex >= 0) {
-                // Update the currently loaded song only
-                song = savedSongs[existingIndex];
-                song.name = title;
-                song.playlist = playlistName;
-                song.content = content;
-                song.speed = speedToSave;
-                song.speedPercent = speedPercent;
-                song.fontSize = viewerFontSize;
-                song.lineHeight = viewerLineHeight;
-                song.bpm = songBPM;
-                song.linesPerMeasure = linesPerMeasure;
-                song.version = 2;
+
+            if (loadedSong) {
+                const isSameNameAndPlaylist =
+                    loadedSong.name === title &&
+                    (loadedSong.playlist || "Set 1") === (playlistName || "Set 1");
+
+                if (!isSameNameAndPlaylist) {
+                    // User changed name or playlist: treat as new song instead of overwriting
+                    song = {
+                        id: makeSongId(),
+                        name: title,
+                        playlist: playlistName,
+                        content,
+                        createdAt: new Date().toISOString(),
+                        ...performanceFields,
+                    };
+                    savedSongs.push(song);
+                } else {
+                    // Same name + playlist: update the existing loaded song
+                    song = loadedSong;
+                    song.name = title;
+                    song.playlist = playlistName;
+                    song.content = content;
+                    Object.assign(song, performanceFields);
+                }
             } else {
-                // Always create a new song if there is no currentSongId match
+                // No song loaded: always create new
                 song = {
                     id: makeSongId(),
                     name: title,
                     playlist: playlistName,
                     content,
-                    speed: speedToSave,
-                    speedPercent,
-                    fontSize: viewerFontSize,
-                    lineHeight: viewerLineHeight,
-                    bpm: songBPM,
-                    linesPerMeasure,
-                    version: 2,
                     createdAt: new Date().toISOString(),
+                    ...performanceFields,
                 };
                 savedSongs.push(song);
             }
 
             saveSongsToStorage();
-
             currentSongId = song.id;
             currentPlaylistName = song.playlist || "Set 1";
             buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
@@ -2134,6 +2149,7 @@ Use Settings to adjust scroll speed, font size, and line spacing.
             saveOverlay.classList.add("hidden");
             setStatus("Saved " + song.name);
         });
+
 
 
         loadSongBtn.addEventListener("click", () => {
