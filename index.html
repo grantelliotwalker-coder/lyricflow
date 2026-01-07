@@ -1422,6 +1422,17 @@
 
 
         let canonicalBaseContentY = 0;
+        let initialSnapBaseContentY = null; // remember first load snap
+
+        // Snapshot of the last “good load” alignment
+        let loadSnapshotBaseContentY = null;
+        let loadSnapshotFontSize = null;
+        let loadSnapshotLineHeight = null;
+
+        // START POINT: baseline for current song + layout
+        let songStartBaseContentY = null;
+        let songStartFontSize = null;
+        let songStartLineHeight = null;
 
 
         function debugLog(...args) {
@@ -1462,49 +1473,61 @@
             viewer.style.lineHeight = viewerLineHeight;
         }
 
+
         function snapFirstLineIntoGlow(force = false) {
             console.log(
-                "SNAP DEBUG entry",
-                "force", force,
-                "isStageMode", isStageMode,
-                "isDragging", isDragging,
-                "isScrolling", isScrolling,
-                "baseContentY", baseContentY,
-                "currentTransform", viewerContent.style.transform,
-                "viewerFontSize", viewerFontSize,
-                "viewerLineHeight", viewerLineHeight
+                'SNAP DEBUG entry, force:',
+                force,
+                'isStageMode:',
+                isStageMode,
+                'isDragging:',
+                isDragging,
+                'isScrolling:',
+                isScrolling,
+                'baseContentY:',
+                baseContentY,
+                'currentTransform:',
+                viewerContent.style.transform,
+                'viewerFontSize:',
+                viewerFontSize,
+                'viewerLineHeight:',
+                viewerLineHeight
             );
 
             if (isDragging) {
-                console.log("SNAP DEBUG skipped: dragging");
+                console.log('SNAP DEBUG skipped: dragging...');
                 return;
             }
 
-            const currentTransform = viewerContent.style.transform || "";
+            const currentTransform = viewerContent.style.transform;
+
             if (!force) {
-                if (currentTransform && currentTransform !== "translateY(0px)") {
+                if (currentTransform && currentTransform !== 'translateY(0px)') {
                     console.log(
-                        "SNAP DEBUG skipped: transform not reset",
-                        "currentTransform:", currentTransform
+                        'SNAP DEBUG skipped: transform not reset, currentTransform:',
+                        currentTransform
                     );
                     return;
                 }
             }
 
-            const lines = document.querySelectorAll(".viewer-content-line");
-            const glowBand = document.querySelector(".viewer-highlight");
+            const lines = document.querySelectorAll('.viewer-content-line');
+            const glowBand = document.querySelector('.viewer-highlight');
 
             console.log(
-                "SNAP DEBUG elements",
-                "lineCount", lines.length,
-                "hasGlow", !!glowBand
+                'SNAP DEBUG elements, lineCount',
+                lines.length,
+                'hasGlow',
+                !!glowBand
             );
 
             if (!lines.length || !glowBand) {
                 console.log(
-                    "SNAP DEBUG abort: no lines or glow band",
-                    "lines.length", lines.length,
-                    "glowBand", glowBand
+                    'SNAP DEBUG abort: no lines or glow band',
+                    'lines.length',
+                    lines.length,
+                    'glowBand',
+                    glowBand
                 );
                 return;
             }
@@ -1519,23 +1542,31 @@
                     break;
                 }
             }
-            const lineRect = firstLine.getBoundingClientRect();
 
+            const lineRect = firstLine.getBoundingClientRect();
             const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
             const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
 
-            console.log(
-                "SNAP DEBUG geometry",
-                { viewerRect, glowRect, lineRect, glowCenter, lineCenter }
-            );
+            console.log('SNAP DEBUG geometry', {
+                viewerRect,
+                glowRect,
+                lineRect,
+                glowCenter,
+                lineCenter,
+            });
 
             if (
-                !Number.isFinite(glowCenter) || !Number.isFinite(lineCenter) ||
-                glowRect.height === 0 || lineRect.height === 0
+                !Number.isFinite(glowCenter) ||
+                !Number.isFinite(lineCenter) ||
+                glowRect.height === 0 ||
+                lineRect.height === 0
             ) {
                 console.log(
-                    "SNAP DEBUG retry next frame: invalid geometry",
-                    { glowRect, lineRect, glowCenter, lineCenter }
+                    'SNAP DEBUG retry next frame: invalid geometry',
+                    glowRect,
+                    lineRect,
+                    glowCenter,
+                    lineCenter
                 );
                 requestAnimationFrame(() => snapFirstLineIntoGlow(force));
                 return;
@@ -1544,24 +1575,52 @@
             const delta = glowCenter - lineCenter;
 
             console.log(
-                "SNAP DEBUG applying",
-                "baseBefore", baseContentY,
-                "delta", delta,
-                "newBase", baseContentY + delta
+                'SNAP DEBUG applying, baseBefore',
+                baseContentY,
+                'delta',
+                delta,
+                'newBase',
+                baseContentY + delta
             );
 
             baseContentY += delta;
             applyScroll();
             canonicalBaseContentY = baseContentY;
-            elapsedTime = 0;
-            updateResetEnabled();
+
+            // Capture START POINT only when Stage is active and geometry is valid
+            if (isStageMode) {
+                songStartBaseContentY = baseContentY;
+                songStartFontSize = viewerFontSize;
+                songStartLineHeight = viewerLineHeight;
+                console.log('START POINT captured', {
+                    songStartBaseContentY,
+                    songStartFontSize,
+                    songStartLineHeight,
+                });
+            } else {
+                console.log('START POINT not captured (not in Stage mode)', {
+                    isStageMode,
+                });
+            }
+
+            if (initialSnapBaseContentY === null) {
+                initialSnapBaseContentY = baseContentY;
+                elapsedTime = 0;
+                updateResetEnabled();
+            }
 
             console.log(
-                "SNAP DEBUG result",
-                "baseAfter", baseContentY,
-                "transform", viewerContent.style.transform
+                'SNAP DEBUG result, baseAfter',
+                baseContentY,
+                'transform',
+                viewerContent.style.transform
             );
         }
+
+
+
+
+
 
 
 
@@ -1682,10 +1741,206 @@
             updateResetEnabled();
         }
 
+        // AFTER (only call goToInitialStageState when layout changed):
         function resetScroll() {
-            goToInitialStageState();
+            if (!currentSong) {
+                console.log("RESET aborted, no currentSong");
+                return;
+            }
+
+            console.log("RESET entry", {
+                baseContentY,
+                canonicalBaseContentY,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+                viewerFontSize,
+                viewerLineHeight,
+                isStageMode,
+                isScrolling,
+            });
+
+            // Stop any scrolling and reset time
+            pauseScroll();
+            elapsedTime = 0;
+            updateTimeDisplay(0);
+
+            // Determine whether baseline START POINT can still be trusted
+            const layoutMatchesStart =
+                songStartBaseContentY != null &&
+                songStartFontSize === viewerFontSize &&
+                songStartLineHeight === viewerLineHeight;
+
+            console.log("RESET layout check", {
+                layoutMatchesStart,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+                currentFontSize: viewerFontSize,
+                currentLineHeight: viewerLineHeight,
+            });
+
+            if (layoutMatchesStart) {
+                // Case 1: layout unchanged – use original START POINT only.
+                baseContentY = songStartBaseContentY;
+                canonicalBaseContentY = songStartBaseContentY;
+                console.log("RESET using START POINT (layout unchanged)", {
+                    baseContentY,
+                    canonicalBaseContentY,
+                });
+            } else {
+                // Case 2: layout changed (font / line spacing / content).
+                // Reset to 0; Stage geometry snap will recompute alignment.
+                baseContentY = 0;
+                canonicalBaseContentY = 0;
+                console.log(
+                    "RESET fallback – layout changed, will re-snap via geometry",
+                    {
+                        baseContentY,
+                        canonicalBaseContentY,
+                        viewerFontSize,
+                        viewerLineHeight,
+                    }
+                );
+            }
+
+            applyScroll();
+
+            // Reset drag state and viewport scroll
+            isDragging = false;
+            dragStartY = null;
+            dragStartBaseY = 0;
+            viewer.parentElement.scrollTop = 0;
+            viewer.scrollTop = 0;
+
+            updateResetEnabled();
+
+            console.log("RESET exit (before optional Stage re-snap)", {
+                baseContentY,
+                canonicalBaseContentY,
+                transform: viewerContent.style.transform,
+                parentScroll: viewer.parentElement.scrollTop,
+                viewerScroll: viewer.scrollTop,
+                layoutMatchesStart,
+            });
+
+            // CRITICAL: only run full goToInitialStageState when layout changed.
+            // When layoutMatchesStart is true, we already restored the exact
+            // START POINT and must NOT override it.
+            if (isStageMode && !layoutMatchesStart) {
+                console.log(
+                    "RESET calling goToInitialStageState from resetScroll (layout changed)",
+                    {
+                        caller: "resetScroll",
+                        layoutMatchesStart,
+                        viewerFontSize,
+                        viewerLineHeight,
+                    }
+                );
+                goToInitialStageState("resetScroll");
+            }
         }
 
+
+
+
+
+
+
+
+        function logStageState(tag) {
+            const rect = viewerContent.getBoundingClientRect();
+            console.log(
+                "STATE",
+                tag,
+                {
+                    baseContentY,
+                    canonicalBaseContentY,
+                    elapsedTime,
+                    isScrolling,
+                    isDragging,
+                    dragStartY,
+                    dragStartBaseY,
+                    transform: viewerContent.style.transform,
+                    contentTop: rect.top,
+                    contentBottom: rect.bottom,
+                }
+            );
+        }
+
+        // NEW: compute baseContentY that centers the first non-blank lyric line in the glow
+        function computeFirstLineGlowBase(tag = "COMPUTE_GLOW_BASE") {
+            const lines = document.querySelectorAll(".viewer-content-line");
+            const glowBand = document.querySelector(".viewer-highlight");
+
+            const viewerRect = viewer.getBoundingClientRect();
+            const glowRect = glowBand ? glowBand.getBoundingClientRect() : null;
+
+            if (!lines.length || !glowBand || !glowRect) {
+                console.log("GLOW BASE DEBUG abort", {
+                    tag,
+                    lineCount: lines.length,
+                    hasGlow: !!glowBand,
+                    glowRect,
+                });
+                return null;
+            }
+
+            // Choose first non-blank line as the target lyric line
+            let firstLine = lines[0];
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].textContent.trim()) {
+                    firstLine = lines[i];
+                    break;
+                }
+            }
+
+            const lineRect = firstLine.getBoundingClientRect();
+
+            const glowCenter =
+                glowRect.top + glowRect.height / 2 - viewerRect.top;
+            const lineCenter =
+                lineRect.top + lineRect.height / 2 - viewerRect.top;
+
+            console.log("GLOW BASE DEBUG geometry", {
+                tag,
+                viewerRect,
+                glowRect,
+                lineRect,
+                glowCenter,
+                lineCenter,
+            });
+
+            if (
+                !Number.isFinite(glowCenter) ||
+                !Number.isFinite(lineCenter) ||
+                glowRect.height === 0 ||
+                lineRect.height === 0
+            ) {
+                console.log("GLOW BASE DEBUG invalid geometry", {
+                    tag,
+                    glowRect,
+                    lineRect,
+                    glowCenter,
+                    lineCenter,
+                });
+                return null;
+            }
+
+            const delta = glowCenter - lineCenter;
+            const targetBase = baseContentY + delta;
+
+            console.log("GLOW BASE DEBUG result", {
+                tag,
+                baseBefore: baseContentY,
+                delta,
+                targetBase,
+                fontSize: viewerFontSize,
+                lineHeight: viewerLineHeight,
+            });
+
+            return targetBase;
+        }
 
         // Drag wiring for stage viewer (pointer)
         viewer.addEventListener("pointerdown", (e) => {
@@ -1711,40 +1966,118 @@
             handleDragEnd();
         });
 
+
+        // AFTER:
         function goToInitialStageState(caller = "unknown") {
             console.log("LyricFlow RESET begin", {
                 caller,
                 isStageMode,
                 isScrolling,
                 baseContentY,
-                transform: viewerContent.style.transform
+                transform: viewerContent.style.transform,
+                viewerFontSize,
+                viewerLineHeight,
             });
 
-            // Always stop scroll and zero timers
+            logStageState("RESETbefore-pause");
+
             pauseScroll();
             elapsedTime = 0;
             updateTimeDisplay(0);
 
-            // Hard reset scroll position
-            baseContentY = 0;
-            canonicalBaseContentY = 0;
+            // Prefer the exact alignment that worked after the last good load/snap,
+            // but only if font size/line height still match.
+            const canUseLoadSnapshot =
+                loadSnapshotBaseContentY != null &&
+                loadSnapshotFontSize === viewerFontSize &&
+                loadSnapshotLineHeight === viewerLineHeight;
+
+            console.log("RESET snapshot check", {
+                caller,
+                canUseLoadSnapshot,
+                loadSnapshotBaseContentY,
+                loadSnapshotFontSize,
+                loadSnapshotLineHeight,
+                currentFontSize: viewerFontSize,
+                currentLineHeight: viewerLineHeight,
+            });
+
+            if (caller === "resetScroll" && canUseLoadSnapshot) {
+                baseContentY = loadSnapshotBaseContentY;
+                canonicalBaseContentY = loadSnapshotBaseContentY;
+                console.log("RESET using load snapshot", {
+                    baseContentY,
+                    viewerFontSize,
+                    viewerLineHeight,
+                });
+            } else {
+                baseContentY = 0;
+                canonicalBaseContentY = 0;
+                console.log("RESET falling back to geometry snap", {
+                    caller,
+                    baseContentY,
+                    viewerFontSize,
+                    viewerLineHeight,
+                });
+            }
+
             applyScroll();
 
-            // Clear drag state
+            logStageState("RESETafter-zero-or-canonical");
+
             isDragging = false;
             dragStartY = null;
             dragStartBaseY = 0;
 
-            console.log("LyricFlow RESET after zero", {
-                baseContentY,
-                transform: viewerContent.style.transform
+            // Ensure viewport scroll is pristine
+            viewer.parentElement.scrollTop = 0;
+            viewer.scrollTop = 0;
+
+            console.log("LyricFlow RESET after base set", {
+                caller,
+                canUseLoadSnapshot: caller === "resetScroll" && canUseLoadSnapshot,
+                loadSnapshotBaseContentY,
+                baseContentY: baseContentY.toFixed(2),
+                canonicalBaseContentY: canonicalBaseContentY.toFixed(2),
+                transform: viewerContent.style.transform,
+                parentScroll: viewer.parentElement.scrollTop,
+                viewerScroll: viewer.scrollTop,
             });
 
-            // One frame later, with layout settled, always snap the first line into the glow
-            requestAnimationFrame(() => {
-                console.log("LyricFlow RESET calling snapFirstLineIntoGlow");
-                snapFirstLineIntoGlow(true);
-            });
+            // For resetScroll and loadSongIntoUI, always go through snapFirstLineIntoGlow
+            // so reset visually matches a fresh load.
+            if (caller === "resetScroll") {
+                // Double frame for resetScroll to avoid zero-rect issue.
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        console.log(
+                            "LyricFlow RESET double frame calling snapFirstLineIntoGlow for resetScroll",
+                            {
+                                viewerFontSize,
+                                viewerLineHeight,
+                            }
+                        );
+                        logStageState("RESETbefore-snap");
+                        snapFirstLineIntoGlow(true);
+                        logStageState("RESETafter-snap");
+                    });
+                });
+            } else {
+                // Load and other callers: single frame snap.
+                requestAnimationFrame(() => {
+                    console.log(
+                        "LyricFlow RESET single frame calling snapFirstLineIntoGlow",
+                        {
+                            caller,
+                            viewerFontSize,
+                            viewerLineHeight,
+                        }
+                    );
+                    logStageState("RESETbefore-snap");
+                    snapFirstLineIntoGlow(true);
+                    logStageState("RESETafter-snap");
+                });
+            }
         }
 
 
@@ -1761,7 +2094,21 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
         function handleDragStart(y) {
+            console.log('DRAG: start', { y, wasScrollingBeforeDrag: isScrolling });
+            logStageState('DRAG start');
             snapPending = false;           // keep this line
             wasScrollingBeforeDrag = isScrolling;
             if (isScrolling) pauseScroll();
@@ -1835,35 +2182,34 @@
             const newY = clampDragY(unclampedY);
             baseContentY = newY;
             applyScroll();
+
+            console.log('DRAG: move', { y, deltaY, unclampedY, newY });
         }
 
         function handleDragEnd() {
             if (!isDragging) return;
+            console.log('DRAG: end BEFORE');
+            logStageState('DRAG end BEFORE');
 
             isDragging = false;
-            viewer.style.cursor = "grab";
+            viewer.style.cursor = 'grab';
             viewerContent.style.opacity = 1;
-            viewerContent.style.transition = "transform 0.08s ease-out";
+            viewerContent.style.transition = 'transform 0.08s ease-out';
 
-            console.log(
-                "DRAG DEBUG end",
-                "baseContentY", baseContentY,
-                "transform", viewerContent.style.transform,
-                "wasScrollingBeforeDrag", wasScrollingBeforeDrag
-            );
-
-            const shouldResume = wasScrollingBeforeDrag && isStageMode;
-            wasScrollingBeforeDrag = false;
+            console.log('DRAG: end AFTER flags reset, will decide resume');
+            const shouldResume =
+                wasScrollingBeforeDrag && isStageMode && wasScrollingBeforeDrag !== false;
+            console.log('DRAG: end shouldResume', { shouldResume, wasScrollingBeforeDrag, isStageMode });
 
             if (shouldResume) {
-                // Always resume auto‑scroll from the new position,
-                // regardless of current speed.
                 startScroll();
             } else {
                 const effective = Math.max(0, getPixelsPerSecond());
-                setStatus(effective === 0 ? "Ready (speed 0)" : "Ready");
+                setStatus(effective === 0 ? 'Ready • speed 0' : 'Ready');
                 updateResetEnabled();
             }
+
+            logStageState('DRAG end AFTER');
         }
 
 
@@ -1944,10 +2290,11 @@
             pauseScroll();
         });
 
-        resetBtn.addEventListener("click", () => {
+        // AFTER:
+        resetBtn.addEventListener('click', () => {
             // Always reset the current song back to start, using current settings.
-            reloadSongIntoUI();
-        });
+            resetScroll();
+        })
 
 
 
@@ -2051,15 +2398,42 @@
             setStatus(isScrolling ? "Scrolling" : "Ready");
         });
 
-        fontSizeSlider.addEventListener("input", () => {
+        fontSizeSlider.addEventListener('input', () => {
+            console.log('FONT DEBUG change', {
+                oldFontSize: viewerFontSize,
+                newFontSize: fontSizeSlider.value,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+            });
+
             viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
             applyFontSize();
+
+            // Invalidate old start point; needs a new Stage snap to re-capture
+            songStartBaseContentY = null;
+            songStartFontSize = null;
+            songStartLineHeight = null;
         });
 
-        lineSpacingSlider.addEventListener("input", () => {
+        lineSpacingSlider.addEventListener('input', () => {
+            console.log('LINEHEIGHT DEBUG change', {
+                oldLineHeight: viewerLineHeight,
+                newLineHeight: lineSpacingSlider.value,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+            });
+
             viewerLineHeight = parseFloat(lineSpacingSlider.value) || 1.9;
             applyFontSize();
+
+            // Invalidate old start point; needs a new Stage snap to re-capture
+            songStartBaseContentY = null;
+            songStartFontSize = null;
+            songStartLineHeight = null;
         });
+
 
         /* Info modals */
 
@@ -2333,10 +2707,15 @@
 
 
 
-
+        // AFTER:
         function loadSongIntoUI(song) {
-            console.log("LyricFlow LOAD: start", { song });
-
+            console.log("LOAD:entry", {
+                songId: song.id,
+                songName: song.name,
+                baseContentYBefore: baseContentY.toFixed(2),
+                transformBefore: viewerContent.style.transform
+            });
+            logStageState('LOAD:before-apply-settings');
 
             currentSong = song; // remember last loaded song
 
@@ -2367,10 +2746,12 @@
             }
 
             applyFontSize();
+            logStageState('LOAD:after-apply-settings');
 
             buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
             updateStagePlaylistUI();
 
+            console.log('LOAD:before-goToInitial');
             goToInitialStageState("loadSongIntoUI");
 
             requestAnimationFrame(() => {
@@ -2380,36 +2761,64 @@
                 const highlightRect = highlight ? highlight.getBoundingClientRect() : null;
                 const lineRect = firstLine ? firstLine.getBoundingClientRect() : null;
 
-                console.log(
-                    "LyricFlow LOAD after goToInitialStageState",
-                    "baseContentY", baseContentY,
-                    "transform", viewerContent.style.transform,
-                    { viewerRect, highlightRect, lineRect }
-                );
+                console.log("LOAD:after-goToInitialStageState", {
+                    baseContentY: baseContentY.toFixed(2),
+                    transform: viewerContent.style.transform,
+                    viewerRectTop: viewerRect.top.toFixed(2),
+                    viewerRectBottom: viewerRect.bottom.toFixed(2),
+                    highlightRect: highlightRect ? {
+                        top: highlightRect.top.toFixed(2),
+                        bottom: highlightRect.bottom.toFixed(2),
+                        height: highlightRect.height.toFixed(2)
+                    } : null,
+                    lineRect: lineRect ? {
+                        top: lineRect.top.toFixed(2),
+                        bottom: lineRect.bottom.toFixed(2),
+                        height: lineRect.height.toFixed(2)
+                    } : null
+                });
+                logStageState('LOAD:final');
             });
 
             setStatus(`Loaded ${song.name}`);
 
         }
 
+
+        // AFTER:
         function reloadSongIntoUI() {
             if (!currentSong) return;
-            const song = currentSong;
 
-            // 1) Rebuild content from the current song
-            editor.value = song.content || "";
-            rebuildViewerFromEditor(); // recreates .viewer-content-line spans
+            // Rebuild lyrics content from the saved song.
+            editor.value = currentSong.lyrics || '';
+            rebuildViewerFromEditor();
 
-            // 2) Re-apply whatever settings are currently active (do NOT overwrite them)
-            applyFontSize(); // uses viewerFontSize & viewerLineHeight as they are now
+            // Re-apply current settings (scroll mode, font size, spacing) without touching scroll position.
+            applyFontSize();
+            // If you have any UI refresh like updateSpeedModeUI(), keep those here too.
 
-            // 3) Use the same reset + snap pipeline as loadSongIntoUI
-            goToInitialStageState("reloadSongIntoUI");
-
-            setStatus(`Reset ${song.name} to start`);
+            // Do NOT call goToInitialStageState from reload; resetScroll/loadSongIntoUI will own that.
         }
 
 
+        // AFTER: place near reloadSongIntoUI / loadSongIntoUI
+
+        function rebuildSongContentOnly() {
+            if (!currentSong) return;
+            // Just mirror saved lyrics into editor + viewer.
+            editor.value = currentSong.lyrics || '';
+            const text = editor.value;
+            viewerContent.innerHTML = '';
+            const lines = text.split('\n');
+            lines.forEach(rawLine => {
+                const line = rawLine.replace(/\r/g, '');
+                const isBlank = !line.trim();
+                const span = document.createElement('span');
+                span.className = 'viewer-content-line';
+                span.textContent = isBlank ? '\u00A0' : line;
+                viewerContent.appendChild(span);
+            });
+        }
 
 
 
