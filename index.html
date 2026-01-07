@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>LyricFlow</title>
+    <title>LyricFlow v3.0</title>
     <meta name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
@@ -538,7 +538,6 @@
                 text-overflow: ellipsis;
             }
 
-
         .tiny-btn {
             border-radius: 999px;
             padding: 3px 8px;
@@ -606,7 +605,7 @@
         .transport-buttons {
             display: flex;
             align-items: center;
-            justify-content: space-between; /* spread buttons */
+            justify-content: space-between;
             gap: 10px;
             width: 100%;
         }
@@ -615,8 +614,6 @@
                 flex: 1;
                 justify-content: center;
             }
-
-
 
         .btn {
             border: none;
@@ -672,7 +669,7 @@
             gap: 6px;
         }
 
-        /* NEW: bigger Settings button in transport bar */
+        /* bigger Settings button */
         #settingsBtnBottom.btn {
             padding: 7px 16px;
             font-size: 11px;
@@ -990,7 +987,6 @@
                                         Use Settings to adjust scroll speed, font size, and line spacing.
                                     </span>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -1036,8 +1032,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
-
+    <!-- Stage info -->
     <div class="overlay hidden" id="stageInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1057,6 +1052,7 @@
         </div>
     </div>
 
+    <!-- Edit info -->
     <div class="overlay hidden" id="editInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1075,6 +1071,7 @@
         </div>
     </div>
 
+    <!-- Save song -->
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1098,6 +1095,7 @@
         </div>
     </div>
 
+    <!-- Load song -->
     <div class="overlay hidden" id="loadOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1117,6 +1115,7 @@
         </div>
     </div>
 
+    <!-- Song details -->
     <div class="overlay hidden" id="songInfoOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1155,7 +1154,7 @@
         </div>
     </div>
 
-
+    <!-- Edit playlist -->
     <div class="overlay hidden" id="editPlaylistOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1175,6 +1174,7 @@
         </div>
     </div>
 
+    <!-- Settings -->
     <div class="overlay hidden" id="settingsOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1223,13 +1223,13 @@
                 <div class="form-field hidden" id="bpmModeFields2">
                     <label for="linesPerMeasureInput">Lines per measure</label>
                     <select id="linesPerMeasureInput">
-                        <option value="0.25">1 line = 1 measure</option>
-                        <option value="0.5">1 line = 1 measure</option>
-                        <option value="0.75">1 line = 1 measure</option>
-                        <option value="1">1 line = 1 measure</option>
-                        <option value="2">2 lines = 1 measure</option>
-                        <option value="4" selected>4 lines = 1 measure</option>
-                        <option value="8">8 lines = 1 measure</option>
+                        <option value="0.25">0.25 lines/measure</option>
+                        <option value="0.5">0.5 lines/measure</option>
+                        <option value="0.75">0.75 lines/measure</option>
+                        <option value="1">1 line/measure</option>
+                        <option value="2">2 lines/measure</option>
+                        <option value="4" selected>4 lines/measure</option>
+                        <option value="8">8 lines/measure</option>
                     </select>
                     <small>How many lyric lines fit in one musical measure (usually 4 beats)</small>
                 </div>
@@ -1248,8 +1248,8 @@
                     <label for="lineSpacingSlider">Line spacing</label>
                     <input type="range"
                            id="lineSpacingSlider"
-                           min="2.4"
-                           max="5"
+                           min="1.2"
+                           max="4"
                            step="0.1"
                            value="1.9" />
                 </div>
@@ -1261,6 +1261,7 @@
         </div>
     </div>
 
+    <!-- Playlist select (from pill) -->
     <div class="overlay hidden" id="playlistSelectOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1278,90 +1279,181 @@
     </div>
 
     <script>
+        /*-------------------------------------------------------
+          Debug infrastructure (enhanced)
+        -------------------------------------------------------*/
+        const DEBUG_CONFIG = {
+            enabled: true,
+            level: "detail" // "basic" | "detail" | "trace"
+        };
 
-        //const
-        const viewer = document.getElementById("viewer");
-        const viewerContent = document.getElementById("viewerContent");
+        const DEBUG_LEVELS = { basic: 1, detail: 2, trace: 3 };
 
-        const modeToggle = document.getElementById("modeToggle");
-        const viewerCard = document.getElementById("viewerCard");
-        const editorCard = document.getElementById("editorCard");
-        const bottomBar = document.getElementById("bottomBar");
-        const statusText = document.getElementById("statusText");
-        const timeDisplay = document.getElementById("timeDisplay");
+        const DEBUG_SESSION_ID =
+            "LF3-" +
+            Math.random().toString(36).slice(2, 8) +
+            "-" +
+            Date.now().toString(36);
 
-        const songInfoOverlay = document.getElementById("songInfoOverlay");
-        const songInfoTitle = document.getElementById("songInfoTitle");
-        const songInfoPlaylist = document.getElementById("songInfoPlaylist");
-        const songInfoScroll = document.getElementById("songInfoScroll");
-        const songInfoFont = document.getElementById("songInfoFont");
-        const songInfoLineHeight = document.getElementById("songInfoLineHeight");
-        const songInfoLinesPerMeasure = document.getElementById("songInfoLinesPerMeasure");
+        function debugShouldLog(level) {
+            if (!DEBUG_CONFIG.enabled || typeof console === "undefined") return false;
+            const target = DEBUG_LEVELS[DEBUG_CONFIG.level] || 1;
+            const here = DEBUG_LEVELS[level] || 1;
+            return here <= target;
+        }
 
+        function debugLog(level, tag, payload) {
+            if (!debugShouldLog(level)) return;
+            const ts = new Date().toISOString();
+            try {
+                console.log(
+                    "[LyricFlow3]",
+                    DEBUG_SESSION_ID,
+                    ts,
+                    "[" + level + "]",
+                    tag,
+                    payload || {}
+                );
+            } catch (_) { }
+        }
 
-        const startBtn = document.getElementById("start");
-        const pauseBtn = document.getElementById("pause");
-        const resetBtn = document.getElementById("resetBtn");
+        function debugError(tag, payload) {
+            if (typeof console === "undefined") return;
+            const ts = new Date().toISOString();
+            try {
+                console.error(
+                    "[LyricFlow3]",
+                    DEBUG_SESSION_ID,
+                    ts,
+                    "[ERROR]",
+                    tag,
+                    payload || {}
+                );
+            } catch (_) { }
+        }
 
-        const prevSongBtn = document.getElementById("prevSongBtn");
-        const nextSongBtn = document.getElementById("nextSongBtn");
-        const playlistPill = document.getElementById("playlistPill");
-        const playlistPillText = document.getElementById("playlistPillText");
-        const playlistPillIndex = document.getElementById("playlistPillIndex");
+        /*-------------------------------------------------------
+          Safe DOM helpers
+        -------------------------------------------------------*/
+        function qs(id) {
+            const el = document.getElementById(id);
+            if (!el) {
+                debugError("MISSING_ELEMENT", { id });
+            }
+            return el;
+        }
 
-        const settingsBtn = document.getElementById("settingsBtn");
-        const settingsBtnBottom = document.getElementById("settingsBtnBottom");
+        function safeQuerySelector(selector) {
+            try {
+                return document.querySelector(selector);
+            } catch (e) {
+                debugError("QS_ERROR", { selector, error: e.message });
+                return null;
+            }
+        }
 
-        const stageInfoBtn = document.getElementById("stageInfoBtn");
-        const stageInfoOverlay = document.getElementById("stageInfoOverlay");
+        function safeQuerySelectorAll(selector) {
+            try {
+                return Array.from(document.querySelectorAll(selector));
+            } catch (e) {
+                debugError("QSA_ERROR", { selector, error: e.message });
+                return [];
+            }
+        }
 
-        const editor = document.getElementById("editor");
-        const editorInfoBtn = document.getElementById("editorInfoBtn");
-        const editInfoOverlay = document.getElementById("editInfoOverlay");
-        const clearEditorBtn = document.getElementById("clearEditorBtn");
+        function safeAddListener(target, type, handler, opts) {
+            if (!target || !type || typeof handler !== "function") {
+                debugError("LISTENER_BAD_ARGS", { target, type });
+                return;
+            }
+            try {
+                target.addEventListener(type, handler, opts || false);
+            } catch (e) {
+                debugError("LISTENER_ERROR", { type, error: e.message });
+            }
+        }
 
-        const saveSongBtn = document.getElementById("saveSongBtn");
-        const loadSongBtn = document.getElementById("loadSongBtn");
-        const editPlaylistBtn = document.getElementById("editPlaylistBtn");
+        /*-------------------------------------------------------
+          DOM refs
+        -------------------------------------------------------*/
+        const viewer = qs("viewer");
+        const viewerContent = qs("viewerContent");
 
-        const saveOverlay = document.getElementById("saveOverlay");
-        const songTitleInput = document.getElementById("songTitleInput");
-        const playlistInput = document.getElementById("playlistInput");
-        const saveConfirmBtn = document.getElementById("saveConfirmBtn");
+        const modeToggle = qs("modeToggle");
+        const viewerCard = qs("viewerCard");
+        const editorCard = qs("editorCard");
+        const bottomBar = qs("bottomBar");
+        const statusText = qs("statusText");
+        const timeDisplay = qs("timeDisplay");
 
-        const loadOverlay = document.getElementById("loadOverlay");
-        const playlistSelect = document.getElementById("playlistSelect");
-        const loadSongList = document.getElementById("loadSongList");
+        const songInfoOverlay = qs("songInfoOverlay");
+        const songInfoTitle = qs("songInfoTitle");
+        const songInfoPlaylist = qs("songInfoPlaylist");
+        const songInfoScroll = qs("songInfoScroll");
+        const songInfoFont = qs("songInfoFont");
+        const songInfoLineHeight = qs("songInfoLineHeight");
+        const songInfoLinesPerMeasure = qs("songInfoLinesPerMeasure");
 
+        const startBtn = qs("start");
+        const pauseBtn = qs("pause");
+        const resetBtn = qs("resetBtn");
 
-        const editPlaylistOverlay = document.getElementById("editPlaylistOverlay");
-        const editPlaylistSelect = document.getElementById("editPlaylistSelect");
-        const playlistEditList = document.getElementById("playlistEditList");
+        const prevSongBtn = qs("prevSongBtn");
+        const nextSongBtn = qs("nextSongBtn");
+        const playlistPill = qs("playlistPill");
+        const playlistPillText = qs("playlistPillText");
+        const playlistPillIndex = qs("playlistPillIndex");
 
-        const settingsOverlay = document.getElementById("settingsOverlay");
-        const speedPercentSlider = document.getElementById("speedPercentSlider");
-        const speedPercentLabel = document.getElementById("speedPercentLabel");
-        const fontSizeSlider = document.getElementById("fontSizeSlider");
-        const lineSpacingSlider = document.getElementById("lineSpacingSlider");
+        const settingsBtnBottom = qs("settingsBtnBottom");
 
-        const speedModePercent = document.getElementById("speedModePercent");
-        const speedModeBPM = document.getElementById("speedModeBPM");
-        const percentModeFields = document.getElementById("percentModeFields");
-        const bpmModeFields = document.getElementById("bpmModeFields");
-        const bpmModeFields2 = document.getElementById("bpmModeFields2");
-        const bpmInput = document.getElementById("bpmInput");
-        const linesPerMeasureInput = document.getElementById("linesPerMeasureInput");
+        const stageInfoBtn = qs("stageInfoBtn");
+        const stageInfoOverlay = qs("stageInfoOverlay");
 
-        const playlistSelectOverlay = document.getElementById("playlistSelectOverlay");
-        const playlistSelectTitle = document.getElementById("playlistSelectTitle");
-        const trackList = document.getElementById("trackList");
+        const editor = qs("editor");
+        const editorInfoBtn = qs("editorInfoBtn");
+        const editInfoOverlay = qs("editInfoOverlay");
+        const clearEditorBtn = qs("clearEditorBtn");
 
-        //Let
+        const saveSongBtn = qs("saveSongBtn");
+        const loadSongBtn = qs("loadSongBtn");
+        const editPlaylistBtn = qs("editPlaylistBtn");
 
+        const saveOverlay = qs("saveOverlay");
+        const songTitleInput = qs("songTitleInput");
+        const playlistInput = qs("playlistInput");
+        const saveConfirmBtn = qs("saveConfirmBtn");
+
+        const loadOverlay = qs("loadOverlay");
+        const playlistSelect = qs("playlistSelect");
+        const loadSongList = qs("loadSongList");
+
+        const editPlaylistOverlay = qs("editPlaylistOverlay");
+        const editPlaylistSelect = qs("editPlaylistSelect");
+        const playlistEditList = qs("playlistEditList");
+
+        const settingsOverlay = qs("settingsOverlay");
+        const speedPercentSlider = qs("speedPercentSlider");
+        const speedPercentLabel = qs("speedPercentLabel");
+        const fontSizeSlider = qs("fontSizeSlider");
+        const lineSpacingSlider = qs("lineSpacingSlider");
+
+        const speedModePercent = qs("speedModePercent");
+        const speedModeBPM = qs("speedModeBPM");
+        const percentModeFields = qs("percentModeFields");
+        const bpmModeFields = qs("bpmModeFields");
+        const bpmModeFields2 = qs("bpmModeFields2");
+        const bpmInput = qs("bpmInput");
+        const linesPerMeasureInput = qs("linesPerMeasureInput");
+
+        const playlistSelectOverlay = qs("playlistSelectOverlay");
+        const playlistSelectTitle = qs("playlistSelectTitle");
+        const trackList = qs("trackList");
+
+        /*-------------------------------------------------------
+          State
+        -------------------------------------------------------*/
         let currentOffsetY = 0;
-
         let currentSong = null;
-
 
         let isStageMode = true;
         let scrollAnimationId = null;
@@ -1384,73 +1476,62 @@
         let currentSongId = null;
 
         let snapPending = false;
-
         let wasScrollingBeforeDrag = false;
 
-        // legacy scrollSpeed kept for save compatibility
         const DEFAULT_SCROLL_SPEED = 4;
         let scrollSpeed = DEFAULT_SCROLL_SPEED;
 
-        // new scroll-speed model
+        // Percentage mode
         let speedPercent = 50;
         const maxPixelsPerSecond = 80;
 
-        // BPM mode: null = use percentage mode
+        // BPM mode
         let songBPM = null;
         let linesPerMeasure = 4;
 
-        let viewerFontSize = 10;
-        let viewerLineHeight = 2.4;
+        // Viewer layout
+        let viewerFontSize = 18;
+        let viewerLineHeight = 1.9;
 
-        // Platform‑specific default stage font size
-        (function setPlatformDefaultFont() {
-            const ua = navigator.userAgent || "";
-            const isIOS = /iPhone|iPad|iPod/i.test(ua);
-            const isWindows = /Windows NT/i.test(ua);
-
-            if (isIOS) {
-                // Bigger default on iPhone / iPad
-                viewerFontSize = 16;
-            } else if (isWindows) {
-                // Slightly smaller default on Windows desktop
-                viewerFontSize = 18;
-            } else {
-                // Other platforms (Mac, Android, etc.)
-                viewerFontSize = 18;
-            }
-        })();
-
-
+        // Snap + layout snapshots
         let canonicalBaseContentY = 0;
-        let initialSnapBaseContentY = null; // remember first load snap
+        let initialSnapBaseContentY = null;
 
-        // Snapshot of the last “good load” alignment
         let loadSnapshotBaseContentY = null;
         let loadSnapshotFontSize = null;
         let loadSnapshotLineHeight = null;
 
-        // START POINT: baseline for current song + layout
         let songStartBaseContentY = null;
         let songStartFontSize = null;
         let songStartLineHeight = null;
+        let songStartLineIndex = null;
 
+        /*-------------------------------------------------------
+          Platform font defaults
+        -------------------------------------------------------*/
+        (function setPlatformDefaultFont() {
+            try {
+                const ua = navigator.userAgent || "";
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isWindows = /Windows NT/i.test(ua);
 
-        function debugLog(...args) {
-            console.log("LyricFlow", ...args);
-        }
+                if (isIOS) viewerFontSize = 16;
+                else if (isWindows) viewerFontSize = 18;
+                else viewerFontSize = 18;
 
-        function updateResetEnabled() {
-            const atStart =
-                !isScrolling &&
-                elapsedTime === 0 &&
-                baseContentY === canonicalBaseContentY;
-            resetBtn.disabled = atStart;
-        }
+                debugLog("basic", "PLATFORM_FONT_INIT", { ua, viewerFontSize });
+            } catch (e) {
+                debugError("PLATFORM_FONT_ERROR", { error: e.message });
+            }
+        })();
 
-
-
+        /*-------------------------------------------------------
+          Status + time
+        -------------------------------------------------------*/
         function setStatus(text) {
+            if (!statusText) return;
             statusText.textContent = text;
+            debugLog("detail", "STATUS", { text });
         }
 
         function formatTime(ms) {
@@ -1461,208 +1542,260 @@
         }
 
         function updateTimeDisplay() {
+            if (!timeDisplay) return;
             timeDisplay.textContent = formatTime(elapsedTime);
         }
 
+        /*-------------------------------------------------------
+          Layout application
+        -------------------------------------------------------*/
         function applyScroll() {
-            viewerContent.style.transform = `translateY(${baseContentY}px)`;
+            if (!viewerContent || !viewerContent.style) return;
+            if (!Number.isFinite(baseContentY)) {
+                baseContentY = 0;
+            }
+            viewerContent.style.transform = "translateY(" + baseContentY + "px)";
+            debugLog("trace", "APPLY_SCROLL", { baseContentY });
         }
 
         function applyFontSize() {
-            viewer.style.fontSize = viewerFontSize + "px";
-            viewer.style.lineHeight = viewerLineHeight;
+            if (!viewer) return;
+            const size = Number.isFinite(viewerFontSize) ? viewerFontSize : 18;
+            const lh = Number.isFinite(viewerLineHeight) ? viewerLineHeight : 1.9;
+            viewer.style.fontSize = size + "px";
+            viewer.style.lineHeight = String(lh);
+            debugLog("detail", "APPLY_FONT", { viewerFontSize: size, viewerLineHeight: lh });
         }
 
-
-        function snapFirstLineIntoGlow(force = false) {
-            console.log(
-                'SNAP DEBUG entry, force:',
-                force,
-                'isStageMode:',
-                isStageMode,
-                'isDragging:',
-                isDragging,
-                'isScrolling:',
+        function updateResetEnabled() {
+            if (!resetBtn) return;
+            const atStart =
+                !isScrolling &&
+                elapsedTime === 0 &&
+                baseContentY === canonicalBaseContentY;
+            resetBtn.disabled = atStart;
+            debugLog("trace", "RESET_ENABLED", {
+                atStart,
                 isScrolling,
-                'baseContentY:',
+                elapsedTime,
                 baseContentY,
-                'currentTransform:',
-                viewerContent.style.transform,
-                'viewerFontSize:',
-                viewerFontSize,
-                'viewerLineHeight:',
-                viewerLineHeight
-            );
+                canonicalBaseContentY
+            });
+        }
 
-            if (isDragging) {
-                console.log('SNAP DEBUG skipped: dragging...');
-                return;
-            }
+        /*-------------------------------------------------------
+          Start-line selection + snapping
+        -------------------------------------------------------*/
+        function pickStartLyricLine(lines) {
+            const arr = Array.from(lines);
+            const canReuseIndex =
+                songStartLineIndex != null &&
+                songStartLineIndex >= 0 &&
+                songStartLineIndex < arr.length &&
+                baseContentY !== 0;
 
-            const currentTransform = viewerContent.style.transform;
-
-            if (!force) {
-                if (currentTransform && currentTransform !== 'translateY(0px)') {
-                    console.log(
-                        'SNAP DEBUG skipped: transform not reset, currentTransform:',
-                        currentTransform
-                    );
-                    return;
+            if (canReuseIndex) {
+                const saved = arr[songStartLineIndex];
+                if (saved && saved.textContent.trim()) {
+                    debugLog("detail", "PICK_START_REUSE", {
+                        index: songStartLineIndex,
+                        text: saved.textContent
+                    });
+                    return { line: saved, index: songStartLineIndex };
                 }
             }
 
-            const lines = document.querySelectorAll('.viewer-content-line');
-            const glowBand = document.querySelector('.viewer-highlight');
+            let firstNonBlank = -1;
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i].textContent.trim()) {
+                    firstNonBlank = i;
+                    break;
+                }
+            }
+            if (firstNonBlank === -1) {
+                debugLog("detail", "PICK_START_NONE", {});
+                return { line: null, index: null };
+            }
 
-            console.log(
-                'SNAP DEBUG elements, lineCount',
-                lines.length,
-                'hasGlow',
-                !!glowBand
-            );
+            let startIndex = firstNonBlank + 1;
+            if (startIndex >= arr.length || !arr[startIndex].textContent.trim()) {
+                startIndex = firstNonBlank;
+            }
+
+            debugLog("detail", "PICK_START_COMPUTED", {
+                index: startIndex,
+                text: arr[startIndex].textContent
+            });
+
+            return { line: arr[startIndex], index: startIndex };
+        }
+
+        function snapFirstLineIntoGlow(force) {
+            force = !!force;
+            debugLog("detail", "SNAP_ENTRY", {
+                force,
+                isStageMode,
+                isDragging,
+                isScrolling,
+                baseContentY,
+                canonicalBaseContentY,
+                viewerFontSize,
+                viewerLineHeight
+            });
+
+            if (!isStageMode || isDragging || isScrolling || !viewer || !viewerContent) {
+                return;
+            }
+
+            const lines = safeQuerySelectorAll(".viewer-content-line");
+            const glowBand = safeQuerySelector(".viewer-highlight");
 
             if (!lines.length || !glowBand) {
-                console.log(
-                    'SNAP DEBUG abort: no lines or glow band',
-                    'lines.length',
-                    lines.length,
-                    'glowBand',
-                    glowBand
-                );
+                debugError("SNAP_MISSING_ELEMENTS", {
+                    hasLines: !!lines.length,
+                    hasGlow: !!glowBand
+                });
+                return;
+            }
+
+            const picked = pickStartLyricLine(lines);
+            const targetLine = picked.line;
+            const targetIndex = picked.index;
+
+            if (!targetLine) {
+                debugError("SNAP_NO_TARGET_LINE", {});
                 return;
             }
 
             const viewerRect = viewer.getBoundingClientRect();
             const glowRect = glowBand.getBoundingClientRect();
+            const lineRect = targetLine.getBoundingClientRect();
 
-            let firstLine = lines[0];
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].textContent.trim()) {
-                    firstLine = lines[i];
-                    break;
-                }
-            }
-
-            const lineRect = firstLine.getBoundingClientRect();
             const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
             const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
 
-            console.log('SNAP DEBUG geometry', {
-                viewerRect,
-                glowRect,
-                lineRect,
-                glowCenter,
-                lineCenter,
-            });
-
-            if (
+            const invalid =
                 !Number.isFinite(glowCenter) ||
                 !Number.isFinite(lineCenter) ||
                 glowRect.height === 0 ||
-                lineRect.height === 0
-            ) {
-                console.log(
-                    'SNAP DEBUG retry next frame: invalid geometry',
+                lineRect.height === 0 ||
+                viewerRect.height === 0;
+
+            debugLog("detail", "SNAP_GEOMETRY", {
+                glowCenter,
+                lineCenter,
+                targetIndex,
+                lineText: targetLine.textContent,
+                invalid
+            });
+
+            if (invalid) {
+                debugError("SNAP_INVALID_GEOMETRY", {
                     glowRect,
                     lineRect,
-                    glowCenter,
-                    lineCenter
-                );
-                requestAnimationFrame(() => snapFirstLineIntoGlow(force));
+                    viewerRect
+                });
                 return;
             }
 
-            const delta = glowCenter - lineCenter;
+            if (canonicalBaseContentY != null && !force) {
+                baseContentY = canonicalBaseContentY;
+                applyScroll();
+            } else {
+                const delta = glowCenter - lineCenter;
+                const newBase = baseContentY + delta;
+                baseContentY = newBase;
+                applyScroll();
+                canonicalBaseContentY = baseContentY;
 
-            console.log(
-                'SNAP DEBUG applying, baseBefore',
-                baseContentY,
-                'delta',
-                delta,
-                'newBase',
-                baseContentY + delta
-            );
-
-            baseContentY += delta;
-            applyScroll();
-            canonicalBaseContentY = baseContentY;
-
-            // Capture START POINT only when Stage is active and geometry is valid
-            if (isStageMode) {
                 songStartBaseContentY = baseContentY;
                 songStartFontSize = viewerFontSize;
                 songStartLineHeight = viewerLineHeight;
-                console.log('START POINT captured', {
+                songStartLineIndex =
+                    typeof targetIndex === "number" ? targetIndex : 0;
+
+                debugLog("detail", "SNAP_SONG_START_CAPTURED", {
                     songStartBaseContentY,
                     songStartFontSize,
                     songStartLineHeight,
-                });
-            } else {
-                console.log('START POINT not captured (not in Stage mode)', {
-                    isStageMode,
+                    songStartLineIndex
                 });
             }
 
             if (initialSnapBaseContentY === null) {
                 initialSnapBaseContentY = baseContentY;
-                elapsedTime = 0;
-                updateResetEnabled();
             }
 
-            console.log(
-                'SNAP DEBUG result, baseAfter',
+            elapsedTime = 0;
+            updateResetEnabled();
+
+            debugLog("detail", "SNAP_RESULT", {
                 baseContentY,
-                'transform',
-                viewerContent.style.transform
-            );
+                canonicalBaseContentY,
+                transform: viewerContent.style.transform
+            });
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        function bpmToPixelsPerSecond(bpm, linesPerMeasure) {
-            const beatsPerSecond = bpm / 60;
-            const measuresPerSecond = beatsPerSecond / 4;
-            const linesPerSecond = measuresPerSecond * linesPerMeasure;
-            const pixelsPerLine = viewerFontSize * viewerLineHeight;
-            return linesPerSecond * pixelsPerLine;
+        function snapAfterLayout() {
+            if (!viewerContent) return;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    debugLog("detail", "LAYOUT_SNAP_CALL", {
+                        baseContentY,
+                        viewerFontSize,
+                        viewerLineHeight,
+                        canonicalBaseContentY
+                    });
+                    snapFirstLineIntoGlow(true);
+                });
+            });
         }
 
-
-
-        function bpmToPixelsPerSecond(bpm, linesPerMeasure) {
+        /*-------------------------------------------------------
+          Scroll maths
+        -------------------------------------------------------*/
+        function bpmToPixelsPerSecondInternal(bpm, lpm) {
+            bpm = Number(bpm) || 0;
+            lpm = Number(lpm) || 0;
+            if (bpm <= 0 || lpm <= 0 || !viewerFontSize || !viewerLineHeight) return 0;
             const beatsPerSecond = bpm / 60;
             const measuresPerSecond = beatsPerSecond / 4;
-            const linesPerSecond = measuresPerSecond * linesPerMeasure;
+            const linesPerSecond = measuresPerSecond * lpm;
             const pixelsPerLine = viewerFontSize * viewerLineHeight;
-            return linesPerSecond * pixelsPerLine;
+            const pps = linesPerSecond * pixelsPerLine;
+            return Number.isFinite(pps) ? pps : 0;
         }
 
         function getPixelsPerSecond() {
             if (songBPM !== null) {
-                return bpmToPixelsPerSecond(songBPM, linesPerMeasure);
+                const pps = bpmToPixelsPerSecondInternal(songBPM, linesPerMeasure);
+                debugLog("trace", "SCROLL_PPS_BPM", {
+                    songBPM,
+                    linesPerMeasure,
+                    pps
+                });
+                return Math.max(0, pps);
             }
-            return (maxPixelsPerSecond * speedPercent) / 100;
+
+            const sp = Math.max(0, Math.min(100, Number(speedPercent) || 0));
+            const pps = (maxPixelsPerSecond * sp) / 100;
+            debugLog("trace", "SCROLL_PPS_PERCENT", {
+                speedPercent: sp,
+                maxPixelsPerSecond,
+                pps
+            });
+            return Math.max(0, pps);
         }
 
+        /*-------------------------------------------------------
+          Auto scroll
+        -------------------------------------------------------*/
         function autoScroll(timestamp) {
-            if (!isScrolling) return;
+            if (!isScrolling || !viewer || !viewerContent) return;
 
             const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
             if (pixelsPerSecond === 0) {
+                debugLog("detail", "AUTO_SCROLL_ZERO_SPEED", {});
                 pauseScroll();
                 return;
             }
@@ -1670,29 +1803,43 @@
             if (lastFrameTime == null) {
                 lastFrameTime = timestamp;
                 if (!startTime) startTime = timestamp;
-                debugLog("autoScroll first frame, baseContentY", baseContentY.toFixed(2));
+                debugLog("detail", "AUTO_SCROLL_FIRST_FRAME", {
+                    baseContentY,
+                    pixelsPerSecond
+                });
                 scrollAnimationId = requestAnimationFrame(autoScroll);
                 return;
             }
 
             const delta = timestamp - lastFrameTime;
             lastFrameTime = timestamp;
-            elapsedTime = timestamp - startTime;
+            elapsedTime = timestamp - (startTime || timestamp);
             updateTimeDisplay();
 
             const distance = (pixelsPerSecond * delta) / 1000;
-
+            if (!Number.isFinite(baseContentY)) baseContentY = 0;
             baseContentY -= distance;
             applyScroll();
 
             const railRect = viewer.getBoundingClientRect();
             const contentRect = viewerContent.getBoundingClientRect();
 
+            debugLog("trace", "AUTO_SCROLL_FRAME", {
+                delta,
+                distance,
+                baseContentY,
+                railRectTop: railRect.top,
+                contentBottom: contentRect.bottom
+            });
+
             if (contentRect.bottom <= railRect.top + railRect.height * 0.4) {
                 pauseScroll();
                 setStatus("End of lyrics");
-                resetBtn.classList.add("btn-attention");
-                setTimeout(() => resetBtn.classList.remove("btn-attention"), 900);
+                if (resetBtn) {
+                    resetBtn.classList.add("btn-attention");
+                    setTimeout(() => resetBtn.classList.remove("btn-attention"), 900);
+                }
+                debugLog("detail", "AUTO_SCROLL_END_REACHED", {});
                 return;
             }
 
@@ -1701,28 +1848,32 @@
         }
 
         function startScroll() {
+            if (!isStageMode || !viewer || !viewerContent) return;
             if (isScrolling) return;
 
             const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
             if (pixelsPerSecond === 0) {
                 setStatus("Speed is 0 – raise scroll speed in Settings");
-                startBtn.classList.add("btn-attention");
-                setTimeout(() => startBtn.classList.remove("btn-attention"), 900);
+                if (startBtn) {
+                    startBtn.classList.add("btn-attention");
+                    setTimeout(() => startBtn.classList.remove("btn-attention"), 900);
+                }
+                debugLog("detail", "START_SCROLL_SPEED_ZERO", {});
                 return;
             }
 
             isScrolling = true;
             setStatus("Scrolling");
-            startBtn.disabled = true;
-            pauseBtn.disabled = false;
+            if (startBtn) startBtn.disabled = true;
+            if (pauseBtn) pauseBtn.disabled = false;
             lastFrameTime = null;
             startTime = performance.now();
-            debugLog(
-                "startScroll begin, pixelsPerSecond",
-                pixelsPerSecond.toFixed(2),
-                "baseContentY",
-                baseContentY.toFixed(2)
-            );
+
+            debugLog("detail", "START_SCROLL", {
+                pixelsPerSecond,
+                baseContentY
+            });
+
             scrollAnimationId = requestAnimationFrame(autoScroll);
             updateResetEnabled();
         }
@@ -1731,24 +1882,34 @@
             if (!isScrolling) return;
             isScrolling = false;
             setStatus("Paused");
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
+            if (startBtn) startBtn.disabled = false;
+            if (pauseBtn) pauseBtn.disabled = true;
+
             if (scrollAnimationId) {
-                cancelAnimationFrame(scrollAnimationId);
+                try {
+                    cancelAnimationFrame(scrollAnimationId);
+                } catch (_) { }
                 scrollAnimationId = null;
             }
-            debugLog("pauseScroll paused at transform", viewerContent.style.transform);
+
+            debugLog("detail", "PAUSE_SCROLL", {
+                transform: viewerContent && viewerContent.style
+                    ? viewerContent.style.transform
+                    : null,
+                baseContentY,
+                elapsedTime
+            });
+
             updateResetEnabled();
         }
 
-        // AFTER (only call goToInitialStageState when layout changed):
         function resetScroll() {
-            if (!currentSong) {
-                console.log("RESET aborted, no currentSong");
+            if (!currentSong || !viewer || !viewerContent) {
+                debugLog("detail", "RESET_NO_SONG_OR_VIEWER", {});
                 return;
             }
 
-            console.log("RESET entry", {
+            debugLog("detail", "RESET_ENTRY", {
                 baseContentY,
                 canonicalBaseContentY,
                 songStartBaseContentY,
@@ -1757,367 +1918,153 @@
                 viewerFontSize,
                 viewerLineHeight,
                 isStageMode,
-                isScrolling,
+                isScrolling
             });
 
-            // Stop any scrolling and reset time
             pauseScroll();
             elapsedTime = 0;
-            updateTimeDisplay(0);
+            updateTimeDisplay();
 
-            // Determine whether baseline START POINT can still be trusted
             const layoutMatchesStart =
                 songStartBaseContentY != null &&
                 songStartFontSize === viewerFontSize &&
                 songStartLineHeight === viewerLineHeight;
 
-            console.log("RESET layout check", {
-                layoutMatchesStart,
-                songStartBaseContentY,
-                songStartFontSize,
-                songStartLineHeight,
-                currentFontSize: viewerFontSize,
-                currentLineHeight: viewerLineHeight,
-            });
-
             if (layoutMatchesStart) {
-                // Case 1: layout unchanged – use original START POINT only.
                 baseContentY = songStartBaseContentY;
                 canonicalBaseContentY = songStartBaseContentY;
-                console.log("RESET using START POINT (layout unchanged)", {
-                    baseContentY,
-                    canonicalBaseContentY,
-                });
+                applyScroll();
             } else {
-                // Case 2: layout changed (font / line spacing / content).
-                // Reset to 0; Stage geometry snap will recompute alignment.
                 baseContentY = 0;
                 canonicalBaseContentY = 0;
-                console.log(
-                    "RESET fallback – layout changed, will re-snap via geometry",
-                    {
-                        baseContentY,
-                        canonicalBaseContentY,
-                        viewerFontSize,
-                        viewerLineHeight,
-                    }
-                );
+                applyScroll();
+
+                if (isStageMode) {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            snapFirstLineIntoGlow(true);
+                        });
+                    });
+                }
             }
 
-            applyScroll();
-
-            // Reset drag state and viewport scroll
             isDragging = false;
-            dragStartY = null;
+            dragStartY = 0;
             dragStartBaseY = 0;
-            viewer.parentElement.scrollTop = 0;
+            if (viewer && viewer.parentElement) {
+                viewer.parentElement.scrollTop = 0;
+            }
             viewer.scrollTop = 0;
 
             updateResetEnabled();
 
-            console.log("RESET exit (before optional Stage re-snap)", {
+            debugLog("detail", "RESET_EXIT", {
                 baseContentY,
                 canonicalBaseContentY,
                 transform: viewerContent.style.transform,
-                parentScroll: viewer.parentElement.scrollTop,
-                viewerScroll: viewer.scrollTop,
-                layoutMatchesStart,
+                layoutMatchesStart
             });
-
-            // CRITICAL: only run full goToInitialStageState when layout changed.
-            // When layoutMatchesStart is true, we already restored the exact
-            // START POINT and must NOT override it.
-            if (isStageMode && !layoutMatchesStart) {
-                console.log(
-                    "RESET calling goToInitialStageState from resetScroll (layout changed)",
-                    {
-                        caller: "resetScroll",
-                        layoutMatchesStart,
-                        viewerFontSize,
-                        viewerLineHeight,
-                    }
-                );
-                goToInitialStageState("resetScroll");
-            }
         }
 
-
-
-
-
-
-
-
+        /*-------------------------------------------------------
+          Stage state logging
+        -------------------------------------------------------*/
         function logStageState(tag) {
+            if (!viewerContent) return;
             const rect = viewerContent.getBoundingClientRect();
-            console.log(
-                "STATE",
-                tag,
-                {
-                    baseContentY,
-                    canonicalBaseContentY,
-                    elapsedTime,
-                    isScrolling,
-                    isDragging,
-                    dragStartY,
-                    dragStartBaseY,
-                    transform: viewerContent.style.transform,
-                    contentTop: rect.top,
-                    contentBottom: rect.bottom,
-                }
-            );
+            debugLog("detail", "STATE_" + tag, {
+                baseContentY,
+                canonicalBaseContentY,
+                elapsedTime,
+                isScrolling,
+                isDragging,
+                dragStartY,
+                dragStartBaseY,
+                transform: viewerContent.style.transform,
+                contentTop: rect.top,
+                contentBottom: rect.bottom
+            });
         }
 
-        // NEW: compute baseContentY that centers the first non-blank lyric line in the glow
-        function computeFirstLineGlowBase(tag = "COMPUTE_GLOW_BASE") {
-            const lines = document.querySelectorAll(".viewer-content-line");
-            const glowBand = document.querySelector(".viewer-highlight");
-
-            const viewerRect = viewer.getBoundingClientRect();
-            const glowRect = glowBand ? glowBand.getBoundingClientRect() : null;
-
-            if (!lines.length || !glowBand || !glowRect) {
-                console.log("GLOW BASE DEBUG abort", {
-                    tag,
-                    lineCount: lines.length,
-                    hasGlow: !!glowBand,
-                    glowRect,
-                });
-                return null;
-            }
-
-            // Choose first non-blank line as the target lyric line
-            let firstLine = lines[0];
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].textContent.trim()) {
-                    firstLine = lines[i];
-                    break;
-                }
-            }
-
-            const lineRect = firstLine.getBoundingClientRect();
-
-            const glowCenter =
-                glowRect.top + glowRect.height / 2 - viewerRect.top;
-            const lineCenter =
-                lineRect.top + lineRect.height / 2 - viewerRect.top;
-
-            console.log("GLOW BASE DEBUG geometry", {
-                tag,
-                viewerRect,
-                glowRect,
-                lineRect,
-                glowCenter,
-                lineCenter,
-            });
-
-            if (
-                !Number.isFinite(glowCenter) ||
-                !Number.isFinite(lineCenter) ||
-                glowRect.height === 0 ||
-                lineRect.height === 0
-            ) {
-                console.log("GLOW BASE DEBUG invalid geometry", {
-                    tag,
-                    glowRect,
-                    lineRect,
-                    glowCenter,
-                    lineCenter,
-                });
-                return null;
-            }
-
-            const delta = glowCenter - lineCenter;
-            const targetBase = baseContentY + delta;
-
-            console.log("GLOW BASE DEBUG result", {
-                tag,
-                baseBefore: baseContentY,
-                delta,
-                targetBase,
-                fontSize: viewerFontSize,
-                lineHeight: viewerLineHeight,
-            });
-
-            return targetBase;
-        }
-
-        // Drag wiring for stage viewer (pointer)
-        viewer.addEventListener("pointerdown", (e) => {
-            if (!isStageMode) return;
-            e.preventDefault();
-            viewer.setPointerCapture(e.pointerId);
-            handleDragStart(e.clientY);
-        });
-
-        viewer.addEventListener("pointermove", (e) => {
-            if (!isStageMode) return;
-            if (!isDragging) return;
-            handleDragMove(e.clientY);
-        });
-
-        viewer.addEventListener("pointerup", () => {
-            if (!isStageMode) return;
-            handleDragEnd();
-        });
-
-        viewer.addEventListener("pointercancel", () => {
-            if (!isStageMode) return;
-            handleDragEnd();
-        });
-
-
-        // AFTER:
-        function goToInitialStageState(caller = "unknown") {
-            console.log("LyricFlow RESET begin", {
+        /*-------------------------------------------------------
+          Initial stage layout
+        -------------------------------------------------------*/
+        function goToInitialStageState(caller) {
+            caller = caller || "unknown";
+            debugLog("detail", "STAGE_RESET_BEGIN", {
                 caller,
                 isStageMode,
                 isScrolling,
                 baseContentY,
-                transform: viewerContent.style.transform,
+                transform: viewerContent && viewerContent.style
+                    ? viewerContent.style.transform
+                    : "none",
                 viewerFontSize,
                 viewerLineHeight,
+                canonicalBaseContentY
             });
 
-            logStageState("RESETbefore-pause");
-
+            logStageState("RESET_BEFORE_PAUSE");
             pauseScroll();
-            elapsedTime = 0;
-            updateTimeDisplay(0);
 
-            // Prefer the exact alignment that worked after the last good load/snap,
-            // but only if font size/line height still match.
             const canUseLoadSnapshot =
+                caller === "loadSongIntoUI" &&
                 loadSnapshotBaseContentY != null &&
                 loadSnapshotFontSize === viewerFontSize &&
                 loadSnapshotLineHeight === viewerLineHeight;
 
-            console.log("RESET snapshot check", {
+            const hasCanonical = canonicalBaseContentY != null;
+
+            if (canUseLoadSnapshot) {
+                baseContentY = loadSnapshotBaseContentY;
+                canonicalBaseContentY = loadSnapshotBaseContentY;
+            } else if (hasCanonical && caller !== "settingsChange") {
+                baseContentY = canonicalBaseContentY;
+            } else {
+                baseContentY = 0;
+            }
+
+            elapsedTime = 0;
+            applyScroll();
+
+            logStageState("RESET_AFTER_BASE");
+
+            debugLog("detail", "STAGE_RESET_AFTER_BASE_SET", {
                 caller,
                 canUseLoadSnapshot,
                 loadSnapshotBaseContentY,
-                loadSnapshotFontSize,
-                loadSnapshotLineHeight,
-                currentFontSize: viewerFontSize,
-                currentLineHeight: viewerLineHeight,
+                baseContentY,
+                canonicalBaseContentY: canonicalBaseContentY == null
+                    ? "null"
+                    : canonicalBaseContentY
             });
 
-            if (caller === "resetScroll" && canUseLoadSnapshot) {
-                baseContentY = loadSnapshotBaseContentY;
-                canonicalBaseContentY = loadSnapshotBaseContentY;
-                console.log("RESET using load snapshot", {
-                    baseContentY,
-                    viewerFontSize,
-                    viewerLineHeight,
-                });
-            } else {
-                baseContentY = 0;
-                canonicalBaseContentY = 0;
-                console.log("RESET falling back to geometry snap", {
-                    caller,
-                    baseContentY,
-                    viewerFontSize,
-                    viewerLineHeight,
-                });
-            }
-
-            applyScroll();
-
-            logStageState("RESETafter-zero-or-canonical");
-
-            isDragging = false;
-            dragStartY = null;
-            dragStartBaseY = 0;
-
-            // Ensure viewport scroll is pristine
-            viewer.parentElement.scrollTop = 0;
-            viewer.scrollTop = 0;
-
-            console.log("LyricFlow RESET after base set", {
-                caller,
-                canUseLoadSnapshot: caller === "resetScroll" && canUseLoadSnapshot,
-                loadSnapshotBaseContentY,
-                baseContentY: baseContentY.toFixed(2),
-                canonicalBaseContentY: canonicalBaseContentY.toFixed(2),
-                transform: viewerContent.style.transform,
-                parentScroll: viewer.parentElement.scrollTop,
-                viewerScroll: viewer.scrollTop,
-            });
-
-            // For resetScroll and loadSongIntoUI, always go through snapFirstLineIntoGlow
-            // so reset visually matches a fresh load.
-            if (caller === "resetScroll") {
-                // Double frame for resetScroll to avoid zero-rect issue.
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        console.log(
-                            "LyricFlow RESET double frame calling snapFirstLineIntoGlow for resetScroll",
-                            {
-                                viewerFontSize,
-                                viewerLineHeight,
-                            }
-                        );
-                        logStageState("RESETbefore-snap");
-                        snapFirstLineIntoGlow(true);
-                        logStageState("RESETafter-snap");
-                    });
-                });
-            } else {
-                // Load and other callers: single frame snap.
-                requestAnimationFrame(() => {
-                    console.log(
-                        "LyricFlow RESET single frame calling snapFirstLineIntoGlow",
-                        {
-                            caller,
-                            viewerFontSize,
-                            viewerLineHeight,
-                        }
-                    );
-                    logStageState("RESETbefore-snap");
-                    snapFirstLineIntoGlow(true);
-                    logStageState("RESETafter-snap");
-                });
+            if (isStageMode) {
+                snapAfterLayout();
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        /*-------------------------------------------------------
+          Drag handling
+        -------------------------------------------------------*/
         function handleDragStart(y) {
-            console.log('DRAG: start', { y, wasScrollingBeforeDrag: isScrolling });
-            logStageState('DRAG start');
-            snapPending = false;           // keep this line
+            if (!viewer || !viewerContent) return;
+            debugLog("detail", "DRAG_START", {
+                y,
+                wasScrollingBeforeDrag: isScrolling,
+                baseContentY
+            });
+            logStageState("DRAG_START");
+
+            snapPending = false;
             wasScrollingBeforeDrag = isScrolling;
             if (isScrolling) pauseScroll();
 
             isDragging = true;
 
             viewerContent.style.transition = "none";
-            viewer.style.cursor = "grabbing";
             viewerContent.style.opacity = 0.8;
+            viewer.style.cursor = "grabbing";
 
             dragStartY = y;
             dragStartBaseY = baseContentY;
@@ -2125,34 +2072,31 @@
             setStatus("Manual drag");
         }
 
-
         function clampDragY(rawY) {
+            if (!viewer || !viewerContent) return rawY;
+
             const viewerRect = viewer.getBoundingClientRect();
             const contentRect = viewerContent.getBoundingClientRect();
             const viewerHeight = viewerRect.height;
             const contentHeight = contentRect.height;
 
-            // How much extra room you allow beyond the natural edges
-            const padding = viewerHeight * 0.3; // 30% of screen height
+            const padding = viewerHeight * 0.3;
 
-            let topLimit, bottomLimit;
+            let topLimit;
+            let bottomLimit;
 
             if (contentHeight <= viewerHeight) {
-                // Short content: allow some wiggle but never lose it entirely
                 const wiggle = viewerHeight * 0.5;
                 topLimit = wiggle;
                 bottomLimit = -wiggle;
             } else {
-                // Tall content:
-                // - topLimit: you can't push content so far down that the first line goes below the bottom
-                // - bottomLimit: you can't push so far up that the last line goes above the top
                 topLimit = padding;
                 bottomLimit = viewerHeight - contentHeight - padding;
             }
 
             const clamped = Math.max(bottomLimit, Math.min(topLimit, rawY));
 
-            debugLog("clampDragY", {
+            debugLog("trace", "DRAG_CLAMP", {
                 before: rawY,
                 after: clamped,
                 viewerHeight,
@@ -2164,147 +2108,233 @@
             return clamped;
         }
 
-
-
-
-
-
-
-
         function handleDragMove(y) {
             if (!isDragging) return;
-
             const deltaY = y - dragStartY;
-            const dampedDelta = deltaY;
-
-            let unclampedY = dragStartBaseY + dampedDelta;
-
+            const unclampedY = dragStartBaseY + deltaY;
             const newY = clampDragY(unclampedY);
             baseContentY = newY;
             applyScroll();
 
-            console.log('DRAG: move', { y, deltaY, unclampedY, newY });
+            debugLog("trace", "DRAG_MOVE", {
+                y,
+                deltaY,
+                unclampedY,
+                newY
+            });
         }
 
         function handleDragEnd() {
             if (!isDragging) return;
-            console.log('DRAG: end BEFORE');
-            logStageState('DRAG end BEFORE');
+
+            debugLog("detail", "DRAG_END_BEFORE", {});
+            logStageState("DRAG_END_BEFORE");
 
             isDragging = false;
-            viewer.style.cursor = 'grab';
-            viewerContent.style.opacity = 1;
-            viewerContent.style.transition = 'transform 0.08s ease-out';
+            if (viewer) viewer.style.cursor = "grab";
+            if (viewerContent) {
+                viewerContent.style.opacity = 1;
+                viewerContent.style.transition = "transform 0.08s ease-out";
+            }
 
-            console.log('DRAG: end AFTER flags reset, will decide resume');
             const shouldResume =
                 wasScrollingBeforeDrag && isStageMode && wasScrollingBeforeDrag !== false;
-            console.log('DRAG: end shouldResume', { shouldResume, wasScrollingBeforeDrag, isStageMode });
+
+            debugLog("detail", "DRAG_END_DECISION", {
+                shouldResume,
+                wasScrollingBeforeDrag,
+                isStageMode
+            });
 
             if (shouldResume) {
                 startScroll();
             } else {
                 const effective = Math.max(0, getPixelsPerSecond());
-                setStatus(effective === 0 ? 'Ready • speed 0' : 'Ready');
+                setStatus(effective === 0 ? "Ready • speed 0" : "Ready");
                 updateResetEnabled();
             }
 
-            logStageState('DRAG end AFTER');
+            logStageState("DRAG_END_AFTER");
         }
 
+        if (viewer) {
+            safeAddListener(viewer, "pointerdown", (e) => {
+                if (!isStageMode) return;
+                e.preventDefault();
+                try {
+                    viewer.setPointerCapture(e.pointerId);
+                } catch (_) { }
+                handleDragStart(e.clientY);
+            });
 
+            safeAddListener(viewer, "pointermove", (e) => {
+                if (!isStageMode || !isDragging) return;
+                handleDragMove(e.clientY);
+            });
 
+            safeAddListener(viewer, "pointerup", () => {
+                if (!isStageMode) return;
+                handleDragEnd();
+            });
+
+            safeAddListener(viewer, "pointercancel", () => {
+                if (!isStageMode) return;
+                handleDragEnd();
+            });
+
+            safeAddListener(viewer, "mousedown", (e) => {
+                if (!isStageMode) return;
+                e.preventDefault();
+                handleDragStart(e.clientY);
+            });
+
+            safeAddListener(
+                viewer,
+                "touchstart",
+                (e) => {
+                    if (!isStageMode) return;
+                    const touch = e.touches[0];
+                    if (!touch) return;
+                    e.preventDefault();
+                    handleDragStart(touch.clientY);
+                },
+                { passive: false }
+            );
+        }
+
+        safeAddListener(window, "mouseup", () => {
+            handleDragEnd();
+        });
+
+        safeAddListener(
+            window,
+            "touchmove",
+            (e) => {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                if (!touch) return;
+                e.preventDefault();
+                handleDragMove(touch.clientY);
+            },
+            { passive: false }
+        );
+
+        safeAddListener(window, "touchend", () => {
+            handleDragEnd();
+        });
+
+        /*-------------------------------------------------------
+          Viewer rebuild from editor
+        -------------------------------------------------------*/
         function rebuildViewerFromEditor() {
-            const text = editor.value;
-            viewerContent.innerHTML = '';
+            if (!viewerContent || !editor) return;
+            const text = editor.value || "";
+            viewerContent.innerHTML = "";
 
-            const lines = text.split('\n');
-            lines.forEach(rawLine => {
-                const line = rawLine.replace(/\r/g, '');
+            const lines = text.split("\n");
+            lines.forEach((rawLine) => {
+                const line = rawLine.replace(/\r/g, "");
                 const isBlank = !line.trim();
-                const span = document.createElement('span');
-                span.className = 'viewer-content-line';
-                span.textContent = isBlank ? '\u00A0' : line;
+                const span = document.createElement("span");
+                span.className = "viewer-content-line";
+                span.textContent = isBlank ? "\u00A0" : line;
                 viewerContent.appendChild(span);
             });
 
-            // Keep content aligned where it is; don't zero + snap here.
-            // Stage reset / load will take care of snapping when needed.
-            // If you really want to reset when editing, you can leave baseContentY = 0,
-            // but don't call snapFirstLineIntoGlow from here.
-
             baseContentY = 0;
+            canonicalBaseContentY = 0;
             applyScroll();
+            setStatus("Viewer mirrored from editor");
 
-            setStatus('Viewer mirrored from editor');
+            debugLog("detail", "VIEWER_REBUILT", {
+                lineCount: lines.length
+            });
+
+            if (isStageMode) {
+                snapAfterLayout();
+            }
         }
 
+        if (editor) {
+            safeAddListener(editor, "input", rebuildViewerFromEditor);
+        }
 
+        if (clearEditorBtn) {
+            safeAddListener(clearEditorBtn, "click", () => {
+                if (!editor) return;
+                editor.value = "";
+                rebuildViewerFromEditor();
+                debugLog("detail", "EDITOR_CLEARED", {});
+            });
+        }
 
-        editor.addEventListener("input", rebuildViewerFromEditor);
+        /*-------------------------------------------------------
+          Mode toggle
+        -------------------------------------------------------*/
+        if (modeToggle) {
+            safeAddListener(modeToggle, "click", () => {
+                isStageMode = !isStageMode;
+                debugLog("detail", "MODE_TOGGLE", { isStageMode });
 
-        clearEditorBtn.addEventListener("click", () => {
-            editor.value = "";
-            rebuildViewerFromEditor();
-        });
+                if (isStageMode) {
+                    viewerCard && viewerCard.classList.remove("hidden");
+                    editorCard && editorCard.classList.add("hidden");
+                    bottomBar && bottomBar.classList.remove("hidden");
+                    const span = modeToggle.querySelector("span");
+                    if (span) {
+                        span.innerHTML =
+                            "<strong>Stage mode</strong> <small>· tap for edit</small>";
+                    }
+                    setStatus("Ready");
+                    settingsBtnBottom && settingsBtnBottom.classList.remove("hidden");
+                    document
+                        .querySelectorAll(".stage-only")
+                        .forEach((el) => el.classList.remove("hidden"));
+                    goToInitialStageState("modeToggle");
+                } else {
+                    pauseScroll();
+                    viewerCard && viewerCard.classList.add("hidden");
+                    editorCard && editorCard.classList.remove("hidden");
+                    bottomBar && bottomBar.classList.add("hidden");
+                    const span = modeToggle.querySelector("span");
+                    if (span) {
+                        span.innerHTML =
+                            "<strong>Edit mode</strong> <small>· tap for stage</small>";
+                    }
+                    setStatus("Edit lyrics – viewer mirrors automatically");
+                    settingsBtnBottom && settingsBtnBottom.classList.add("hidden");
+                    document
+                        .querySelectorAll(".stage-only")
+                        .forEach((el) => el.classList.add("hidden"));
+                }
+            });
+        }
 
-        /* Mode toggle */
+        /*-------------------------------------------------------
+          Transport controls
+        -------------------------------------------------------*/
+        if (startBtn) {
+            safeAddListener(startBtn, "click", () => {
+                if (!isStageMode) return;
+                startScroll();
+            });
+        }
 
-        modeToggle.addEventListener("click", () => {
-            isStageMode = !isStageMode;
-            if (isStageMode) {
-                viewerCard.classList.remove("hidden");
-                editorCard.classList.add("hidden");
-                bottomBar.classList.remove("hidden");
-                modeToggle.querySelector("span").innerHTML =
-                    "<strong>Stage mode</strong> <small>· tap for edit</small>";
-                setStatus("Ready");
-                settingsBtnBottom.classList.remove("hidden");
-                // Show stage-only buttons
-                document.querySelectorAll('.stage-only').forEach(el => el.classList.remove('hidden'));
-            } else {
+        if (pauseBtn) {
+            safeAddListener(pauseBtn, "click", () => {
+                if (!isStageMode) return;
                 pauseScroll();
-                viewerCard.classList.add("hidden");
-                editorCard.classList.remove("hidden");
-                bottomBar.classList.add("hidden");
-                modeToggle.querySelector("span").innerHTML =
-                    "<strong>Edit mode</strong> <small>· tap for stage</small>";
-                setStatus("Edit lyrics – viewer mirrors automatically");
-                settingsBtnBottom.classList.add("hidden");
-                // Hide stage-only buttons
-                document.querySelectorAll('.stage-only').forEach(el => el.classList.add('hidden'));
-            }
-        });
+            });
+        }
 
+        if (resetBtn) {
+            safeAddListener(resetBtn, "click", () => {
+                resetScroll();
+            });
+        }
 
-
-        /* Transport */
-
-        startBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            startScroll();
-        });
-
-        pauseBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            pauseScroll();
-        });
-
-        // AFTER:
-        resetBtn.addEventListener('click', () => {
-            // Always reset the current song back to start, using current settings.
-            resetScroll();
-        })
-
-
-
-
-
-
-
-        /* Keyboard */
-
-        document.addEventListener("keydown", (e) => {
+        // keyboard shortcuts
+        safeAddListener(document, "keydown", (e) => {
             if (!isStageMode) return;
             if (e.target === editor) return;
 
@@ -2322,18 +2352,19 @@
             }
         });
 
-        /* Settings: scroll speed, font, spacing */
-
+        /*-------------------------------------------------------
+          Settings – scroll, font, spacing
+        -------------------------------------------------------*/
         function updateSpeedModeUI() {
-            const isBPMMode = speedModeBPM.checked;
-
-            percentModeFields.classList.toggle("hidden", isBPMMode);
-            bpmModeFields.classList.toggle("hidden", !isBPMMode);
-            bpmModeFields2.classList.toggle("hidden", !isBPMMode);
+            const isBPMMode = speedModeBPM && speedModeBPM.checked;
+            if (percentModeFields) percentModeFields.classList.toggle("hidden", isBPMMode);
+            if (bpmModeFields) bpmModeFields.classList.toggle("hidden", !isBPMMode);
+            if (bpmModeFields2) bpmModeFields2.classList.toggle("hidden", !isBPMMode);
 
             if (isBPMMode) {
-                songBPM = parseInt(bpmInput.value, 10) || 120;
-                linesPerMeasure = parseInt(linesPerMeasureInput.value, 10) || 4;
+                songBPM = parseInt(bpmInput && bpmInput.value, 10) || 120;
+                linesPerMeasure =
+                    parseFloat(linesPerMeasureInput && linesPerMeasureInput.value) || 4;
             } else {
                 songBPM = null;
             }
@@ -2342,334 +2373,296 @@
                 const pps = getPixelsPerSecond();
                 setStatus(pps === 0 ? "Ready (speed 0)" : "Ready");
             }
+
+            debugLog("detail", "SPEED_MODE_UPDATE", {
+                isBPMMode,
+                songBPM,
+                linesPerMeasure,
+                speedPercent
+            });
         }
 
         function openSettings() {
-            if (songBPM !== null) {
+            debugLog("detail", "SETTINGS_OPEN", {
+                songBPM,
+                linesPerMeasure,
+                speedPercent,
+                viewerFontSize,
+                viewerLineHeight
+            });
+
+            if (songBPM !== null && speedModeBPM) {
                 speedModeBPM.checked = true;
-                bpmInput.value = songBPM;
-                linesPerMeasureInput.value = String(linesPerMeasure || 4);
-            } else {
+                if (bpmInput) bpmInput.value = String(songBPM);
+                if (linesPerMeasureInput) {
+                    linesPerMeasureInput.value = String(linesPerMeasure || 4);
+                }
+            } else if (speedModePercent) {
                 speedModePercent.checked = true;
-                speedPercentSlider.value = String(speedPercent);
-                speedPercentLabel.textContent = `${speedPercent}%`;
+                if (speedPercentSlider) {
+                    speedPercentSlider.value = String(speedPercent);
+                    if (speedPercentLabel) {
+                        speedPercentLabel.textContent = speedPercent + "%";
+                    }
+                }
             }
 
             updateSpeedModeUI();
 
-            fontSizeSlider.value = String(viewerFontSize);
-            lineSpacingSlider.value = String(viewerLineHeight);
-            settingsOverlay.classList.remove("hidden");
+            if (fontSizeSlider) fontSizeSlider.value = String(viewerFontSize);
+            if (lineSpacingSlider) lineSpacingSlider.value = String(viewerLineHeight);
+            if (settingsOverlay) settingsOverlay.classList.remove("hidden");
         }
 
+        if (settingsBtnBottom) {
+            safeAddListener(settingsBtnBottom, "click", () => {
+                if (!isStageMode) return;
+                openSettings();
+            });
+        }
 
-        settingsBtnBottom.addEventListener("click", () => {
-            if (!isStageMode) return;
-            openSettings();
-        });
-
-        settingsOverlay.addEventListener("click", (e) => {
-            if (e.target.dataset.closeSettings !== undefined || e.target === settingsOverlay) {
-                settingsOverlay.classList.add("hidden");
-            }
-        });
-
-        settingsOverlay
-            .querySelectorAll("[data-close-settings]")
-            .forEach((el) =>
-                el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
-            );
-
-        speedModePercent.addEventListener("change", updateSpeedModeUI);
-        speedModeBPM.addEventListener("change", updateSpeedModeUI);
-
-        bpmInput.addEventListener("input", () => {
-            songBPM = parseInt(bpmInput.value, 10) || 120;
-        });
-
-        linesPerMeasureInput.addEventListener("change", () => {
-            linesPerMeasure = parseInt(linesPerMeasureInput.value, 10) || 4;
-        });
-
-        speedPercentSlider.addEventListener("input", () => {
-            const raw = parseInt(speedPercentSlider.value, 10) || 0;
-            speedPercent = Math.max(0, Math.min(100, raw));
-            speedPercentLabel.textContent = `${speedPercent}%`;
-            setStatus(isScrolling ? "Scrolling" : "Ready");
-        });
-
-        fontSizeSlider.addEventListener('input', () => {
-            console.log('FONT DEBUG change', {
-                oldFontSize: viewerFontSize,
-                newFontSize: fontSizeSlider.value,
-                songStartBaseContentY,
-                songStartFontSize,
-                songStartLineHeight,
+        if (settingsOverlay) {
+            safeAddListener(settingsOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeSettings !== undefined ||
+                    e.target === settingsOverlay
+                ) {
+                    settingsOverlay.classList.add("hidden");
+                    debugLog("detail", "SETTINGS_CLOSE", {});
+                }
             });
 
-            viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
-            applyFontSize();
+            settingsOverlay
+                .querySelectorAll("[data-close-settings]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        settingsOverlay.classList.add("hidden");
+                        debugLog("detail", "SETTINGS_CLOSE_BTN", {});
+                    })
+                );
+        }
 
-            // Invalidate old start point; needs a new Stage snap to re-capture
-            songStartBaseContentY = null;
-            songStartFontSize = null;
-            songStartLineHeight = null;
-        });
+        if (speedModePercent) {
+            safeAddListener(speedModePercent, "change", updateSpeedModeUI);
+        }
+        if (speedModeBPM) {
+            safeAddListener(speedModeBPM, "change", updateSpeedModeUI);
+        }
 
-        lineSpacingSlider.addEventListener('input', () => {
-            console.log('LINEHEIGHT DEBUG change', {
-                oldLineHeight: viewerLineHeight,
-                newLineHeight: lineSpacingSlider.value,
-                songStartBaseContentY,
-                songStartFontSize,
-                songStartLineHeight,
+        if (bpmInput) {
+            safeAddListener(bpmInput, "input", () => {
+                songBPM = parseInt(bpmInput.value, 10) || 120;
+                debugLog("detail", "BPM_CHANGE", { songBPM });
             });
+        }
 
-            viewerLineHeight = parseFloat(lineSpacingSlider.value) || 1.9;
-            applyFontSize();
+        if (linesPerMeasureInput) {
+            safeAddListener(linesPerMeasureInput, "change", () => {
+                linesPerMeasure =
+                    parseFloat(linesPerMeasureInput.value) || 4;
+                debugLog("detail", "LINES_PER_MEASURE_CHANGE", {
+                    linesPerMeasure
+                });
+            });
+        }
 
-            // Invalidate old start point; needs a new Stage snap to re-capture
-            songStartBaseContentY = null;
-            songStartFontSize = null;
-            songStartLineHeight = null;
-        });
+        if (speedPercentSlider) {
+            safeAddListener(speedPercentSlider, "input", () => {
+                const raw = parseInt(speedPercentSlider.value, 10) || 0;
+                speedPercent = Math.max(0, Math.min(100, raw));
+                if (speedPercentLabel) {
+                    speedPercentLabel.textContent = speedPercent + "%";
+                }
+                setStatus(isScrolling ? "Scrolling" : "Ready");
+                debugLog("detail", "SPEED_PERCENT_CHANGE", {
+                    speedPercent
+                });
+            });
+        }
 
+        if (fontSizeSlider) {
+            safeAddListener(fontSizeSlider, "input", () => {
+                debugLog("detail", "FONT_CHANGE_BEFORE", {
+                    oldFontSize: viewerFontSize,
+                    newFontSizeRaw: fontSizeSlider.value,
+                    songStartBaseContentY,
+                    songStartFontSize,
+                    songStartLineHeight,
+                    songStartLineIndex,
+                    loadSnapshotBaseContentY,
+                    loadSnapshotFontSize,
+                    loadSnapshotLineHeight,
+                    isStageMode
+                });
 
-        /* Info modals */
+                viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
+                applyFontSize();
 
-        stageInfoBtn.addEventListener("click", () => {
-            if (!isStageMode) return;
-            stageInfoOverlay.classList.remove("hidden");
-        });
+                songStartBaseContentY = null;
+                songStartFontSize = null;
+                songStartLineHeight = null;
 
-        stageInfoOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeStageInfo !== undefined ||
-                e.target === stageInfoOverlay
-            ) {
-                stageInfoOverlay.classList.add("hidden");
+                loadSnapshotBaseContentY = null;
+                loadSnapshotFontSize = null;
+                loadSnapshotLineHeight = null;
+
+                debugLog("detail", "FONT_CHANGE_AFTER_INVALIDATE", {
+                    viewerFontSize,
+                    songStartLineIndex
+                });
+
+                if (isStageMode) {
+                    baseContentY = 0;
+                    canonicalBaseContentY = 0;
+                    applyScroll();
+                    snapAfterLayout();
+                }
+            });
+        }
+
+        if (lineSpacingSlider) {
+            safeAddListener(lineSpacingSlider, "input", () => {
+                debugLog("detail", "LINEHEIGHT_CHANGE_BEFORE", {
+                    oldLineHeight: viewerLineHeight,
+                    newLineHeightRaw: lineSpacingSlider.value,
+                    songStartBaseContentY,
+                    songStartFontSize,
+                    songStartLineHeight,
+                    songStartLineIndex,
+                    loadSnapshotBaseContentY,
+                    loadSnapshotFontSize,
+                    loadSnapshotLineHeight,
+                    isStageMode
+                });
+
+                viewerLineHeight =
+                    parseFloat(lineSpacingSlider.value) || 1.9;
+                applyFontSize();
+
+                songStartBaseContentY = null;
+                songStartFontSize = null;
+                songStartLineHeight = null;
+
+                loadSnapshotBaseContentY = null;
+                loadSnapshotFontSize = null;
+                loadSnapshotLineHeight = null;
+
+                debugLog("detail", "LINEHEIGHT_CHANGE_AFTER_INVALIDATE", {
+                    viewerLineHeight,
+                    songStartLineIndex
+                });
+
+                if (isStageMode) {
+                    baseContentY = 0;
+                    canonicalBaseContentY = 0;
+                    applyScroll();
+                    snapAfterLayout();
+                }
+            });
+        }
+
+        /*-------------------------------------------------------
+          Storage – fully self-contained v3
+        -------------------------------------------------------*/
+        const STORAGE_KEY = "lyricflow_v3_songs";
+
+        function storageAvailable() {
+            try {
+                const testKey = "__lf_test__";
+                localStorage.setItem(testKey, "1");
+                localStorage.removeItem(testKey);
+                return true;
+            } catch (e) {
+                debugError("STORAGE_UNAVAILABLE", { error: e.message });
+                return false;
             }
-        });
-
-        stageInfoOverlay
-            .querySelectorAll("[data-close-stage-info]")
-            .forEach((el) =>
-                el.addEventListener("click", () =>
-                    stageInfoOverlay.classList.add("hidden")
-                )
-            );
-
-        editorInfoBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            editInfoOverlay.classList.remove("hidden");
-        });
-
-        editInfoOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeEditInfo !== undefined ||
-                e.target === editInfoOverlay
-            ) {
-                editInfoOverlay.classList.add("hidden");
-            }
-        });
-
-        editInfoOverlay
-            .querySelectorAll("[data-close-edit-info]")
-            .forEach((el) =>
-                el.addEventListener("click", () =>
-                    editInfoOverlay.classList.add("hidden")
-                )
-            );
-
-        /* Save / load / playlists */
-
-        function makeSongId() {
-            return (
-                Date.now().toString(36) +
-                "-" +
-                Math.random().toString(36).slice(2, 8)
-            );
         }
 
         function saveSongsToStorage() {
+            if (!storageAvailable()) return;
             try {
-                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
+                const payload = JSON.stringify(savedSongs || []);
+                localStorage.setItem(STORAGE_KEY, payload);
+                debugLog("detail", "STORAGE_SAVE", { count: (savedSongs || []).length });
             } catch (e) {
-                alert(
-                    "Could not save songs – your browser storage is disabled or full."
-                );
+                debugError("STORAGE_SAVE_ERR", { error: e.message });
             }
         }
 
         function loadSongsFromStorage() {
+            if (!storageAvailable()) {
+                savedSongs = [];
+                return;
+            }
             try {
-                const stored = localStorage.getItem("lyricflow-songs");
-                savedSongs = stored ? JSON.parse(stored) : [];
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) {
+                    savedSongs = [];
+                    debugLog("basic", "STORAGE_LOAD_EMPTY", {});
+                    return;
+                }
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) {
+                    savedSongs = [];
+                    debugError("STORAGE_LOAD_BAD_FORMAT", {});
+                    return;
+                }
+                savedSongs = parsed.map((s) => ({
+                    id: s.id || ("song_" + Math.random().toString(36).slice(2)),
+                    name: s.name || "Untitled",
+                    playlist: s.playlist || "Set 1",
+                    content: s.content || "",
+                    speed: typeof s.speed === "number" ? s.speed : DEFAULT_SCROLL_SPEED,
+                    speedPercent:
+                        typeof s.speedPercent === "number" ? s.speedPercent : 50,
+                    fontSize:
+                        typeof s.fontSize === "number" ? s.fontSize : viewerFontSize,
+                    lineHeight:
+                        typeof s.lineHeight === "number" ? s.lineHeight : viewerLineHeight,
+                    bpm: typeof s.bpm === "number" ? s.bpm : null,
+                    linesPerMeasure:
+                        typeof s.linesPerMeasure === "number"
+                            ? s.linesPerMeasure
+                            : 4,
+                    createdAt: s.createdAt || new Date().toISOString()
+                }));
+                debugLog("basic", "STORAGE_LOAD_OK", { count: savedSongs.length });
             } catch (e) {
                 savedSongs = [];
+                debugError("STORAGE_LOAD_ERR", { error: e.message });
             }
         }
 
-        saveSongBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            if (!editor.value.trim()) {
-                alert("Type or paste some lyrics before saving.");
-                return;
-            }
-
-            const existingSong =
-                currentSongId && savedSongs.find((s) => s.id === currentSongId);
-
-            songTitleInput.value = existingSong ? existingSong.name : "";
-            playlistInput.value = existingSong
-                ? (existingSong.playlist || "Set 1")
-                : (currentPlaylistName || "Set 1");
-
-            saveOverlay.classList.remove("hidden");
-            songTitleInput.focus();
-        });
-
-        saveOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeSave !== undefined ||
-                e.target === saveOverlay
-            ) {
-                saveOverlay.classList.add("hidden");
-            }
-        });
-
-        saveOverlay
-            .querySelectorAll("[data-close-save]")
-            .forEach((el) =>
-                el.addEventListener("click", () => saveOverlay.classList.add("hidden"))
-            );
-
-        saveConfirmBtn.addEventListener("click", () => {
-            const title = songTitleInput.value.trim() || "Untitled";
-            const playlistName = playlistInput.value.trim() || "Set 1";
-            const content = editor.value.trim();
-
-            if (!content) {
-                alert("Lyrics are empty – nothing to save.");
-                return;
-            }
-
-            const speedToSave = Math.max(
-                1,
-                parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10)
-            );
-
-            const performanceFields = {
-                speed: speedToSave,
-                speedPercent,
-                fontSize: viewerFontSize,
-                lineHeight: viewerLineHeight,
-                bpm: songBPM,
-                linesPerMeasure,
-                version: 2,
-            };
-
-            const loadedSong = currentSongId
-                ? savedSongs.find((s) => s.id === currentSongId)
-                : null;
-
-            let song;
-
-            if (loadedSong) {
-                const isSameNameAndPlaylist =
-                    loadedSong.name === title &&
-                    (loadedSong.playlist || "Set 1") === (playlistName || "Set 1");
-
-                if (!isSameNameAndPlaylist) {
-                    // User changed name or playlist: treat as new song instead of overwriting
-                    song = {
-                        id: makeSongId(),
-                        name: title,
-                        playlist: playlistName,
-                        content,
-                        createdAt: new Date().toISOString(),
-                        ...performanceFields,
-                    };
-                    savedSongs.push(song);
-                } else {
-                    // Same name + playlist: update the existing loaded song
-                    song = loadedSong;
-                    song.name = title;
-                    song.playlist = playlistName;
-                    song.content = content;
-                    Object.assign(song, performanceFields);
-                }
-            } else {
-                // No song loaded: always create new
-                song = {
-                    id: makeSongId(),
-                    name: title,
-                    playlist: playlistName,
-                    content,
-                    createdAt: new Date().toISOString(),
-                    ...performanceFields,
-                };
-                savedSongs.push(song);
-            }
-
-            saveSongsToStorage();
-            currentSongId = song.id;
-            currentPlaylistName = song.playlist || "Set 1";
-            buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
-            updateStagePlaylistUI();
-
-            saveOverlay.classList.add("hidden");
-            setStatus("Saved " + song.name);
-        });
-
-
-
-        loadSongBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            buildPlaylistSelect();
-            buildLoadSongList();
-            loadOverlay.classList.remove("hidden");
-        });
-
-
-        loadOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeLoad !== undefined ||
-                e.target === loadOverlay
-            ) {
-                loadOverlay.classList.add("hidden");
-            }
-        });
-
-        loadOverlay
-            .querySelectorAll("[data-close-load]")
-            .forEach((el) =>
-                el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
-            );
-
+        /*-------------------------------------------------------
+          Songs + playlists
+        -------------------------------------------------------*/
         function buildPlaylistSelect() {
+            if (!playlistSelect) return;
             const playlists = Array.from(
-                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
+                new Set((savedSongs || []).map((s) => s.playlist || "Set 1"))
             ).sort();
             playlistSelect.innerHTML = "";
-            playlists.forEach((p) => {
-                const opt = document.createElement("option");
-                opt.value = p;
-                opt.textContent = p;
-                playlistSelect.appendChild(opt);
-            });
             if (!playlists.length) {
                 const opt = document.createElement("option");
                 opt.value = "";
                 opt.textContent = "No playlists";
                 playlistSelect.appendChild(opt);
+            } else {
+                playlists.forEach((p) => {
+                    const opt = document.createElement("option");
+                    opt.value = p;
+                    opt.textContent = p;
+                    playlistSelect.appendChild(opt);
+                });
             }
+            debugLog("detail", "PLAYLIST_SELECT_BUILT", { playlists });
         }
 
         function buildLoadSongList() {
+            if (!playlistSelect || !loadSongList) return;
             const playlistName = playlistSelect.value || "Set 1";
             loadSongList.innerHTML = "";
-            const songs = savedSongs
+            const songs = (savedSongs || [])
                 .filter((s) => (s.playlist || "Set 1") === playlistName)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
@@ -2677,492 +2670,649 @@
                 const item = document.createElement("div");
                 item.className = "track-item";
                 const label = document.createElement("span");
-                label.textContent = `${index + 1}. ${s.name}`;
+                label.textContent = (index + 1) + ". " + (s.name || "Untitled");
                 const speedSpan = document.createElement("span");
 
                 if (typeof s.bpm === "number") {
-                    speedSpan.textContent = `${s.bpm} BPM`;
+                    speedSpan.textContent = s.bpm + " BPM";
                 } else {
-                    const sp = typeof s.speedPercent === "number" ? s.speedPercent : 0;
-                    speedSpan.textContent = `${sp}%`;
+                    const sp =
+                        typeof s.speedPercent === "number"
+                            ? s.speedPercent
+                            : 0;
+                    speedSpan.textContent = sp + "%";
                 }
 
                 item.appendChild(label);
                 item.appendChild(speedSpan);
-                item.addEventListener("click", () => {
-                    loadOverlay.classList.add("hidden");
+                safeAddListener(item, "click", () => {
+                    loadOverlay && loadOverlay.classList.add("hidden");
                     loadSongIntoUI(s);
                 });
                 loadSongList.appendChild(item);
             });
 
             if (!songs.length) {
-                loadSongList.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
-            }
-        }
-
-        playlistSelect.addEventListener("change", buildLoadSongList);
-
-
-
-
-
-        // AFTER:
-        function loadSongIntoUI(song) {
-            console.log("LOAD:entry", {
-                songId: song.id,
-                songName: song.name,
-                baseContentYBefore: baseContentY.toFixed(2),
-                transformBefore: viewerContent.style.transform
-            });
-            logStageState('LOAD:before-apply-settings');
-
-            currentSong = song; // remember last loaded song
-
-            currentSongId = song.id;
-            currentPlaylistName = song.playlist || "Set 1";
-
-            editor.value = song.content || "";
-            rebuildViewerFromEditor();
-
-            const savedSpeed = typeof song.speed === "number" ? song.speed : 0;
-            scrollSpeed = savedSpeed > 0 ? savedSpeed : DEFAULT_SCROLL_SPEED;
-
-            if (typeof song.speedPercent === "number") {
-                speedPercent = Math.max(0, Math.min(100, song.speedPercent));
-            }
-            if (typeof song.fontSize === "number") {
-                viewerFontSize = song.fontSize;
-            }
-            if (typeof song.lineHeight === "number") {
-                viewerLineHeight = song.lineHeight;
+                loadSongList.innerHTML =
+                    '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
             }
 
-            if (typeof song.bpm === "number") {
-                songBPM = song.bpm;
-                linesPerMeasure = song.linesPerMeasure || 4;
-            } else {
-                songBPM = null;
-            }
-
-            applyFontSize();
-            logStageState('LOAD:after-apply-settings');
-
-            buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
-            updateStagePlaylistUI();
-
-            console.log('LOAD:before-goToInitial');
-            goToInitialStageState("loadSongIntoUI");
-
-            requestAnimationFrame(() => {
-                const highlight = document.querySelector(".viewer-highlight");
-                const firstLine = viewerContent.querySelector(".viewer-content-line");
-                const viewerRect = viewer.getBoundingClientRect();
-                const highlightRect = highlight ? highlight.getBoundingClientRect() : null;
-                const lineRect = firstLine ? firstLine.getBoundingClientRect() : null;
-
-                console.log("LOAD:after-goToInitialStageState", {
-                    baseContentY: baseContentY.toFixed(2),
-                    transform: viewerContent.style.transform,
-                    viewerRectTop: viewerRect.top.toFixed(2),
-                    viewerRectBottom: viewerRect.bottom.toFixed(2),
-                    highlightRect: highlightRect ? {
-                        top: highlightRect.top.toFixed(2),
-                        bottom: highlightRect.bottom.toFixed(2),
-                        height: highlightRect.height.toFixed(2)
-                    } : null,
-                    lineRect: lineRect ? {
-                        top: lineRect.top.toFixed(2),
-                        bottom: lineRect.bottom.toFixed(2),
-                        height: lineRect.height.toFixed(2)
-                    } : null
-                });
-                logStageState('LOAD:final');
-            });
-
-            setStatus(`Loaded ${song.name}`);
-
-        }
-
-
-        // AFTER:
-        function reloadSongIntoUI() {
-            if (!currentSong) return;
-
-            // Rebuild lyrics content from the saved song.
-            editor.value = currentSong.lyrics || '';
-            rebuildViewerFromEditor();
-
-            // Re-apply current settings (scroll mode, font size, spacing) without touching scroll position.
-            applyFontSize();
-            // If you have any UI refresh like updateSpeedModeUI(), keep those here too.
-
-            // Do NOT call goToInitialStageState from reload; resetScroll/loadSongIntoUI will own that.
-        }
-
-
-        // AFTER: place near reloadSongIntoUI / loadSongIntoUI
-
-        function rebuildSongContentOnly() {
-            if (!currentSong) return;
-            // Just mirror saved lyrics into editor + viewer.
-            editor.value = currentSong.lyrics || '';
-            const text = editor.value;
-            viewerContent.innerHTML = '';
-            const lines = text.split('\n');
-            lines.forEach(rawLine => {
-                const line = rawLine.replace(/\r/g, '');
-                const isBlank = !line.trim();
-                const span = document.createElement('span');
-                span.className = 'viewer-content-line';
-                span.textContent = isBlank ? '\u00A0' : line;
-                viewerContent.appendChild(span);
+            debugLog("detail", "LOAD_SONG_LIST_BUILT", {
+                playlistName,
+                count: songs.length
             });
         }
 
+        if (loadSongBtn) {
+            safeAddListener(loadSongBtn, "click", () => {
+                if (isStageMode) return;
+                buildPlaylistSelect();
+                buildLoadSongList();
+                loadOverlay && loadOverlay.classList.remove("hidden");
+                debugLog("detail", "LOAD_OVERLAY_OPEN", {});
+            });
+        }
 
+        if (loadOverlay) {
+            safeAddListener(loadOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeLoad !== undefined ||
+                    e.target === loadOverlay
+                ) {
+                    loadOverlay.classList.add("hidden");
+                    debugLog("detail", "LOAD_OVERLAY_CLOSE", {});
+                }
+            });
+
+            loadOverlay
+                .querySelectorAll("[data-close-load]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        loadOverlay.classList.add("hidden");
+                        debugLog("detail", "LOAD_OVERLAY_CLOSE_BTN", {});
+                    })
+                );
+        }
+
+        if (playlistSelect) {
+            safeAddListener(playlistSelect, "change", buildLoadSongList);
+        }
 
         function buildCurrentPlaylistOrder(playlistName, focusSongId) {
-            const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+            const songs = (savedSongs || [])
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            currentPlaylistName = playlistName;
             currentPlaylistSongIds = songs.map((s) => s.id);
-            const idx = currentPlaylistSongIds.indexOf(focusSongId);
-            currentSongId = idx >= 0 ? focusSongId : songs[0]?.id || null;
-        }
+            currentSongId = focusSongId || (songs[0] && songs[0].id) || null;
 
-        function updateStagePlaylistUI() {
-            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) {
-                playlistPill.classList.add("hidden");
-                prevSongBtn.classList.add("hidden");
-                nextSongBtn.classList.add("hidden");
-                return;
+            const index = currentPlaylistSongIds.indexOf(currentSongId);
+            const humanIndex = index >= 0 ? index + 1 : 1;
+            const total = currentPlaylistSongIds.length || 1;
+
+            if (playlistPillText) playlistPillText.textContent = playlistName;
+            if (playlistPillIndex) playlistPillIndex.textContent = humanIndex + "/" + total;
+
+            if (currentPlaylistSongIds.length > 1) {
+                playlistPill && playlistPill.classList.remove("hidden");
+                prevSongBtn && prevSongBtn.classList.remove("hidden");
+                nextSongBtn && nextSongBtn.classList.remove("hidden");
+            } else {
+                playlistPill && playlistPill.classList.add("hidden");
+                prevSongBtn && prevSongBtn.classList.add("hidden");
+                nextSongBtn && nextSongBtn.classList.add("hidden");
             }
 
-            const idx = currentPlaylistSongIds.indexOf(currentSongId);
-            const total = currentPlaylistSongIds.length;
-            playlistPillText.textContent = currentPlaylistName || "Set 1";
-            playlistPillIndex.textContent = `${idx + 1}/${total}`;
-            playlistPill.classList.remove("hidden");
-
-            prevSongBtn.classList.toggle("hidden", idx <= 0);
-            nextSongBtn.classList.toggle("hidden", idx >= total - 1);
-        }
-
-        editPlaylistBtn.addEventListener("click", () => {
-            if (isStageMode) return;
-            buildEditPlaylistSelect();
-            buildEditPlaylistList();
-            editPlaylistOverlay.classList.remove("hidden");
-        });
-
-        editPlaylistOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeEditPlaylist !== undefined ||
-                e.target === editPlaylistOverlay
-            ) {
-                editPlaylistOverlay.classList.add("hidden");
-            }
-        });
-
-        editPlaylistOverlay
-            .querySelectorAll("[data-close-edit-playlist]")
-            .forEach((el) =>
-                el.addEventListener("click", () =>
-                    editPlaylistOverlay.classList.add("hidden")
-                )
-            );
-
-        function buildEditPlaylistSelect() {
-            const playlists = Array.from(
-                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
-            ).sort();
-            editPlaylistSelect.innerHTML = "";
-            playlists.forEach((p) => {
-                const opt = document.createElement("option");
-                opt.value = p;
-                opt.textContent = p;
-                editPlaylistSelect.appendChild(opt);
+            debugLog("detail", "PLAYLIST_ORDER_BUILT", {
+                playlistName,
+                currentSongId,
+                order: currentPlaylistSongIds
             });
+        }
+
+        function findSongById(id) {
+            return (savedSongs || []).find((s) => s.id === id) || null;
+        }
+
+        function navigatePlaylist(offset) {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const len = currentPlaylistSongIds.length;
+            if (!len) return;
+
+            const currentIndex = currentPlaylistSongIds.indexOf(currentSongId);
+            const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+            let nextIndex = safeIndex + offset;
+
+            if (nextIndex < 0) nextIndex = len - 1;
+            if (nextIndex >= len) nextIndex = 0;
+
+            const nextId = currentPlaylistSongIds[nextIndex];
+            const song = findSongById(nextId);
+            if (!song) return;
+
+            debugLog("detail", "PLAYLIST_NAVIGATE", {
+                offset,
+                fromIndex: safeIndex,
+                toIndex: nextIndex,
+                nextId
+            });
+
+            loadSongIntoUI(song, { fromPlaylistNav: true });
+        }
+
+        if (prevSongBtn) {
+            safeAddListener(prevSongBtn, "click", () => navigatePlaylist(-1));
+        }
+        if (nextSongBtn) {
+            safeAddListener(nextSongBtn, "click", () => navigatePlaylist(1));
+        }
+
+        /*-------------------------------------------------------
+          Playlist pill -> quick track select
+        -------------------------------------------------------*/
+        function openPlaylistSelectOverlay() {
+            if (!currentPlaylistName || !playlistSelectOverlay || !trackList) return;
+
+            playlistSelectTitle.textContent = currentPlaylistName;
+            trackList.innerHTML = "";
+
+            const songs = (savedSongs || [])
+                .filter((s) => (s.playlist || "Set 1") === currentPlaylistName)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "track-item";
+
+                const label = document.createElement("span");
+                label.textContent = (index + 1) + ". " + (s.name || "Untitled");
+
+                const meta = document.createElement("span");
+                if (typeof s.bpm === "number") {
+                    meta.textContent = s.bpm + " BPM";
+                } else {
+                    const sp =
+                        typeof s.speedPercent === "number"
+                            ? s.speedPercent
+                            : (typeof s.speed === "number" ? s.speed : DEFAULT_SCROLL_SPEED);
+                    meta.textContent = sp + "%";
+                }
+
+                item.appendChild(label);
+                item.appendChild(meta);
+                safeAddListener(item, "click", () => {
+                    playlistSelectOverlay.classList.add("hidden");
+                    loadSongIntoUI(s, { fromPlaylistNav: true });
+                });
+
+                trackList.appendChild(item);
+            });
+
+            if (!songs.length) {
+                trackList.innerHTML =
+                    '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
+            }
+
+            playlistSelectOverlay.classList.remove("hidden");
+            debugLog("detail", "PLAYLIST_SELECT_OVERLAY_OPEN", {
+                playlistName: currentPlaylistName,
+                count: songs.length
+            });
+        }
+
+        if (playlistPill) {
+            safeAddListener(playlistPill, "click", () => {
+                if (!isStageMode) return;
+                openPlaylistSelectOverlay();
+            });
+        }
+
+        if (playlistSelectOverlay) {
+            safeAddListener(playlistSelectOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closePlaylistSelect !== undefined ||
+                    e.target === playlistSelectOverlay
+                ) {
+                    playlistSelectOverlay.classList.add("hidden");
+                    debugLog("detail", "PLAYLIST_SELECT_OVERLAY_CLOSE", {});
+                }
+            });
+
+            playlistSelectOverlay
+                .querySelectorAll("[data-close-playlist-select]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        playlistSelectOverlay.classList.add("hidden");
+                        debugLog("detail", "PLAYLIST_SELECT_OVERLAY_CLOSE_BTN", {});
+                    })
+                );
+        }
+
+        /*-------------------------------------------------------
+          Save song flow
+        -------------------------------------------------------*/
+        if (saveSongBtn) {
+            safeAddListener(saveSongBtn, "click", () => {
+                if (!editor) return;
+                const existingTitle = currentSong && currentSong.name
+                    ? currentSong.name
+                    : "";
+                const existingPlaylist = currentSong && currentSong.playlist
+                    ? currentSong.playlist
+                    : "Set 1";
+
+                songTitleInput.value = existingTitle;
+                playlistInput.value = existingPlaylist;
+                saveOverlay && saveOverlay.classList.remove("hidden");
+
+                debugLog("detail", "SAVE_OVERLAY_OPEN", {
+                    existingTitle,
+                    existingPlaylist
+                });
+            });
+        }
+
+        if (saveOverlay) {
+            safeAddListener(saveOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeSave !== undefined ||
+                    e.target === saveOverlay
+                ) {
+                    saveOverlay.classList.add("hidden");
+                    debugLog("detail", "SAVE_OVERLAY_CLOSE", {});
+                }
+            });
+
+            saveOverlay
+                .querySelectorAll("[data-close-save]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        saveOverlay.classList.add("hidden");
+                        debugLog("detail", "SAVE_OVERLAY_CLOSE_BTN", {});
+                    })
+                );
+        }
+
+        if (saveConfirmBtn) {
+            safeAddListener(saveConfirmBtn, "click", () => {
+                if (!editor) return;
+
+                const title = (songTitleInput.value || "").trim() || "Untitled";
+                const playlistName = (playlistInput.value || "").trim() || "Set 1";
+                const content = editor.value || "";
+
+                let song = currentSong;
+                if (!song) {
+                    song = {
+                        id: "song_" + Math.random().toString(36).slice(2),
+                        createdAt: new Date().toISOString()
+                    };
+                    savedSongs.push(song);
+                }
+
+                song.name = title;
+                song.playlist = playlistName;
+                song.content = content;
+
+                song.speedPercent =
+                    typeof speedPercent === "number" ? speedPercent : 50;
+                song.speed =
+                    typeof scrollSpeed === "number" ? scrollSpeed : DEFAULT_SCROLL_SPEED;
+                song.fontSize = viewerFontSize;
+                song.lineHeight = viewerLineHeight;
+                song.bpm = songBPM;
+                song.linesPerMeasure = linesPerMeasure;
+
+                currentSong = song;
+                currentSongId = song.id;
+
+                saveSongsToStorage();
+                saveOverlay && saveOverlay.classList.add("hidden");
+
+                buildCurrentPlaylistOrder(playlistName, song.id);
+                setStatus("Song saved");
+
+                debugLog("detail", "SONG_SAVED", {
+                    id: song.id,
+                    name: song.name,
+                    playlist: song.playlist
+                });
+            });
+        }
+
+        /*-------------------------------------------------------
+          Edit playlist UI
+        -------------------------------------------------------*/
+        function buildEditPlaylistSelect() {
+            if (!editPlaylistSelect) return;
+            const playlists = Array.from(
+                new Set((savedSongs || []).map((s) => s.playlist || "Set 1"))
+            ).sort();
+
+            editPlaylistSelect.innerHTML = "";
             if (!playlists.length) {
                 const opt = document.createElement("option");
                 opt.value = "";
                 opt.textContent = "No playlists";
                 editPlaylistSelect.appendChild(opt);
+            } else {
+                playlists.forEach((p) => {
+                    const opt = document.createElement("option");
+                    opt.value = p;
+                    opt.textContent = p;
+                    editPlaylistSelect.appendChild(opt);
+                });
             }
-        }
-        function buildEditPlaylistList() {
-            const playlistName = editPlaylistSelect.value || "Set 1";
-            const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
+            debugLog("detail", "EDIT_PLAYLIST_SELECT_BUILT", { playlists });
+        }
+
+        function buildPlaylistEditList() {
+            if (!editPlaylistSelect || !playlistEditList) return;
+            const playlistName = editPlaylistSelect.value || "Set 1";
             playlistEditList.innerHTML = "";
 
-            songs.forEach((s, index) => {
-                const item = document.createElement("div");
-                item.className = "playlist-edit-item";
+            const songs = (savedSongs || [])
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-                const mainRow = document.createElement("div");
-                mainRow.style.display = "flex";
-                mainRow.style.alignItems = "center";
-                mainRow.style.justifyContent = "space-between";
-                mainRow.style.gap = "6px";
+            songs.forEach((s, index) => {
+                const row = document.createElement("div");
+                row.className = "playlist-edit-item";
 
                 const nameSpan = document.createElement("span");
                 nameSpan.className = "playlist-edit-name";
-                nameSpan.textContent = s.name;
+                nameSpan.textContent = (index + 1) + ". " + (s.name || "Untitled");
 
                 const controls = document.createElement("div");
                 controls.className = "playlist-edit-controls";
 
                 const upBtn = document.createElement("button");
                 upBtn.textContent = "↑";
-                upBtn.disabled = index === 0;
-                upBtn.addEventListener("click", () => {
-                    const idx = savedSongs.findIndex((x) => x.id === s.id);
-                    if (idx <= 0) return;
-                    const prevIdx = idx - 1;
-                    const prevSong = savedSongs[prevIdx];
-                    if ((prevSong.playlist || "Set 1") !== (s.playlist || "Set 1")) return;
-
-                    savedSongs.splice(idx, 1);
-                    savedSongs.splice(prevIdx, 0, s);
-                    saveSongsToStorage();
-                    buildEditPlaylistList();
-                });
 
                 const downBtn = document.createElement("button");
                 downBtn.textContent = "↓";
-                downBtn.disabled = index === songs.length - 1;
-                downBtn.addEventListener("click", () => {
-                    const idx = savedSongs.findIndex((x) => x.id === s.id);
-                    if (idx < 0 || idx >= savedSongs.length - 1) return;
-                    const nextIdx = idx + 1;
-                    const nextSong = savedSongs[nextIdx];
-                    if ((nextSong.playlist || "Set 1") !== (s.playlist || "Set 1")) return;
-
-                    savedSongs.splice(idx, 1);
-                    savedSongs.splice(nextIdx, 0, s);
-                    saveSongsToStorage();
-                    buildEditPlaylistList();
-                });
 
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "✕";
-                deleteBtn.addEventListener("click", () => {
-                    if (!confirm(`Delete "${s.name}" from ${s.playlist || "Set 1"}?`)) return;
+
+                safeAddListener(upBtn, "click", () => {
                     const idx = savedSongs.findIndex((x) => x.id === s.id);
-                    if (idx >= 0) {
-                        savedSongs.splice(idx, 1);
-                        saveSongsToStorage();
-                        buildEditPlaylistList();
+                    if (idx > 0) {
+                        const prev = savedSongs[idx - 1];
+                        if ((prev.playlist || "Set 1") === playlistName) {
+                            const tmp = savedSongs[idx].createdAt;
+                            savedSongs[idx].createdAt = prev.createdAt;
+                            prev.createdAt = tmp;
+                            saveSongsToStorage();
+                            buildPlaylistEditList();
+                        }
                     }
                 });
 
-                const infoBtn = document.createElement("button");
-                infoBtn.textContent = "i";
-                infoBtn.addEventListener("click", () => {
-                    showSongInfo(s);
+                safeAddListener(downBtn, "click", () => {
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx >= 0 && idx < savedSongs.length - 1) {
+                        const next = savedSongs[idx + 1];
+                        if ((next.playlist || "Set 1") === playlistName) {
+                            const tmp = savedSongs[idx].createdAt;
+                            savedSongs[idx].createdAt = next.createdAt;
+                            next.createdAt = tmp;
+                            saveSongsToStorage();
+                            buildPlaylistEditList();
+                        }
+                    }
+                });
+
+                safeAddListener(deleteBtn, "click", () => {
+                    const confirmed = window.confirm("Delete this song?");
+                    if (!confirmed) return;
+                    savedSongs = savedSongs.filter((x) => x.id !== s.id);
+                    if (currentSongId === s.id) {
+                        currentSongId = null;
+                        currentSong = null;
+                    }
+                    saveSongsToStorage();
+                    buildPlaylistEditList();
+                    buildPlaylistSelect();
                 });
 
                 controls.appendChild(upBtn);
                 controls.appendChild(downBtn);
                 controls.appendChild(deleteBtn);
-                controls.appendChild(infoBtn);
 
-                mainRow.appendChild(nameSpan);
-                mainRow.appendChild(controls);
-                item.appendChild(mainRow);
-
-                playlistEditList.appendChild(item);
+                row.appendChild(nameSpan);
+                row.appendChild(controls);
+                playlistEditList.appendChild(row);
             });
 
             if (!songs.length) {
                 playlistEditList.innerHTML =
-                    '<p style="color: var(--text-muted); text-align: center; padding: 16px;">No songs in this playlist</p>';
+                    '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
             }
+
+            debugLog("detail", "PLAYLIST_EDIT_LIST_BUILT", {
+                playlistName,
+                count: songs.length
+            });
         }
 
-
-
-
-        editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
-
-        function showSongInfo(song) {
-            songInfoTitle.value = song.name;
-            songInfoPlaylist.value = song.playlist || "Set 1";
-
-            if (typeof song.bpm === "number") {
-                songInfoScroll.value = `${song.bpm} BPM`;
-            } else {
-                songInfoScroll.value = `${song.speedPercent ?? 0}% speed`;
-            }
-
-            songInfoFont.value = `${song.fontSize ?? 28}px`;
-            songInfoLineHeight.value = song.lineHeight ?? 2.4;
-            songInfoLinesPerMeasure.value = song.linesPerMeasure ?? 4;
-
-            songInfoOverlay.classList.remove("hidden");
+        if (editPlaylistBtn) {
+            safeAddListener(editPlaylistBtn, "click", () => {
+                if (isStageMode) return;
+                buildEditPlaylistSelect();
+                buildPlaylistEditList();
+                editPlaylistOverlay && editPlaylistOverlay.classList.remove("hidden");
+                debugLog("detail", "EDIT_PLAYLIST_OVERLAY_OPEN", {});
+            });
         }
 
-        songInfoOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closeSongInfo !== undefined ||
-                e.target === songInfoOverlay
-            ) {
-                songInfoOverlay.classList.add("hidden");
-            }
-        });
-
-        songInfoOverlay
-            .querySelectorAll("[data-close-song-info]")
-            .forEach((el) =>
-                el.addEventListener("click", () =>
-                    songInfoOverlay.classList.add("hidden")
-                )
-            );
-
-
-        playlistPill.addEventListener("click", () => {
-            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
-            const songs = savedSongs
-                .filter((s) => (s.playlist || "Set 1") === (currentPlaylistName || "Set 1"))
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            playlistSelectTitle.textContent = currentPlaylistName || "Set 1";
-            trackList.innerHTML = "";
-
-            songs.forEach((s, index) => {
-                const item = document.createElement("div");
-                item.className = "track-item";
-                const label = document.createElement("span");
-                label.textContent = `${index + 1}. ${s.name}`;
-                const speedSpan = document.createElement("span");
-
-                if (typeof s.bpm === "number") {
-                    speedSpan.textContent = `${s.bpm} BPM`;
-                } else {
-                    const sp = typeof s.speedPercent === "number" ? s.speedPercent : 0;
-                    speedSpan.textContent = `Speed ${sp}%`;
+        if (editPlaylistOverlay) {
+            safeAddListener(editPlaylistOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeEditPlaylist !== undefined ||
+                    e.target === editPlaylistOverlay
+                ) {
+                    editPlaylistOverlay.classList.add("hidden");
+                    debugLog("detail", "EDIT_PLAYLIST_OVERLAY_CLOSE", {});
                 }
-
-                item.appendChild(label);
-                item.appendChild(speedSpan);
-                item.addEventListener("click", () => {
-                    playlistSelectOverlay.classList.add("hidden");
-                    loadSongIntoUI(s);
-                });
-                trackList.appendChild(item);
             });
 
-            playlistSelectOverlay.classList.remove("hidden");
-        });
+            editPlaylistOverlay
+                .querySelectorAll("[data-close-edit-playlist]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        editPlaylistOverlay.classList.add("hidden");
+                        debugLog("detail", "EDIT_PLAYLIST_OVERLAY_CLOSE_BTN", {});
+                    })
+                );
+        }
 
-        playlistSelectOverlay.addEventListener("click", (e) => {
-            if (
-                e.target.dataset.closePlaylistSelect !== undefined ||
-                e.target === playlistSelectOverlay
-            ) {
-                playlistSelectOverlay.classList.add("hidden");
-            }
-        });
+        if (editPlaylistSelect) {
+            safeAddListener(editPlaylistSelect, "change", buildPlaylistEditList);
+        }
 
-        playlistSelectOverlay
-            .querySelectorAll("[data-close-playlist-select]")
-            .forEach((el) =>
-                el.addEventListener("click", () =>
-                    playlistSelectOverlay.classList.add("hidden")
-                )
-            );
-
-        prevSongBtn.addEventListener("click", () => {
-            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
-            const idx = currentPlaylistSongIds.indexOf(currentSongId);
-            if (idx <= 0) return;
-            const newId = currentPlaylistSongIds[idx - 1];
-            const song = savedSongs.find((s) => s.id === newId);
-            if (!song) return;
-            loadSongIntoUI(song);
-        });
-
-        nextSongBtn.addEventListener("click", () => {
-            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
-            const idx = currentPlaylistSongIds.indexOf(currentSongId);
-            if (idx >= currentPlaylistSongIds.length - 1) return;
-            const newId = currentPlaylistSongIds[idx + 1];
-            const song = savedSongs.find((s) => s.id === newId);
-            if (!song) return;
-            loadSongIntoUI(song);
-        });
-
-        // mouse drag (fallback)
-        viewer.addEventListener("mousedown", (e) => {
-            if (!isStageMode) return;
-            e.preventDefault();
-            handleDragStart(e.clientY);
-        });
-
-        window.addEventListener("load", () => {
-            applyFontSize();
-            goToInitialStageState("window.load");
-        });
-
-
-        window.addEventListener("mouseup", () => {
-            handleDragEnd();
-        });
-
-        // touch drag
-        viewer.addEventListener(
-            "touchstart",
-            (e) => {
-                if (!isStageMode) return;
-                const touch = e.touches[0];
-                e.preventDefault();
-                handleDragStart(touch.clientY);
-            },
-            { passive: false }
-        );
-
-        window.addEventListener(
-            "touchmove",
-            (e) => {
-                if (!isDragging) return;
-                const touch = e.touches[0];
-                e.preventDefault();
-                handleDragMove(touch.clientY);
-            },
-            { passive: false }
-        );
-
-        window.addEventListener("touchend", () => {
-            handleDragEnd();
-        });
-
-        /* Init */
-
-        loadSongsFromStorage();
-
-        window.addEventListener("load", () => {
-            applyFontSize();
-            goToInitialStageState();
-        });
-
-
-        // Disable double‑tap to zoom on the whole document
-        let lastTouchEnd = 0;
-        document.addEventListener(
-            "touchend",
-            function (event) {
-                const now = Date.now();
-                if (now - lastTouchEnd <= 300) {
-                    event.preventDefault();
+        /*-------------------------------------------------------
+          Info overlays
+        -------------------------------------------------------*/
+        function wireOverlay(overlay, closeSelector) {
+            if (!overlay) return;
+            safeAddListener(overlay, "click", (e) => {
+                if (e.target === overlay || e.target.matches(closeSelector)) {
+                    overlay.classList.add("hidden");
                 }
-                lastTouchEnd = now;
-            },
-            { passive: false }
-        );
+            });
+            overlay
+                .querySelectorAll(closeSelector)
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => overlay.classList.add("hidden"))
+                );
+        }
+
+        if (stageInfoBtn && stageInfoOverlay) {
+            safeAddListener(stageInfoBtn, "click", () => {
+                if (!isStageMode) return;
+                stageInfoOverlay.classList.remove("hidden");
+                debugLog("detail", "STAGE_INFO_OPEN", {});
+            });
+            wireOverlay(stageInfoOverlay, "[data-close-stage-info]");
+        }
+
+        if (editorInfoBtn && editInfoOverlay) {
+            safeAddListener(editorInfoBtn, "click", () => {
+                editInfoOverlay.classList.remove("hidden");
+                debugLog("detail", "EDIT_INFO_OPEN", {});
+            });
+            wireOverlay(editInfoOverlay, "[data-close-edit-info]");
+        }
+
+        if (songInfoOverlay) {
+            wireOverlay(songInfoOverlay, "[data-close-song-info]");
+        }
+
+        /*-------------------------------------------------------
+          Load song into UI
+        -------------------------------------------------------*/
+        function loadSongIntoUI(song, opts) {
+            opts = opts || {};
+            if (!song) return;
+
+            debugLog("detail", "LOAD_SONG_ENTRY", {
+                id: song.id,
+                name: song.name,
+                playlist: song.playlist,
+                opts
+            });
+
+            currentSong = song;
+            currentSongId = song.id;
+            currentPlaylistName = song.playlist || "Set 1";
+
+            buildCurrentPlaylistOrder(currentPlaylistName, song.id);
+
+            // Editor text
+            if (editor) {
+                editor.value = song.content || "";
+                rebuildViewerFromEditor();
+            }
+
+            // Snapshot layout
+            loadSnapshotBaseContentY = baseContentY;
+            loadSnapshotFontSize = viewerFontSize;
+            loadSnapshotLineHeight = viewerLineHeight;
+
+            // Apply song settings
+            viewerFontSize =
+                typeof song.fontSize === "number"
+                    ? song.fontSize
+                    : viewerFontSize;
+            viewerLineHeight =
+                typeof song.lineHeight === "number"
+                    ? song.lineHeight
+                    : viewerLineHeight;
+            applyFontSize();
+
+            songBPM =
+                typeof song.bpm === "number" ? song.bpm : null;
+            linesPerMeasure =
+                typeof song.linesPerMeasure === "number"
+                    ? song.linesPerMeasure
+                    : 4;
+            speedPercent =
+                typeof song.speedPercent === "number"
+                    ? song.speedPercent
+                    : (typeof song.speed === "number"
+                        ? song.speed
+                        : DEFAULT_SCROLL_SPEED);
+
+            if (speedModePercent && speedModeBPM) {
+                if (songBPM !== null) {
+                    speedModeBPM.checked = true;
+                    if (bpmInput) bpmInput.value = String(songBPM);
+                    if (linesPerMeasureInput) {
+                        linesPerMeasureInput.value = String(linesPerMeasure || 4);
+                    }
+                } else {
+                    speedModePercent.checked = true;
+                    if (speedPercentSlider) {
+                        speedPercentSlider.value = String(speedPercent);
+                        if (speedPercentLabel) {
+                            speedPercentLabel.textContent = speedPercent + "%";
+                        }
+                    }
+                }
+                updateSpeedModeUI();
+            }
+
+            // Song info overlay values
+            if (songInfoTitle) songInfoTitle.value = song.name || "";
+            if (songInfoPlaylist) songInfoPlaylist.value = currentPlaylistName;
+            if (songInfoScroll) {
+                if (songBPM !== null) {
+                    songInfoScroll.value = songBPM + " BPM / " + linesPerMeasure + " lines/measure";
+                } else {
+                    songInfoScroll.value = speedPercent + "%";
+                }
+            }
+            if (songInfoFont) songInfoFont.value = viewerFontSize + " px";
+            if (songInfoLineHeight) songInfoLineHeight.value = String(viewerLineHeight);
+            if (songInfoLinesPerMeasure) {
+                songInfoLinesPerMeasure.value =
+                    songBPM !== null ? String(linesPerMeasure) : "-";
+            }
+
+            // Reset geometry
+            canonicalBaseContentY = null;
+            baseContentY = 0;
+            elapsedTime = 0;
+            applyScroll();
+            updateTimeDisplay();
+
+            debugLog("detail", "LOAD_SONG_APPLIED", {
+                songStartBaseContentY,
+                viewerFontSize,
+                viewerLineHeight,
+                speedPercent,
+                songBPM,
+                linesPerMeasure
+            });
+
+            if (isStageMode) {
+                goToInitialStageState("loadSongIntoUI");
+            } else {
+                setStatus("Song loaded into editor");
+            }
+        }
+
+        /*-------------------------------------------------------
+          Initial boot
+        -------------------------------------------------------*/
+        function bootLyricFlow() {
+            debugLog("basic", "BOOT_BEGIN", {});
+
+            applyFontSize();
+            loadSongsFromStorage();
+
+            rebuildViewerFromEditor();
+
+            if (isStageMode) {
+                goToInitialStageState("boot");
+            }
+
+            setStatus("Ready");
+
+            debugLog("basic", "BOOT_COMPLETE", {
+                savedSongCount: (savedSongs || []).length
+            });
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", bootLyricFlow);
+        } else {
+            bootLyricFlow();
+        }
     </script>
 </body>
 </html>
+

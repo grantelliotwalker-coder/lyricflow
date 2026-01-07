@@ -1,2251 +1,3301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>LyricFlow</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    :root {
-      --bg: #070b10;
-      --card: #111827;
-      --card-soft: #111827;
-      --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.12);
-      --accent-strong: rgba(34, 197, 94, 0.28);
-      --accent-bright: #22c55e;
-      --accent-subtle: rgba(34, 197, 94, 0.12);
-      --accent-subtle-strong: rgba(34, 197, 94, 0.28);
-      --accent-subtle-soft: rgba(34, 197, 94, 0.18);
-      --accent-subtle-border: rgba(34, 197, 94, 0.4);
-      --accent-subtle-border-soft: rgba(34, 197, 94, 0.25);
-      --accent-subtle-border-strong: rgba(34, 197, 94, 0.55);
-      --accent-glow: rgba(34, 197, 94, 0.45);
-      --accent-glow-soft: rgba(34, 197, 94, 0.25);
-      --accent-glow-strong: rgba(34, 197, 94, 0.65);
-      --text-main: #e5e7eb;
-      --text-soft: #9ca3af;
-      --text-muted: #6b7280;
-      --border-subtle: rgba(148, 163, 184, 0.45);
-      --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
-      --shadow-strong: 0 30px 90px rgba(0, 0, 0, 0.95);
-      --shadow-focus: 0 0 0 1px rgba(34, 197, 94, 0.6), 0 0 0 10px rgba(34, 197, 94, 0.05);
-      --danger: #f97373;
-      --danger-soft: rgba(248, 113, 113, 0.16);
-      --danger-border: rgba(248, 113, 113, 0.6);
-      --pill-bg: rgba(15, 23, 42, 0.9);
-      --radius-lg: 26px;
-      --radius-full: 999px;
-      --radius-md: 18px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
-      color: var(--text-main);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      overflow: hidden;
-    }
-
-    body {
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      padding: 14px;
-    }
-
-    .app-shell {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: 100%;
-      max-width: 1080px;
-      max-height: 100%;
-      margin: 0 auto;
-      padding: 16px 14px 14px;
-      border-radius: 32px;
-      background:
-        radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%),
-        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%),
-        radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%),
-        radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%),
-        linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      box-shadow: var(--shadow-soft);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .app-shell::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%),
-        radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
-      opacity: 0.85;
-      mix-blend-mode: soft-light;
-    }
-
-    .app-shell-inner {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      height: 100%;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 6px 2px 2px;
-    }
-
-    .branding {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-mark {
-      width: 26px;
-      height: 26px;
-      border-radius: 10px;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.95), transparent 58%),
-        radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%),
-        conic-gradient(from 180deg at 50% 50%, #22c55e, #4ade80, #22d3ee, #22c55e);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.92),
-        0 10px 25px rgba(34, 197, 94, 0.25);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .logo-inner-orbit {
-      position: absolute;
-      inset: 3px;
-      border-radius: inherit;
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.86), transparent 62%),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.78), transparent 60%);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.9),
-        inset 0 0 30px rgba(15, 23, 42, 1);
-    }
-
-    .logo-glyph {
-      position: relative;
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      box-shadow:
-        0 0 16px rgba(34, 197, 94, 0.75),
-        0 0 30px rgba(34, 197, 94, 0.45);
-      background:
-        radial-gradient(circle at 30% 0%, rgba(248, 250, 252, 0.9), transparent 40%),
-        radial-gradient(circle at 50% 70%, rgba(34, 197, 94, 0.9), transparent 55%),
-        radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.9), transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.82), transparent 70%);
-    }
-
-    .logo-glyph::before,
-    .logo-glyph::after {
-      content: "";
-      position: absolute;
-      inset: 3px;
-      border-radius: inherit;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      opacity: 0.8;
-    }
-
-    .logo-glyph::after {
-      inset: 5px;
-      border-color: rgba(34, 197, 94, 0.55);
-      box-shadow:
-        inset 0 0 12px rgba(34, 197, 94, 0.65),
-        0 0 18px rgba(34, 197, 94, 0.55);
-    }
-
-    .logo-orbit {
-      position: absolute;
-      inset: 1.5px;
-      border-radius: inherit;
-      border: 1px dashed rgba(148, 163, 184, 0.6);
-      opacity: 0.75;
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.9),
-        0 0 18px rgba(148, 163, 184, 0.45);
-    }
-
-    .logo-orbit::before {
-      content: "";
-      position: absolute;
-      width: 4.5px;
-      height: 4.5px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-      top: -2px;
-      left: 50%;
-      transform: translateX(-50%);
-      box-shadow:
-        0 0 10px rgba(34, 197, 94, 0.85),
-        0 0 0 1px rgba(15, 23, 42, 0.95);
-    }
-
-    .app-title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-
-    .app-title-row {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    .app-title {
-      font-size: 18px;
-      font-weight: 620;
-      letter-spacing: 0.02em;
-      color: #e5e7eb;
-      text-shadow:
-        0 0 18px rgba(34, 197, 94, 0.5),
-        0 0 35px rgba(34, 197, 94, 0.4);
-    }
-
-    .app-pill {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      color: var(--accent-bright);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow:
-        0 8px 18px rgba(15, 23, 42, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 0.9);
-    }
-
-    .pill-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-    }
-
-    .app-subtitle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .subtitle-pill {
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(51, 65, 85, 0.8);
-      color: rgba(209, 213, 219, 0.9);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.95);
-    }
-
-    .subtitle-pill span {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .subtitle-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.95);
-      box-shadow: 0 0 5px rgba(148, 163, 184, 0.8);
-    }
-
-    .controls-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .cluster {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid rgba(51, 65, 85, 0.8);
-      box-shadow:
-        0 12px 22px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(18px);
-    }
-
-    .cluster label {
-      font-size: 11px;
-      color: var(--text-soft);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .cluster small {
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .cluster .hint-pill {
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(75, 85, 99, 0.9);
-      color: rgba(209, 213, 219, 0.9);
-      background: rgba(15, 23, 42, 0.9);
-      font-size: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .cluster input[type="range"] {
-      width: 120px;
-      accent-color: var(--accent-bright);
-      cursor: pointer;
-    }
-
-    .transport-cluster {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 5px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.94);
-      border: 1px solid rgba(55, 65, 81, 0.85);
-      box-shadow:
-        0 10px 20px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .transport-left {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .transport-label {
-      font-size: 11px;
-      color: var(--text-soft);
-      padding: 3px 7px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.85);
-    }
-
-    .transport-time {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.96);
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      color: rgba(209, 213, 219, 0.92);
-      min-width: 46px;
-      text-align: center;
-    }
-
-    .transport-buttons {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .btn {
-      border: none;
-      cursor: pointer;
-      border-radius: 999px;
-      font-size: 11px;
-      padding: 5px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-soft);
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      box-shadow:
-        0 10px 20px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 0.95);
-      transition: all 0.14s ease-out;
-    }
-
-    .btn span {
-      font-size: 13px;
-    }
-
-    .btn-primary {
-      background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-      color: #020617;
-      border-color: rgba(74, 222, 128, 0.6);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.95),
-        0 12px 28px rgba(22, 163, 74, 0.7),
-        0 0 35px rgba(34, 197, 94, 0.8);
-    }
-
-    .btn-ghost {
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-soft);
-    }
-
-    .btn-ghost.danger {
-      border-color: var(--danger-border);
-      color: var(--danger);
-      background: rgba(15, 23, 42, 0.95);
-      box-shadow:
-        0 10px 20px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .btn-ghost.danger:hover {
-      background: var(--danger-soft);
-      box-shadow:
-        0 10px 22px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(248, 113, 113, 0.8);
-    }
-
-    .btn-ghost.danger:active {
-      transform: translateY(1px);
-      box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(248, 113, 113, 0.7);
-    }
-
-    .btn:hover {
-      transform: translateY(-0.5px) translateZ(0);
-      box-shadow:
-        0 14px 26px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-      opacity: 0.96;
-    }
-
-    .btn-primary:hover {
-      box-shadow:
-        0 15px 30px rgba(22, 163, 74, 0.8),
-        0 0 40px rgba(34, 197, 94, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 0.98);
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-      box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 0.9);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.35fr);
-      gap: 10px;
-      height: calc(100% - 54px);
-      min-height: 0;
-    }
-
-    .panel {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .card {
-      flex: 1;
-      min-height: 0;
-      border-radius: 22px;
-      background:
-        radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%),
-        radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.18), transparent 50%),
-        radial-gradient(circle at 100% 0, rgba(129, 140, 248, 0.16), transparent 54%),
-        linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      box-shadow:
-        0 18px 60px rgba(15, 23, 42, 0.98),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.95);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.22), transparent 52%),
-        radial-gradient(circle at 100% 100%, rgba(51, 65, 85, 0.65), transparent 55%);
-      mix-blend-mode: soft-light;
-      opacity: 0.85;
-    }
-
-    .card-inner {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      height: 100%;
-      min-height: 0;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 0 2px;
-    }
-
-    .card-title-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .card-title {
-      font-size: 13px;
-      font-weight: 550;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      color: rgba(226, 232, 240, 0.98);
-    }
-
-    .card-pill {
-      font-size: 11px;
-      padding: 3px 7px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.94);
-      border: 1px solid rgba(71, 85, 105, 0.92);
-      color: rgba(209, 213, 219, 0.9);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow:
-        0 10px 18px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .card-pill-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 0 0, #f9fafb, #22c55e);
-      box-shadow: 0 0 9px rgba(34, 197, 94, 0.85);
-    }
-
-    .card-subtext {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .card-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .chip {
-      border-radius: 999px;
-      padding: 3px 7px;
-      font-size: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      background: rgba(15, 23, 42, 0.96);
-      color: rgba(209, 213, 219, 0.95);
-      box-shadow:
-        0 8px 18px rgba(15, 23, 42, 0.96),
-        0 0 0 1px rgba(15, 23, 42, 0.98);
-    }
-
-    .chip-icon {
-      width: 13px;
-      height: 13px;
-      border-radius: 7px;
-      background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #020617;
-      font-size: 10px;
-      box-shadow:
-        0 8px 18px rgba(22, 163, 74, 0.8),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .chip-secondary {
-      background: rgba(15, 23, 42, 0.96);
-      color: var(--text-soft);
-      border-color: rgba(55, 65, 81, 0.95);
-    }
-
-    .chip-secondary .chip-icon {
-      background: radial-gradient(circle at 0 0, #e5e7eb, #9ca3af);
-      color: #020617;
-      box-shadow:
-        0 8px 18px rgba(15, 23, 42, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .editor-wrapper {
-      flex: 1;
-      min-height: 0;
-      position: relative;
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
-      border: 1px solid rgba(75, 85, 99, 0.92);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.9),
-        0 16px 28px rgba(0, 0, 0, 0.9);
-      overflow: hidden;
-    }
-
-    .editor-header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 8px;
-      border-bottom: 1px solid rgba(55, 65, 81, 0.95);
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)),
-        linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
-    }
-
-    .editor-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .traffic-lights {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding-right: 4px;
-      border-right: 1px solid rgba(55, 65, 81, 0.85);
-      margin-right: 4px;
-    }
-
-    .dot-red,
-    .dot-yellow,
-    .dot-green {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
-    }
-
-    .dot-red {
-      background: #f97373;
-    }
-
-    .dot-yellow {
-      background: #facc15;
-    }
-
-    .dot-green {
-      background: #22c55e;
-    }
-
-    .editor-label {
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .editor-buttons {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .tiny-btn {
-      border-radius: 999px;
-      padding: 3px 7px;
-      border: 1px solid rgba(55, 65, 81, 0.98);
-      background: rgba(15, 23, 42, 0.98);
-      color: var(--text-soft);
-      font-size: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      box-shadow:
-        0 10px 18px rgba(0, 0, 0, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .tiny-btn:hover {
-      background: rgba(31, 41, 55, 0.98);
-    }
-
-    .tiny-btn.primary {
-      border-color: rgba(34, 197, 94, 0.8);
-      color: var(--accent-bright);
-      box-shadow:
-        0 10px 22px rgba(15, 23, 42, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-      background: rgba(15, 23, 42, 0.98);
-    }
-
-    .tiny-btn.primary:hover {
-      background: rgba(22, 101, 52, 0.8);
-      color: #ecfdf3;
-    }
-
-    #editor {
-      width: 100%;
-      height: calc(100% - 32px);
-      border: none;
-      outline: none;
-      resize: none;
-      background: transparent;
-      color: var(--text-main);
-      padding: 8px 10px;
-      font-size: 14px;
-      line-height: 1.5;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
-    }
-
-    #editor::placeholder {
-      color: rgba(75, 85, 99, 0.95);
-    }
-
-    .editor-footnote {
-      padding: 3px 6px 0;
-      display: flex;
-      justify-content: flex-end;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .viewer-wrapper {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .viewer-status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 0 2px;
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .viewer-status-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .viewer-status-pill {
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.96);
-      color: rgba(209, 213, 219, 0.95);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow:
-        0 8px 16px rgba(15, 23, 42, 0.96),
-        0 0 0 1px rgba(15, 23, 42, 0.98);
-    }
-
-    .viewer-status-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: var(--accent-bright);
-      box-shadow:
-        0 0 8px rgba(34, 197, 94, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .viewer-status-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .viewer-card {
-      flex: 1;
-      min-height: 0;
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.99)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.95),
-        0 18px 30px rgba(0, 0, 0, 0.95);
-      padding: 9px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .viewer-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.18), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(71, 85, 105, 0.55), transparent 52%);
-      opacity: 0.85;
-      mix-blend-mode: soft-light;
-    }
-
-    .viewer-card-inner {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: 0;
-      border-radius: 14px;
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      overflow: hidden;
-    }
-
-    .viewer-viewport {
-      flex: 1;
-      min-height: 0;
-      position: relative;
-      overflow: hidden;
-      border-radius: 14px;
-      background:
-        radial-gradient(circle at 0 -25%, rgba(34, 197, 94, 0.28), transparent 60%),
-        radial-gradient(circle at 100% 120%, rgba(59, 130, 246, 0.28), transparent 60%),
-        linear-gradient(#020617, #020617);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.95),
-        0 18px 30px rgba(0, 0, 0, 0.85);
-    }
-
-    .viewer-halo-top {
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      height: 90px;
-      background: radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.42), transparent 70%);
-      filter: blur(12px);
-      opacity: 0.8;
-      pointer-events: none;
-    }
-
-    .viewer-halo-bottom {
-      position: absolute;
-      bottom: -50px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      height: 100px;
-      background:
-        radial-gradient(circle at 50% 0, rgba(34, 197, 94, 0.26), transparent 70%),
-        radial-gradient(circle at 50% 0, rgba(59, 130, 246, 0.18), transparent 70%);
-      filter: blur(14px);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .viewer-highlight {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 100%;
-      height: 42%;
-      transform: translate(-50%, -50%);
-      background:
-        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.26)),
-        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.03), rgba(15, 23, 42, 0.35));
-      border-radius: 36px;
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.9),
-        0 0 0 2px rgba(34, 197, 94, 0.16),
-        0 20px 40px rgba(0, 0, 0, 0.9),
-        0 -16px 35px rgba(15, 23, 42, 0.95),
-        0 0 50px rgba(34, 197, 94, 0.45);
-      pointer-events: none;
-      mix-blend-mode: screen;
-      opacity: 0.75;
-    }
-
-    .viewer-subtle-layer {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 0 50%, rgba(15, 23, 42, 0.6), transparent 60%),
-        radial-gradient(circle at 100% 50%, rgba(15, 23, 42, 0.75), transparent 60%);
-      opacity: 0.85;
-      mix-blend-mode: multiply;
-      pointer-events: none;
-    }
-
-    .viewer-text-rail {
-      position: absolute;
-      inset: 16px 8px 16px 8px;
-      border-radius: 28px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 10px;
-      -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent 100%);
-      mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent 100%);
-    }
-
-    .viewer {
-      position: relative;
-      width: 100%;
-      max-width: 620px;
-      margin: 0 auto;
-      color: rgba(226, 232, 240, 0.98);
-      font-size: 18px;
-      line-height: 1.7;
-      text-align: center;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      padding: 0 4px;
-      text-shadow:
-        0 0 20px rgba(15, 23, 42, 0.95),
-        0 0 40px rgba(0, 0, 0, 0.85);
-      cursor: grab;
-      touch-action: none;
-      transition: transform 0.08s ease-out;
-    }
-
-    .viewer:active {
-      cursor: grabbing;
-    }
-
-    .viewer-content {
-      position: relative;
-      display: inline-block;
-      will-change: transform;
-    }
-
-    .viewer-overlay-top,
-    .viewer-overlay-bottom {
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 65px;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    .viewer-overlay-top {
-      top: -2px;
-      background: linear-gradient(to bottom, rgba(2, 6, 23, 0.96), rgba(2, 6, 23, 0));
-    }
-
-    .viewer-overlay-bottom {
-      bottom: -2px;
-      background: linear-gradient(to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0));
-    }
-
-    .viewer-gradient-border-top,
-    .viewer-gradient-border-bottom {
-      position: absolute;
-      left: 22%;
-      right: 22%;
-      height: 2px;
-      border-radius: 999px;
-      background:
-        linear-gradient(to right,
-          rgba(15, 23, 42, 0),
-          rgba(34, 197, 94, 0.9),
-          rgba(59, 130, 246, 0.9),
-          rgba(15, 23, 42, 0)
-        );
-      box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
-      opacity: 0.75;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    .viewer-gradient-border-top {
-      top: 21%;
-    }
-
-    .viewer-gradient-border-bottom {
-      bottom: 18%;
-    }
-
-    .viewer-foot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 6px 8px;
-      border-top: 1px solid rgba(30, 64, 175, 0.7);
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-      box-shadow:
-        0 -12px 24px rgba(15, 23, 42, 0.9),
-        inset 0 1px 0 rgba(15, 23, 42, 0.9);
-    }
-
-    .viewer-foot-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .viewer-foot-pill {
-      padding: 3px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      background: rgba(15, 23, 42, 0.96);
-      font-size: 10px;
-      color: rgba(209, 213, 219, 0.95);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow:
-        0 8px 18px rgba(0, 0, 0, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .viewer-foot-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.95);
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-    }
-
-    .viewer-foot-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .viewer-foot-note-pill {
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px dashed rgba(75, 85, 99, 0.9);
-      background: rgba(15, 23, 42, 0.96);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: rgba(148, 163, 184, 0.95);
-    }
-
-    .viewer-foot-keys {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .key-cap {
-      padding: 1px 4px;
-      border-radius: 6px;
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.96);
-      font-size: 9px;
-      color: rgba(209, 213, 219, 0.95);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
-    }
-
-    .songs-card {
-      border-radius: 22px;
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      box-shadow:
-        0 18px 30px rgba(0, 0, 0, 0.95),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.95);
-      padding: 9px;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .songs-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.14), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.18), transparent 60%);
-      opacity: 0.9;
-      mix-blend-mode: soft-light;
-    }
-
-    .songs-card-inner {
-      position: relative;
-      z-index: 1;
-    }
-
-    .songs-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      padding: 0 1px;
-    }
-
-    .songs-header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .songs-title-row {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .songs-title {
-      font-size: 12px;
-      font-weight: 550;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(226, 232, 240, 0.96);
-    }
-
-    .songs-count-pill {
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      color: rgba(209, 213, 219, 0.95);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow:
-        0 8px 16px rgba(0, 0, 0, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .songs-count-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.98);
-      box-shadow:
-        0 0 8px rgba(34, 197, 94, 0.9),
-        0 0 0 1px rgba(0, 0, 0, 0.95);
-    }
-
-    .songs-subtitle {
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .songs-header-right {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .songs-hint-chip {
-      padding: 3px 7px;
-      border-radius: 999px;
-      font-size: 10px;
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.98);
-      color: rgba(209, 213, 219, 0.95);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow:
-        0 8px 16px rgba(0, 0, 0, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .songs-hint-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.95);
-    }
-
-    .songs-actions {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .songs-body {
-      margin-top: 4px;
-      border-radius: 15px;
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      box-shadow:
-        inset 0 0 0 1px rgba(15, 23, 42, 0.95),
-        0 15px 26px rgba(0, 0, 0, 0.9);
-      max-height: 160px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .songs-list {
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 4px 3px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
-    }
-
-    .song-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      padding: 6px 8px;
-      border-radius: 11px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      background: rgba(15, 23, 42, 0.92);
-      transition: all 0.12s ease-out;
-      margin-bottom: 4px;
-    }
-
-    .song-item:hover {
-      border-color: rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.98);
-      box-shadow:
-        0 8px 14px rgba(0, 0, 0, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .song-item.active {
-      border-color: rgba(34, 197, 94, 0.9);
-      background: rgba(15, 23, 42, 0.96);
-      box-shadow:
-        0 8px 18px rgba(34, 197, 94, 0.35),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .song-main {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      min-width: 0;
-    }
-
-    .song-title-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      min-width: 0;
-    }
-
-    .song-title {
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(226, 232, 240, 0.96);
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-
-    .song-pill {
-      font-size: 9px;
-      padding: 2px 5px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      color: rgba(148, 163, 184, 0.95);
-    }
-
-    .song-meta {
-      font-size: 10px;
-      color: rgba(148, 163, 184, 0.95);
-    }
-
-    .song-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .song-btn {
-      border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 0.95);
-      background: rgba(15, 23, 42, 0.98);
-      color: rgba(209, 213, 219, 0.96);
-      font-size: 10px;
-      padding: 3px 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      cursor: pointer;
-      box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .song-btn.danger {
-      border-color: rgba(248, 113, 113, 0.75);
-      color: #fecaca;
-      background: rgba(15, 23, 42, 0.98);
-    }
-
-    .song-btn:hover {
-      background: rgba(31, 41, 55, 0.98);
-    }
-
-    .song-btn.danger:hover {
-      background: rgba(127, 29, 29, 0.9);
-    }
-
-    .songs-empty {
-      padding: 6px 8px 8px;
-      font-size: 10px;
-      color: var(--text-muted);
-      border-top: 1px dashed rgba(55, 65, 81, 0.9);
-      background: rgba(15, 23, 42, 0.96);
-    }
-
-    .songs-empty strong {
-      font-weight: 500;
-      color: rgba(229, 231, 235, 0.96);
-    }
-
-    .songs-footer {
-      padding: 4px 6px 3px;
-      font-size: 10px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid rgba(31, 41, 55, 0.95);
-      background:
-        radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)),
-        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-      box-shadow:
-        0 -10px 20px rgba(15, 23, 42, 0.9),
-        inset 0 1px 0 rgba(15, 23, 42, 0.98);
-    }
-
-    .songs-footer-left {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .songs-footer-pill {
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.98);
-      color: rgba(209, 213, 219, 0.96);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.95),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .songs-footer-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.98);
-      box-shadow:
-        0 0 8px rgba(34, 197, 94, 0.9),
-        0 0 0 1px rgba(0, 0, 0, 0.95);
-    }
-
-    .songs-footer-right {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .songs-footer-shortcut {
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px dashed rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.98);
-      color: rgba(148, 163, 184, 0.95);
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-
-    .shortcut-key {
-      padding: 1px 4px;
-      border-radius: 5px;
-      border: 1px solid rgba(75, 85, 99, 0.95);
-      background: rgba(15, 23, 42, 0.98);
-      color: rgba(209, 213, 219, 0.96);
-      font-size: 9px;
-    }
-
-    .viewer-status-icon {
-      width: 14px;
-      height: 14px;
-      border-radius: 7px;
-      background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 9px;
-      color: #020617;
-      box-shadow:
-        0 8px 18px rgba(22, 163, 74, 0.8),
-        0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .pill-icon {
-      font-size: 10px;
-    }
-
-    .songs-label {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .songs-label strong {
-      font-size: 10px;
-      color: rgba(226, 232, 240, 0.95);
-    }
-
-    .songs-label span {
-      font-size: 10px;
-      color: rgba(148, 163, 184, 0.98);
-    }
-
-    .highlight-current-line .viewer-content-line.current {
-      color: #ecfeff;
-      text-shadow:
-        0 0 30px rgba(59, 130, 246, 0.8),
-        0 0 60px rgba(37, 99, 235, 0.9),
-        0 0 90px rgba(37, 99, 235, 1);
-      font-weight: 500;
-    }
-
-    .viewer-content-line {
-      display: block;
-      padding: 2px 0;
-    }
-
-    @media (max-width: 900px) {
-      body {
-        padding: 10px;
-      }
-
-      .app-shell {
-        border-radius: 26px;
-        padding: 12px 10px 10px;
-      }
-
-      .layout {
-        grid-template-columns: minmax(0, 1fr);
-        height: calc(100% - 52px);
-        gap: 8px;
-      }
-
-      .header {
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .controls-row {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-
-      .viewer {
-        font-size: 17px;
-      }
-
-      .songs-body {
-        max-height: 150px;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .controls-row {
-        width: 100%;
-        justify-content: space-between;
-      }
-
-      .cluster {
-        flex: 1;
-      }
-
-      .transport-cluster {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-
-      .layout {
-        height: calc(100% - 54px);
-      }
-
-      .card,
-      .songs-card {
-        border-radius: 20px;
-      }
-
-      .viewer {
-        font-size: 16px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 8px 6px;
-      }
-
-      .app-shell {
-        padding: 10px 8px 8px;
-        border-radius: 22px;
-      }
-
-      .app-title {
-        font-size: 17px;
-      }
-
-      .cluster input[type="range"] {
-        width: 100px;
-      }
-
-      .viewer {
-        font-size: 15px;
-      }
-
-      .songs-body {
-        max-height: 140px;
-      }
-    }
-
-    .viewer::-webkit-scrollbar,
-    #editor::-webkit-scrollbar,
-    .songs-list::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .viewer::-webkit-scrollbar-thumb,
-    #editor::-webkit-scrollbar-thumb,
-    .songs-list::-webkit-scrollbar-thumb {
-      background: rgba(75, 85, 99, 0.9);
-      border-radius: 999px;
-    }
-
-    .viewer::-webkit-scrollbar-track,
-    #editor::-webkit-scrollbar-track,
-    .songs-list::-webkit-scrollbar-track {
-      background: transparent;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <title>LyricFlow</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+    <style>
+        :root {
+            --bg: #070b10;
+            --card: #111827;
+            --accent: #22c55e;
+            --accent-soft: rgba(34, 197, 94, 0.12);
+            --accent-bright: #22c55e;
+            --text-main: #e5e7eb;
+            --text-soft: #9ca3af;
+            --text-muted: #6b7280;
+            --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
+            --danger: #f97373;
+            --danger-border: rgba(248, 113, 113, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            padding: 14px;
+        }
+
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 1080px;
+            max-height: 100%;
+            margin: 0 auto;
+            padding: 14px 14px 10px;
+            border-radius: 30px;
+            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+            .app-shell::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
+                opacity: 0.85;
+                mix-blend-mode: soft-light;
+            }
+
+        .app-shell-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
+        }
+
+        /* Header */
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .branding {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lf-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.9), transparent 55%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), radial-gradient(circle at 30% 90%, rgba(59, 130, 246, 1), transparent 65%), linear-gradient(135deg, #020617, #020617);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lf-logo-glyph {
+            position: relative;
+            width: 20px;
+            height: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: radial-gradient(circle at 0 0, #020617, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
+        }
+
+            .lf-logo-glyph::before {
+                content: "L";
+                font-weight: 700;
+                font-size: 11px;
+                letter-spacing: 0.06em;
+                color: #bbf7d0;
+                position: absolute;
+                left: 4px;
+                top: 4px;
+            }
+
+            .lf-logo-glyph::after {
+                content: "F";
+                font-weight: 700;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                color: #22c55e;
+                position: absolute;
+                right: 4px;
+                bottom: 4px;
+            }
+
+        .app-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 620;
+            letter-spacing: 0.02em;
+            color: #e5e7eb;
+            text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
+        }
+
+        .app-subtitle {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            color: var(--text-soft);
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .mode-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .mode-toggle span strong {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 10px;
+            color: #e5e7eb;
+        }
+
+        .mode-toggle span small {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Status + playlist row */
+
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .status-line {
+            font-size: 11px;
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 2px;
+        }
+
+        .status-label {
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-pill-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .status-time {
+            opacity: 0.8;
+        }
+
+        .header-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pill-label {
+            font-size: 10px;
+            color: var(--text-soft);
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+            .pill-label strong {
+                font-weight: 600;
+            }
+
+        .icon-btn {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 11px;
+            padding: 4px 7px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+            .icon-btn span {
+                font-size: 11px;
+            }
+
+        .pill-btn {
+            border-radius: 999px;
+            padding: 4px 10px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        /* Central viewer / editor */
+
+        .main-stack {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .viewer-card {
+            flex: 1;
+            min-height: 0;
+            border-radius: 22px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.99)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.95);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viewer-viewport {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            background: radial-gradient(circle at 0 -25%, rgba(34, 197, 94, 0.28), transparent 60%), radial-gradient(circle at 100% 120%, rgba(59, 130, 246, 0.28), transparent 60%), linear-gradient(#020617, #020617);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.85);
+        }
+
+        .viewer-halo-top,
+        .viewer-halo-bottom,
+        .viewer-highlight,
+        .viewer-subtle-layer {
+            pointer-events: none;
+        }
+
+        .viewer-halo-top {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 90px;
+            background: radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.42), transparent 70%);
+            filter: blur(12px);
+            opacity: 0.8;
+        }
+
+        .viewer-halo-bottom {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 100px;
+            background: radial-gradient(circle at 50% 0, rgba(34, 197, 94, 0.26), transparent 70%), radial-gradient(circle at 50% 0, rgba(59, 130, 246, 0.18), transparent 70%);
+            filter: blur(14px);
+            opacity: 0.9;
+        }
+
+        .viewer-highlight {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.26)), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.03), rgba(15, 23, 42, 0.35));
+            border-radius: 40px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 0 2px rgba(34, 197, 94, 0.16), 0 20px 40px rgba(0, 0, 0, 0.9), 0 -16px 35px rgba(15, 23, 42, 0.95), 0 0 50px rgba(34, 197, 94, 0.45);
+            mix-blend-mode: screen;
+            opacity: 0.75;
+        }
+
+        .viewer-subtle-layer {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 0 50%, rgba(15, 23, 42, 0.6), transparent 60%), radial-gradient(circle at 100% 50%, rgba(15, 23, 42, 0.75), transparent 60%);
+            opacity: 0.85;
+            mix-blend-mode: multiply;
+        }
+
+        .viewer-text-rail {
+            position: absolute;
+            inset: 18px 10px;
+            border-radius: 32px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+            -webkit-mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
+            mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
+        }
+
+        .viewer {
+            position: relative;
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            color: rgba(226, 232, 240, 0.98);
+            font-size: 20px;
+            line-height: 1.9;
+            text-align: center;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 0 4px;
+            text-shadow: 0 0 20px rgba(15, 23, 42, 0.95), 0 0 40px rgba(0, 0, 0, 0.85);
+            cursor: grab;
+            touch-action: none;
+            transition: transform 0.08s ease-out;
+        }
+
+            .viewer:active {
+                cursor: grabbing;
+            }
+
+        .viewer-content {
+            position: relative;
+            display: inline-block;
+            will-change: transform;
+            transform: translateY(0px);
+        }
+
+        .viewer-overlay-top,
+        .viewer-overlay-bottom {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 70px;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .viewer-overlay-top {
+            top: -4px;
+            background: linear-gradient( to bottom, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
+        }
+
+        .viewer-overlay-bottom {
+            bottom: -4px;
+            background: linear-gradient( to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
+        }
+
+        .viewer-gradient-border-top,
+        .viewer-gradient-border-bottom {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient( to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0) );
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+            opacity: 0.8;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .viewer-gradient-border-top {
+            top: 24%;
+        }
+
+        .viewer-gradient-border-bottom {
+            bottom: 24%;
+        }
+
+        .viewer-content-line {
+            display: block;
+            padding: 1px 0;
+        }
+
+        /* Editor */
+
+        .editor-card {
+            flex: 1;
+            min-height: 0;
+            border-radius: 22px;
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%), radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%), linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.98), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .editor-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+        }
+
+        .editor-title {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.96);
+        }
+
+        .editor-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .playlist-edit-details {
+            margin-top: 4px;
+            padding: 4px 6px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            font-size: 11px;
+            color: var(--text-soft);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px 8px;
+        }
+
+            .playlist-edit-details span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+
+        .tiny-btn {
+            border-radius: 999px;
+            padding: 3px 8px;
+            border: 1px solid rgba(55, 65, 81, 0.98);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+            .tiny-btn.primary {
+                border-color: rgba(34, 197, 94, 0.8);
+                color: var(--accent-bright);
+            }
+
+        .tiny-btn-danger {
+            border-color: var(--danger-border);
+            color: var(--danger);
+        }
+
+        #editor {
+            flex: 1;
+            min-height: 0;
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.92);
+            background: rgba(15, 23, 42, 0.98);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+            padding: 8px 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            background-image: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
+        }
+
+            #editor::placeholder {
+                color: rgba(75, 85, 99, 0.95);
+            }
+
+        /* Bottom transport bar */
+
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.97);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .transport-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* spread buttons */
+            gap: 10px;
+            width: 100%;
+        }
+
+            .transport-buttons .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+
+
+        .btn {
+            border: none;
+            cursor: pointer;
+            border-radius: 999px;
+            font-size: 11px;
+            padding: 7px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
+        }
+
+            .btn span {
+                font-size: 13px;
+            }
+
+        .btn-primary {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            color: #020617;
+            border-color: rgba(74, 222, 128, 0.6);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(22, 163, 74, 0.7), 0 0 35px rgba(34, 197, 94, 0.8);
+        }
+
+        .btn-reset {
+            padding: 6px 10px;
+            font-size: 10px;
+            border-color: rgba(248, 113, 113, 0.6);
+            color: var(--danger);
+        }
+
+        .btn:hover {
+            transform: translateY(-0.5px) translateZ(0);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+            opacity: 0.97;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
+        }
+
+        .btn-attention {
+            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.85), 0 0 18px rgba(34, 197, 94, 0.8), 0 0 45px rgba(34, 197, 94, 0.85);
+        }
+
+        .bottom-tools {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* NEW: bigger Settings button in transport bar */
+        #settingsBtnBottom.btn {
+            padding: 7px 16px;
+            font-size: 11px;
+        }
+
+            #settingsBtnBottom.btn span:first-child {
+                font-size: 15px;
+            }
+
+        /* Modals */
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
+
+            .overlay.hidden {
+                display: none;
+            }
+
+        .modal {
+            max-width: 360px;
+            width: 90%;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
+            padding: 12px 14px 10px;
+            color: var(--text-soft);
+            font-size: 13px;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .modal-title {
+            font-size: 13px;
+            font-weight: 550;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            color: var(--text-soft);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-body p {
+            margin: 6px 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+            .modal-footer button {
+                border-radius: 999px;
+                border: 1px solid rgba(75, 85, 99, 0.95);
+                background: rgba(15, 23, 42, 1);
+                color: var(--text-soft);
+                font-size: 11px;
+                padding: 4px 10px;
+                cursor: pointer;
+            }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+            .form-field label {
+                font-size: 11px;
+                color: var(--text-soft);
+            }
+
+            .form-field input,
+            .form-field select {
+                border-radius: 999px;
+                border: 1px solid rgba(75, 85, 99, 0.95);
+                background: rgba(15, 23, 42, 1);
+                color: var(--text-main);
+                padding: 6px 10px;
+                font-size: 13px;
+                outline: none;
+            }
+
+        .modal-footer .btn-primary-small {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            border-color: rgba(74, 222, 128, 0.7);
+            color: #020617;
+            margin-left: 6px;
+        }
+
+        .playlist-edit-list {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 6px;
+            padding-right: 4px;
+        }
+
+        .playlist-edit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 4px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+            .playlist-edit-item:last-child {
+                border-bottom: none;
+            }
+
+        .playlist-edit-name {
+            flex: 1;
+            color: var(--text-main);
+        }
+
+        .playlist-edit-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            .playlist-edit-controls button {
+                border-radius: 999px;
+                border: 1px solid rgba(75, 85, 99, 0.95);
+                background: rgba(15, 23, 42, 1);
+                color: var(--text-soft);
+                font-size: 10px;
+                padding: 2px 6px;
+                cursor: pointer;
+            }
+
+        .track-list {
+            max-height: 260px;
+            overflow-y: auto;
+            margin-top: 6px;
+        }
+
+        .track-item {
+            padding: 6px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+
+            .track-item span:first-child {
+                opacity: 0.8;
+            }
+
+            .track-item:hover {
+                background: rgba(30, 64, 175, 0.35);
+            }
+
+        .viewer::-webkit-scrollbar,
+        #editor::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .viewer::-webkit-scrollbar-thumb,
+        #editor::-webkit-scrollbar-thumb {
+            background: rgba(75, 85, 99, 0.9);
+            border-radius: 999px;
+        }
+
+        .viewer::-webkit-scrollbar-track,
+        #editor::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .app-shell {
+                padding: 12px 10px 8px;
+                border-radius: 26px;
+            }
+
+            .viewer {
+                font-size: 18px;
+            }
+
+            .bottom-bar {
+                padding: 6px 8px;
+            }
+
+            .btn {
+                padding: 7px 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px 6px;
+            }
+
+            .app-shell {
+                border-radius: 22px;
+            }
+
+            .viewer {
+                font-size: 17px;
+            }
+
+            .branding {
+                max-width: 62%;
+            }
+
+            .btn {
+                padding: 6px 12px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body>
-<div class="app-shell">
-  <div class="app-shell-inner">
-    <header class="header">
-      <div class="branding">
-        <div class="logo-mark">
-          <div class="logo-inner-orbit"></div>
-          <div class="logo-glyph"></div>
-          <div class="logo-orbit"></div>
-        </div>
-        <div class="app-title-block">
-          <div class="app-title-row">
-            <div class="app-title">LyricFlow</div>
-            <div class="app-pill">
-              <span class="pill-dot"></span>
-              <span>Stage‑ready lyric scroller</span>
-            </div>
-          </div>
-          <div class="app-subtitle">
-            <div class="subtitle-pill">
-              <span class="subtitle-dot"></span>
-              <span>Type, save, scroll – your lyrics, your pace</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="controls-row">
-        <div class="cluster">
-          <label for="speed">
-            <span>Scroll speed</span>
-            <small>(0 = off)</small>
-          </label>
-          <input type="range" id="speed" min="0" max="10" step="1" value="4">
-          <span class="hint-pill">
-              <span class="subtitle-dot"></span>
-              Drag lyrics to fine‑tune
-            </span>
-        </div>
-
-        <div class="transport-cluster">
-          <div class="transport-left">
-            <div class="transport-label">
-              <span class="status-dot"></span>
-              <span id="statusText">Ready</span>
-            </div>
-            <div class="transport-time">
-              <span id="timeDisplay">0:00</span>
-            </div>
-          </div>
-          <div class="transport-buttons">
-            <button id="start" class="btn btn-primary">
-              <span>▶</span> <span>Start</span>
-            </button>
-            <button id="pause" class="btn btn-ghost">
-              <span>⏸</span> <span>Pause</span>
-            </button>
-            <button id="resetBtn" class="btn btn-ghost danger">
-              <span>⟲</span> <span>Reset</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <main class="layout">
-      <section class="panel">
-        <div class="card">
-          <div class="card-inner">
-            <div class="card-header">
-              <div class="card-title-row">
-                <div class="card-title">Lyrics editor</div>
-                <div class="card-pill">
-                  <span class="card-pill-dot"></span>
-                  <span>Draft & tweak here</span>
-                </div>
-              </div>
-              <div class="card-actions">
-                <div class="chip">
-                  <div class="chip-icon">✎</div>
-                  <span>Type raw lyrics, then send to viewer</span>
-                </div>
-                <div class="chip chip-secondary">
-                  <div class="chip-icon">⌨</div>
-                  <span>Enter on PC or phone</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="editor-wrapper">
-              <div class="editor-header-bar">
-                <div class="editor-left">
-                  <div class="traffic-lights">
-                    <div class="dot-red"></div>
-                    <div class="dot-yellow"></div>
-                    <div class="dot-green"></div>
-                  </div>
-                  <div class="editor-label">
-                    Type lyrics, then tap “Send to viewer” to update the on‑stage window.
-                  </div>
-                </div>
-                <div class="editor-buttons">
-                  <button id="copyToViewer" class="tiny-btn primary">
-                    <span>⇪</span>
-                    <span>Send to viewer</span>
-                  </button>
-                  <button id="clearEditor" class="tiny-btn">
-                    <span>⌫</span>
-                    <span>Clear</span>
-                  </button>
-                </div>
-              </div>
-              <textarea id="editor" placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;Tap “Send to viewer” to update the scrolling window…"></textarea>
-            </div>
-            <div class="editor-footnote">
-              <span>Tip: Write and edit here – the viewer always stays clean and performance‑ready.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="viewer-wrapper">
-          <div class="viewer-status-row">
-            <div class="viewer-status-left">
-              <div class="viewer-status-pill">
-                <div class="viewer-status-dot"></div>
-                <span>Lyric window is always on screen – only the text inside moves.</span>
-              </div>
-            </div>
-            <div class="viewer-status-right">
-              <span>Drag inside the window to nudge scroll speed while performing.</span>
-            </div>
-          </div>
-
-          <div class="viewer-card">
-            <div class="viewer-card-inner">
-              <div class="viewer-viewport">
-                <div class="viewer-halo-top"></div>
-                <div class="viewer-halo-bottom"></div>
-                <div class="viewer-subtle-layer"></div>
-                <div class="viewer-highlight"></div>
-
-                <div class="viewer-text-rail">
-                  <div class="viewer-overlay-top"></div>
-                  <div class="viewer-overlay-bottom"></div>
-                  <div class="viewer-gradient-border-top"></div>
-                  <div class="viewer-gradient-border-bottom"></div>
-
-                  <div class="viewer" id="viewer">
-                    <div class="viewer-content" id="viewerContent">
-                      <span class="viewer-content-line">Send lyrics from the editor to see them here.</span>
+    <div class="app-shell">
+        <div class="app-shell-inner">
+            <header class="header">
+                <div class="branding">
+                    <div class="lf-logo">
+                        <div class="lf-logo-glyph"></div>
                     </div>
-                  </div>
+                    <div class="app-title-block">
+                        <div class="app-title">LyricFlow</div>
+                        <div class="app-subtitle">Stage‑ready lyric scroller</div>
+                    </div>
                 </div>
-              </div>
+                <div class="mode-toggle" id="modeToggle">
+                    <div class="mode-dot"></div>
+                    <span>
+                        <strong>Stage mode</strong>
+                        <small>· tap for edit</small>
+                    </span>
+                </div>
+            </header>
 
-              <div class="viewer-foot">
-                <div class="viewer-foot-left">
-                  <div class="viewer-foot-pill">
-                    <span class="viewer-foot-dot"></span>
-                    <span>Lyric window stays anchored – text scrolls inside for consistency on any screen.</span>
-                  </div>
+            <div class="top-row">
+                <div class="status-line">
+                    <div class="status-label">
+                        <span class="status-pill-dot"></span>
+                        <span id="statusText">Ready</span>
+                        <span class="status-time">· <span id="timeDisplay">0:00</span></span>
+                    </div>
                 </div>
-                <div class="viewer-foot-right">
-                  <div class="viewer-foot-note-pill">
-                    <span>Controls:</span>
-                    <span class="viewer-foot-keys">
-                        <span class="key-cap">Start</span>
-                        <span class="key-cap">Pause</span>
-                        <span class="key-cap">Reset</span>
-                      </span>
-                  </div>
-                  <span>Use the speed slider or drag the lyrics to fine‑tune during a song.</span>
+                <div class="header-right">
+                    <button id="prevSongBtn" class="icon-btn hidden" title="Previous song">
+                        <span>⏮</span>
+                    </button>
+                    <button id="nextSongBtn" class="icon-btn hidden" title="Next song">
+                        <span>⏭</span>
+                    </button>
+                    <span id="playlistPill" class="pill-label hidden">
+                        <span id="playlistPillText">Set 1</span>
+                        <span id="playlistPillIndex">1/1</span>
+                    </span>
+                    <button class="pill-btn stage-only" id="stageInfoBtn">Info</button>
                 </div>
-              </div>
             </div>
-          </div>
+
+            <div class="main-stack">
+                <div class="viewer-card" id="viewerCard">
+                    <div class="viewer-viewport">
+                        <div class="viewer-halo-top"></div>
+                        <div class="viewer-halo-bottom"></div>
+                        <div class="viewer-subtle-layer"></div>
+                        <div class="viewer-highlight"></div>
+
+                        <div class="viewer-text-rail">
+                            <div class="viewer-overlay-top"></div>
+                            <div class="viewer-overlay-bottom"></div>
+                            <div class="viewer-gradient-border-top"></div>
+                            <div class="viewer-gradient-border-bottom"></div>
+
+                            <div class="viewer" id="viewer">
+                                <div class="viewer-content" id="viewerContent">
+                                    <span class="viewer-content-line">
+                                        Welcome to LyricFlow – stage‑ready lyric scroller.
+                                        Tap Edit to paste or type lyrics.
+                                        Come back to Stage, set a scroll speed, press Start.
+                                        Drag lines during the song to fine‑tune your pace.
+                                        Use Settings to adjust scroll speed, font size, and line spacing.
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-card hidden" id="editorCard">
+                    <div class="editor-inner">
+                        <div class="editor-header-bar">
+                            <div class="editor-title">Lyrics editor</div>
+                            <div class="editor-buttons">
+                                <button class="tiny-btn" id="editorInfoBtn">i</button>
+                                <button class="tiny-btn primary" id="saveSongBtn">Save</button>
+                                <button class="tiny-btn" id="loadSongBtn">Load</button>
+                                <button class="tiny-btn" id="editPlaylistBtn">Edit playlist</button>
+                                <button class="tiny-btn tiny-btn-danger" id="clearEditorBtn">Clear</button>
+                            </div>
+                        </div>
+                        <textarea id="editor"
+                                  placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge)."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-bar" id="bottomBar">
+                <div class="transport-buttons">
+                    <button id="start" class="btn btn-primary">
+                        <span>Start</span>
+                    </button>
+                    <button id="pause" class="btn">
+                        <span>Pause</span>
+                    </button>
+                    <button id="resetBtn" class="btn btn-reset">
+                        <span>Reset</span>
+                    </button>
+                    <button id="settingsBtnBottom" class="btn">
+                        <span>Settings</span>
+                    </button>
+                </div>
+                <div class="bottom-tools">
+                    <!-- reserved for future tools -->
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="songs-card">
-          <div class="songs-card-inner">
-            <div class="songs-header">
-              <div class="songs-header-left">
-                <div class="songs-title-row">
-                  <div class="songs-title">Saved songs</div>
-                  <div class="songs-count-pill">
-                    <span class="songs-count-dot"></span>
-                    <span><span id="songCount">0</span> saved</span>
-                  </div>
-                </div>
-                <div class="songs-subtitle">
-                  Load songs instantly and keep your favourite lyrics ready to go.
-                </div>
-              </div>
-              <div class="songs-header-right">
-                <div class="songs-hint-chip">
-                  <span class="songs-hint-dot"></span>
-                  <span>Names are saved on this device using your browser’s storage.</span>
-                </div>
-                <div class="songs-actions">
-                  <button id="saveSong" class="tiny-btn primary">
-                    <span>💾</span>
-                    <span>Save current lyrics</span>
-                  </button>
-                  <button id="clearAllSongs" class="tiny-btn danger">
-                    <span>🗑</span>
-                    <span>Clear all</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+    <!-- Modals -->
 
-            <div class="songs-body">
-              <div id="songsList" class="songs-list"></div>
-              <div class="songs-empty" id="songsEmpty">
-                <strong>No songs saved yet.</strong> Save any lyrics with “Save current lyrics” – they stay on this phone or PC until you clear them.
-              </div>
+    <div class="overlay hidden" id="stageInfoOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Stage mode</div>
+                <button class="modal-close" data-close-stage-info>✕</button>
             </div>
-
-            <div class="songs-footer">
-              <div class="songs-footer-left">
-                <div class="songs-footer-pill">
-                  <span class="songs-footer-dot"></span>
-                  <span>Storage:</span>
-                  <span>Uses your browser’s local storage (no account needed).</span>
-                </div>
-              </div>
-              <div class="songs-footer-right">
-                <div class="songs-footer-shortcut">
-                  <span>Tip:</span>
-                  <span class="shortcut-key">Save</span>
-                  <span>after you tweak spacing and line breaks you like.</span>
-                </div>
-              </div>
+            <div class="modal-body">
+                <p>• Stage shows only the live lyric window and transport controls.</p>
+                <p>• Set a scroll speed or BPM, press Start, and read your lines inside the glow.</p>
+                <p>• Drag the lyrics up or down during a song to fine‑tune position.</p>
+                <p>• Space = Start/Pause, R = Reset (desktop).</p>
+                <p>BPM mode tips: look up tempo on a BPM tool or metronome app; start with “4 lines = 1 measure”; if scrolling is too fast, increase lines per measure; if too slow, decrease it.</p>
             </div>
-          </div>
+            <div class="modal-footer">
+                <button data-close-stage-info>Got it</button>
+            </div>
         </div>
-      </section>
-    </main>
-  </div>
-</div>
-
-<script>
-  const editor = document.getElementById("editor");
-  const viewer = document.getElementById("viewer");
-  const viewerContent = document.getElementById("viewerContent");
-  const copyToViewerBtn = document.getElementById("copyToViewer");
-  const clearEditorBtn = document.getElementById("clearEditor");
-
-  const startBtn = document.getElementById("start");
-  const pauseBtn = document.getElementById("pause");
-  const resetBtn = document.getElementById("resetBtn");
-  const speedSlider = document.getElementById("speed");
-  const statusText = document.getElementById("statusText");
-  const timeDisplay = document.getElementById("timeDisplay");
-
-  const songsList = document.getElementById("songsList");
-  const songsEmpty = document.getElementById("songsEmpty");
-  const songCount = document.getElementById("songCount");
-  const saveSongBtn = document.getElementById("saveSong");
-  const clearAllSongsBtn = document.getElementById("clearAllSongs");
-
-  let scrollAnimationId = null;
-  let scrollSpeed = parseInt(speedSlider.value, 10);
-  let isScrolling = false;
-  let lastFrameTime = null;
-  let startTime = null;
-  let elapsedTime = 0;
-
-  let isDragging = false;
-  let dragStartY = 0;
-  let dragStartContentY = 0;
-
-  let savedSongs = [];
-  let activeSongId = null;
-
-  function setStatus(text) {
-    statusText.textContent = text;
-  }
-
-  function formatTime(seconds) {
-    const whole = Math.floor(seconds);
-    const mins = Math.floor(whole / 60);
-    const secs = whole % 60;
-    return mins + ":" + String(secs).padStart(2, "0");
-  }
-
-  function updateTimeDisplay() {
-    timeDisplay.textContent = formatTime(elapsedTime / 1000);
-  }
-
-  function autoScroll(timestamp) {
-    if (!isScrolling || scrollSpeed <= 0) return;
-
-    if (lastFrameTime === null) {
-      lastFrameTime = timestamp;
-      if (!startTime) startTime = timestamp - elapsedTime;
-    }
-
-    const delta = timestamp - lastFrameTime;
-    lastFrameTime = timestamp;
-
-    elapsedTime = timestamp - startTime;
-    updateTimeDisplay();
-
-    const baseSpeed = scrollSpeed;
-    const pixelsPerSecond = baseSpeed * 12;
-    const distance = (pixelsPerSecond * delta) / 1000;
-
-    viewerContent.style.transform = viewerContent.style.transform || "translateY(0px)";
-    const currentY = parseFloat(viewerContent.style.transform.replace("translateY(", "").replace("px)", "")) || 0;
-    const newY = currentY - distance;
-
-    viewerContent.style.transform = "translateY(" + newY + "px)";
-
-    const railRect = viewer.getBoundingClientRect();
-    const contentRect = viewerContent.getBoundingClientRect();
-    if (contentRect.bottom < railRect.bottom - 8) {
-      stopScroll();
-      return;
-    }
-
-    scrollAnimationId = requestAnimationFrame(autoScroll);
-  }
-
-  function startScroll() {
-    if (scrollSpeed <= 0) {
-      setStatus("Speed is 0 – drag or raise slider");
-      return;
-    }
-
-    if (isScrolling) return;
-
-    isScrolling = true;
-    setStatus("Scrolling");
-
-    startBtn.disabled = true;
-    pauseBtn.disabled = false;
-
-    lastFrameTime = null;
-    if (!startTime) startTime = performance.now() - elapsedTime;
-    scrollAnimationId = requestAnimationFrame(autoScroll);
-  }
-
-  function pauseScroll() {
-    if (!isScrolling) return;
-    isScrolling = false;
-
-    setStatus("Paused");
-    startBtn.disabled = false;
-    pauseBtn.disabled = true;
-
-    if (scrollAnimationId) {
-      cancelAnimationFrame(scrollAnimationId);
-      scrollAnimationId = null;
-    }
-  }
-
-  function resetScroll() {
-    isScrolling = false;
-    scrollSpeed = parseInt(speedSlider.value, 10);
-    lastFrameTime = null;
-    startTime = null;
-    elapsedTime = 0;
-    updateTimeDisplay();
-
-    setStatus("Ready");
-    startBtn.disabled = false;
-    pauseBtn.disabled = false;
-
-    if (scrollAnimationId) {
-      cancelAnimationFrame(scrollAnimationId);
-      scrollAnimationId = null;
-    }
-
-    viewerContent.style.transform = "translateY(0px)";
-  }
-
-  speedSlider.addEventListener("input", () => {
-    scrollSpeed = parseInt(speedSlider.value, 10);
-    if (scrollSpeed === 0) {
-      setStatus("Speed set to 0 – scrolling off");
-      pauseScroll();
-    } else {
-      setStatus(isScrolling ? "Scrolling" : "Ready");
-    }
-  });
-
-  startBtn.addEventListener("click", () => {
-    startScroll();
-  });
-
-  pauseBtn.addEventListener("click", () => {
-    pauseScroll();
-  });
-
-  resetBtn.addEventListener("click", () => {
-    resetScroll();
-  });
-
-  function handleDragStart(y) {
-    isDragging = true;
-    viewerContent.style.transition = "none";
-    dragStartY = y;
-    const currentTransform = viewerContent.style.transform || "translateY(0px)";
-    dragStartContentY = parseFloat(currentTransform.replace("translateY(", "").replace("px)", "")) || 0;
-    setStatus("Manual drag");
-  }
-
-  function handleDragMove(y) {
-    if (!isDragging) return;
-    const deltaY = y - dragStartY;
-    const newY = dragStartContentY + deltaY;
-
-    viewerContent.style.transform = "translateY(" + newY + "px)";
-  }
-
-  function handleDragEnd() {
-    if (!isDragging) return;
-    isDragging = false;
-    viewerContent.style.transition = "transform 0.08s ease-out";
-    setStatus(scrollSpeed > 0 ? "Ready (speed set)" : "Ready");
-  }
-
-  viewer.addEventListener("mousedown", (e) => {
-    e.preventDefault();
-    pauseScroll();
-    handleDragStart(e.clientY);
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-    handleDragMove(e.clientY);
-  });
-
-  window.addEventListener("mouseup", () => {
-    handleDragEnd();
-  });
-
-  viewer.addEventListener("touchstart", (e) => {
-    const touch = e.touches[0];
-    e.preventDefault();
-    pauseScroll();
-    handleDragStart(touch.clientY);
-  }, { passive: false });
-
-  window.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    e.preventDefault();
-    handleDragMove(touch.clientY);
-  }, { passive: false });
-
-  window.addEventListener("touchend", () => {
-    handleDragEnd();
-  });
-
-  copyToViewerBtn.addEventListener("click", () => {
-    const text = editor.value || "Send lyrics from the editor to see them here.";
-    viewerContent.textContent = "";
-    const lines = text.split("\n");
-    lines.forEach((line) => {
-      const span = document.createElement("span");
-      span.className = "viewer-content-line";
-      span.textContent = line || "\u00A0";
-      viewerContent.appendChild(span);
-      viewerContent.appendChild(document.createElement("br"));
-    });
-    resetScroll();
-    setStatus("Viewer updated");
-  });
-
-  clearEditorBtn.addEventListener("click", () => {
-    editor.value = "";
-  });
-
-  function loadSongsFromStorage() {
-    try {
-      const stored = localStorage.getItem("lyricflow-songs");
-      savedSongs = stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      savedSongs = [];
-    }
-    renderSongs();
-  }
-
-  function saveSongsToStorage() {
-    try {
-      localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
-    } catch (e) {
-    }
-  }
-
-  function renderSongs() {
-    songsList.innerHTML = "";
-    songCount.textContent = savedSongs.length.toString();
-
-    if (savedSongs.length === 0) {
-      songsEmpty.style.display = "block";
-      return;
-    }
-    songsEmpty.style.display = "none";
-
-    savedSongs.forEach((song) => {
-      const item = document.createElement("div");
-      item.className = "song-item" + (song.id === activeSongId ? " active" : "");
-
-      const main = document.createElement("div");
-      main.className = "song-main";
-
-      const titleRow = document.createElement("div");
-      titleRow.className = "song-title-row";
-
-      const title = document.createElement("div");
-      title.className = "song-title";
-      title.textContent = song.name || "(Untitled)";
-
-      const pill = document.createElement("div");
-      pill.className = "song-pill";
-      pill.textContent = "Local";
-
-      titleRow.appendChild(title);
-      titleRow.appendChild(pill);
-
-      const meta = document.createElement("div");
-      meta.className = "song-meta";
-      meta.textContent = song.createdAt
-        ? new Date(song.createdAt).toLocaleString()
-        : "Saved locally";
-
-      main.appendChild(titleRow);
-      main.appendChild(meta);
-
-      const actions = document.createElement("div");
-      actions.className = "song-actions";
-
-      const loadBtn = document.createElement("button");
-      loadBtn.className = "song-btn";
-      loadBtn.innerHTML = "<span>↪</span><span>Load</span>";
-      loadBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        loadSong(song.id);
-      });
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "song-btn danger";
-      deleteBtn.innerHTML = "<span>✕</span>";
-      deleteBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        deleteSong(song.id);
-      });
-
-      actions.appendChild(loadBtn);
-      actions.appendChild(deleteBtn);
-
-      item.appendChild(main);
-      item.appendChild(actions);
-
-      item.addEventListener("click", () => {
-        loadSong(song.id);
-      });
-
-      songsList.appendChild(item);
-    });
-  }
-
-  function saveCurrentSong() {
-    const text = editor.value.trim();
-    if (!text) {
-      alert("Type some lyrics in the editor before saving.");
-      return;
-    }
-    const name = prompt("Song title:");
-    if (name === null) return;
-
-    const song = {
-      id: Date.now().toString(),
-      name: name.trim() || "Untitled",
-      content: text,
-      createdAt: new Date().toISOString(),
-    };
-
-    savedSongs.push(song);
-    activeSongId = song.id;
-    saveSongsToStorage();
-    renderSongs();
-  }
-
-  function loadSong(id) {
-    const song = savedSongs.find((s) => s.id === id);
-    if (!song) return;
-    activeSongId = id;
-    editor.value = song.content;
-    copyToViewerBtn.click();
-    renderSongs();
-  }
-
-  function deleteSong(id) {
-    if (!confirm("Delete this song?")) return;
-    savedSongs = savedSongs.filter((s) => s.id !== id);
-    if (activeSongId === id) {
-      activeSongId = null;
-    }
-    saveSongsToStorage();
-    renderSongs();
-  }
-
-  function clearAllSongs() {
-    if (!confirm("Clear all saved songs from this device?")) return;
-    savedSongs = [];
-    activeSongId = null;
-    saveSongsToStorage();
-    renderSongs();
-  }
-
-  saveSongBtn.addEventListener("click", saveCurrentSong);
-  clearAllSongsBtn.addEventListener("click", clearAllSongs);
-
-  loadSongsFromStorage();
-</script>
+    </div>
+
+    <div class="overlay hidden" id="editInfoOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit mode</div>
+                <button class="modal-close" data-close-edit-info>✕</button>
+            </div>
+            <div class="modal-body">
+                <p>• Type or paste your lyrics into the editor.</p>
+                <p>• The stage lyric window mirrors the editor automatically.</p>
+                <p>• Use blank lines to separate verses, chorus, or bridge sections.</p>
+                <p>• Use Save to store this song to your device.</p>
+            </div>
+            <div class="modal-footer">
+                <button data-close-edit-info>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay hidden" id="saveOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Save song</div>
+                <button class="modal-close" data-close-save>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="songTitleInput">Song title</label>
+                    <input id="songTitleInput" type="text" placeholder="e.g. Whole Lotta Love" />
+                </div>
+                <div class="form-field">
+                    <label for="playlistInput">Playlist</label>
+                    <input id="playlistInput" type="text" value="Set 1" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-save>Cancel</button>
+                <button class="btn-primary-small" id="saveConfirmBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay hidden" id="loadOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Load song</div>
+                <button class="modal-close" data-close-load>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="playlistSelect">Playlist</label>
+                    <select id="playlistSelect"></select>
+                </div>
+                <div class="track-list" id="loadSongList"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-load>Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay hidden" id="songInfoOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Song details</div>
+                <button class="modal-close" data-close-song-info>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Title</label>
+                    <input id="songInfoTitle" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Playlist</label>
+                    <input id="songInfoPlaylist" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Scroll mode</label>
+                    <input id="songInfoScroll" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Font size</label>
+                    <input id="songInfoFont" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Line height</label>
+                    <input id="songInfoLineHeight" type="text" readonly />
+                </div>
+                <div class="form-field">
+                    <label>Lines per measure</label>
+                    <input id="songInfoLinesPerMeasure" type="text" readonly />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-song-info>Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="overlay hidden" id="editPlaylistOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit playlist</div>
+                <button class="modal-close" data-close-edit-playlist>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="editPlaylistSelect">Playlist</label>
+                    <select id="editPlaylistSelect"></select>
+                </div>
+                <div class="playlist-edit-list" id="playlistEditList"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-edit-playlist>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay hidden" id="settingsOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Settings</div>
+                <button class="modal-close" data-close-settings>✕</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-field">
+                    <label>
+                        <input type="radio" name="speedMode" value="percent" checked id="speedModePercent">
+                        Percentage mode
+                    </label>
+                </div>
+
+                <div class="form-field" id="percentModeFields">
+                    <label for="speedPercentSlider">Scroll speed</label>
+                    <input id="speedPercentSlider"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="1"
+                           value="50" />
+                    <small id="speedPercentLabel">50%</small>
+                </div>
+
+                <div class="form-field">
+                    <label>
+                        <input type="radio" name="speedMode" value="bpm" id="speedModeBPM">
+                        BPM mode (tempo-based)
+                    </label>
+                </div>
+
+                <div class="form-field hidden" id="bpmModeFields">
+                    <label for="bpmInput">Song BPM (tempo)</label>
+                    <input type="number"
+                           id="bpmInput"
+                           min="40"
+                           max="200"
+                           step="1"
+                           value="120"
+                           placeholder="e.g. 120">
+                    <small>Typical range: 60 (slow ballad) to 180 (fast rock)</small>
+                </div>
+
+                <div class="form-field hidden" id="bpmModeFields2">
+                    <label for="linesPerMeasureInput">Lines per measure</label>
+                    <select id="linesPerMeasureInput">
+                        <option value="0.25">1 line = 1 measure</option>
+                        <option value="0.5">1 line = 1 measure</option>
+                        <option value="0.75">1 line = 1 measure</option>
+                        <option value="1">1 line = 1 measure</option>
+                        <option value="2">2 lines = 1 measure</option>
+                        <option value="4" selected>4 lines = 1 measure</option>
+                        <option value="8">8 lines = 1 measure</option>
+                    </select>
+                    <small>How many lyric lines fit in one musical measure (usually 4 beats)</small>
+                </div>
+
+                <div class="form-field">
+                    <label for="fontSizeSlider">Font size</label>
+                    <input type="range"
+                           id="fontSizeSlider"
+                           min="10"
+                           max="50"
+                           step="1"
+                           value="20" />
+                </div>
+
+                <div class="form-field">
+                    <label for="lineSpacingSlider">Line spacing</label>
+                    <input type="range"
+                           id="lineSpacingSlider"
+                           min="2.4"
+                           max="5"
+                           step="0.1"
+                           value="1.9" />
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button data-close-settings>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay hidden" id="playlistSelectOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Select track</div>
+                <button class="modal-close" data-close-playlist-select>✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="playlistSelectTitle"></p>
+                <div class="track-list" id="trackList"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-playlist-select>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        //const
+        const viewer = document.getElementById("viewer");
+        const viewerContent = document.getElementById("viewerContent");
+
+        const modeToggle = document.getElementById("modeToggle");
+        const viewerCard = document.getElementById("viewerCard");
+        const editorCard = document.getElementById("editorCard");
+        const bottomBar = document.getElementById("bottomBar");
+        const statusText = document.getElementById("statusText");
+        const timeDisplay = document.getElementById("timeDisplay");
+
+        const songInfoOverlay = document.getElementById("songInfoOverlay");
+        const songInfoTitle = document.getElementById("songInfoTitle");
+        const songInfoPlaylist = document.getElementById("songInfoPlaylist");
+        const songInfoScroll = document.getElementById("songInfoScroll");
+        const songInfoFont = document.getElementById("songInfoFont");
+        const songInfoLineHeight = document.getElementById("songInfoLineHeight");
+        const songInfoLinesPerMeasure = document.getElementById("songInfoLinesPerMeasure");
+
+
+        const startBtn = document.getElementById("start");
+        const pauseBtn = document.getElementById("pause");
+        const resetBtn = document.getElementById("resetBtn");
+
+        const prevSongBtn = document.getElementById("prevSongBtn");
+        const nextSongBtn = document.getElementById("nextSongBtn");
+        const playlistPill = document.getElementById("playlistPill");
+        const playlistPillText = document.getElementById("playlistPillText");
+        const playlistPillIndex = document.getElementById("playlistPillIndex");
+
+        const settingsBtn = document.getElementById("settingsBtn");
+        const settingsBtnBottom = document.getElementById("settingsBtnBottom");
+
+        const stageInfoBtn = document.getElementById("stageInfoBtn");
+        const stageInfoOverlay = document.getElementById("stageInfoOverlay");
+
+        const editor = document.getElementById("editor");
+        const editorInfoBtn = document.getElementById("editorInfoBtn");
+        const editInfoOverlay = document.getElementById("editInfoOverlay");
+        const clearEditorBtn = document.getElementById("clearEditorBtn");
+
+        const saveSongBtn = document.getElementById("saveSongBtn");
+        const loadSongBtn = document.getElementById("loadSongBtn");
+        const editPlaylistBtn = document.getElementById("editPlaylistBtn");
+
+        const saveOverlay = document.getElementById("saveOverlay");
+        const songTitleInput = document.getElementById("songTitleInput");
+        const playlistInput = document.getElementById("playlistInput");
+        const saveConfirmBtn = document.getElementById("saveConfirmBtn");
+
+        const loadOverlay = document.getElementById("loadOverlay");
+        const playlistSelect = document.getElementById("playlistSelect");
+        const loadSongList = document.getElementById("loadSongList");
+
+
+        const editPlaylistOverlay = document.getElementById("editPlaylistOverlay");
+        const editPlaylistSelect = document.getElementById("editPlaylistSelect");
+        const playlistEditList = document.getElementById("playlistEditList");
+
+        const settingsOverlay = document.getElementById("settingsOverlay");
+        const speedPercentSlider = document.getElementById("speedPercentSlider");
+        const speedPercentLabel = document.getElementById("speedPercentLabel");
+        const fontSizeSlider = document.getElementById("fontSizeSlider");
+        const lineSpacingSlider = document.getElementById("lineSpacingSlider");
+
+        const speedModePercent = document.getElementById("speedModePercent");
+        const speedModeBPM = document.getElementById("speedModeBPM");
+        const percentModeFields = document.getElementById("percentModeFields");
+        const bpmModeFields = document.getElementById("bpmModeFields");
+        const bpmModeFields2 = document.getElementById("bpmModeFields2");
+        const bpmInput = document.getElementById("bpmInput");
+        const linesPerMeasureInput = document.getElementById("linesPerMeasureInput");
+
+        const playlistSelectOverlay = document.getElementById("playlistSelectOverlay");
+        const playlistSelectTitle = document.getElementById("playlistSelectTitle");
+        const trackList = document.getElementById("trackList");
+
+        //Let
+
+        let currentOffsetY = 0;
+
+        let currentSong = null;
+
+
+        let isStageMode = true;
+        let scrollAnimationId = null;
+        let isScrolling = false;
+        let lastFrameTime = null;
+        let startTime = null;
+        let elapsedTime = 0;
+
+        let isDragging = false;
+        let dragStartY = 0;
+        let dragStartBaseY = 0;
+
+        let baseContentY = 0;
+
+        let savedSongs = [];
+        let lastSpaceTime = 0;
+
+        let currentPlaylistName = null;
+        let currentPlaylistSongIds = null;
+        let currentSongId = null;
+
+        let snapPending = false;
+
+        let wasScrollingBeforeDrag = false;
+
+        // legacy scrollSpeed kept for save compatibility
+        const DEFAULT_SCROLL_SPEED = 4;
+        let scrollSpeed = DEFAULT_SCROLL_SPEED;
+
+        // new scroll-speed model
+        let speedPercent = 50;
+        const maxPixelsPerSecond = 80;
+
+        // BPM mode: null = use percentage mode
+        let songBPM = null;
+        let linesPerMeasure = 4;
+
+        let viewerFontSize = 10;
+        let viewerLineHeight = 2.4;
+
+        // Platform‑specific default stage font size
+        (function setPlatformDefaultFont() {
+            const ua = navigator.userAgent || "";
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+            const isWindows = /Windows NT/i.test(ua);
+
+            if (isIOS) {
+                // Bigger default on iPhone / iPad
+                viewerFontSize = 16;
+            } else if (isWindows) {
+                // Slightly smaller default on Windows desktop
+                viewerFontSize = 18;
+            } else {
+                // Other platforms (Mac, Android, etc.)
+                viewerFontSize = 18;
+            }
+        })();
+
+
+        let canonicalBaseContentY = 0;
+        let initialSnapBaseContentY = null; // remember first load snap
+
+        // Snapshot of the last “good load” alignment
+        let loadSnapshotBaseContentY = null;
+        let loadSnapshotFontSize = null;
+        let loadSnapshotLineHeight = null;
+
+        // START POINT: baseline for current song + layout
+        let songStartBaseContentY = null;
+        let songStartFontSize = null;
+        let songStartLineHeight = null;
+        // Remember which viewer-content-line index was used as the start line
+        let songStartLineIndex = null;
+
+
+        function debugLog(...args) {
+            console.log("LyricFlow", ...args);
+        }
+
+        function updateResetEnabled() {
+            const atStart =
+                !isScrolling &&
+                elapsedTime === 0 &&
+                baseContentY === canonicalBaseContentY;
+            resetBtn.disabled = atStart;
+        }
+
+
+
+        function setStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function formatTime(ms) {
+            const seconds = Math.max(0, Math.floor(ms / 1000));
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return mins + ":" + String(secs).padStart(2, "0");
+        }
+
+        function updateTimeDisplay() {
+            timeDisplay.textContent = formatTime(elapsedTime);
+        }
+
+        function applyScroll() {
+            viewerContent.style.transform = `translateY(${baseContentY}px)`;
+        }
+
+        function applyFontSize() {
+            viewer.style.fontSize = viewerFontSize + "px";
+            viewer.style.lineHeight = viewerLineHeight;
+        }
+
+
+        // Helper: choose which line should be in the glow
+        function pickStartLyricLine(lines) {
+            const arr = Array.from(lines);
+
+            // Reuse saved index only when we're not at neutral base (i.e. re-snap after layout change)
+            const canReuseIndex =
+                songStartLineIndex != null &&
+                songStartLineIndex >= 0 &&
+                songStartLineIndex < arr.length &&
+                baseContentY !== 0;
+
+            if (canReuseIndex) {
+                const saved = arr[songStartLineIndex];
+                if (saved && saved.textContent.trim()) {
+                    console.log('PICK START: using saved index', songStartLineIndex, {
+                        text: saved.textContent,
+                    });
+                    return { line: saved, index: songStartLineIndex };
+                }
+            }
+
+            // Fresh computation: skip first non-blank (treat as title), use next non-blank as start
+            let firstNonBlank = -1;
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i].textContent.trim()) {
+                    firstNonBlank = i;
+                    break;
+                }
+            }
+            if (firstNonBlank === -1) {
+                console.log('PICK START: no non-blank lines');
+                return { line: null, index: null };
+            }
+
+            let startIndex = firstNonBlank + 1;
+            if (
+                startIndex >= arr.length ||
+                !arr[startIndex].textContent.trim()
+            ) {
+                startIndex = firstNonBlank;
+            }
+
+            console.log('PICK START: computed index', startIndex, {
+                text: arr[startIndex].textContent,
+            });
+            return { line: arr[startIndex], index: startIndex };
+        }
+
+        // AFTER:
+        function snapFirstLineIntoGlow(force = false) {
+            // Extra state dump to catch bad globals / NaNs
+            console.log("SNAP DEBUG state", {
+                baseContentY,
+                canonicalBaseContentY,
+                initialSnapBaseContentY,
+                viewerFontSize,
+                viewerLineHeight,
+                isStageMode,
+                isDragging,
+                isScrolling,
+                viewerExists: !!viewer,
+                viewerContentExists: !!viewerContent,
+            });
+
+            console.log(
+                "SNAP DEBUG entry, force",
+                force,
+                "isStageMode",
+                isStageMode,
+                "isDragging",
+                isDragging,
+                "isScrolling",
+                isScrolling,
+                "baseContentY",
+                baseContentY,
+                "currentTransform",
+                viewerContent && viewerContent.style ? viewerContent.style.transform : null,
+                "viewerFontSize",
+                viewerFontSize,
+                "viewerLineHeight",
+                viewerLineHeight,
+                "canonicalBaseContentY",
+                canonicalBaseContentY
+            );
+
+            // Only snap in Stage mode and when user is not interacting
+            if (!isStageMode) {
+                console.log("SNAP DEBUG abort: not in stage mode");
+                return;
+            }
+            if (isDragging || isScrolling) {
+                console.log("SNAP DEBUG skipped: dragging or scrolling", {
+                    isDragging,
+                    isScrolling,
+                });
+                return;
+            }
+
+            if (!viewer || !viewerContent) {
+                console.log("SNAP DEBUG abort: viewer or viewerContent missing");
+                return;
+            }
+
+            const lines = document.querySelectorAll(".viewer-content-line");
+            const glowBand = document.querySelector(".viewer-highlight");
+            console.log(
+                "SNAP DEBUG elements: lineCount",
+                lines.length,
+                "hasGlow",
+                !!glowBand
+            );
+            if (!lines.length || !glowBand) {
+                console.log("SNAP DEBUG abort: no lines or glow band");
+                return;
+            }
+
+            // Use pickStartLyricLine to choose the first non-blank line and index
+            const picked = pickStartLyricLine(lines);
+            console.log("SNAP DEBUG pickStartLyricLine", picked);
+            const { line: targetLine, index: targetIndex } = picked || {};
+
+            if (!targetLine) {
+                console.log("SNAP DEBUG abort: no non-blank start line");
+                return;
+            }
+
+            const viewerRect = viewer.getBoundingClientRect();
+            const glowRect = glowBand.getBoundingClientRect();
+            const lineRect = targetLine.getBoundingClientRect();
+
+            const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
+            const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
+
+            console.log(
+                "SNAP DEBUG geometry",
+                {
+                    viewerRect,
+                    glowRect,
+                    lineRect,
+                    glowCenter,
+                    lineCenter,
+                    targetIndex,
+                    targetText: targetLine.textContent,
+                }
+            );
+
+            const invalid =
+                !Number.isFinite(glowCenter) ||
+                !Number.isFinite(lineCenter) ||
+                glowRect.height === 0 ||
+                lineRect.height === 0 ||
+                viewerRect.height === 0;
+
+            if (invalid) {
+                console.log(
+                    "SNAP DEBUG abort invalid geometry: no snap applied",
+                    { glowRect, lineRect, glowCenter, lineCenter }
+                );
+                return;
+            }
+
+            // Reuse canonical base unless caller forces a fresh geometry snap
+            if (canonicalBaseContentY !== null && !force) {
+                console.log(
+                    "SNAP DEBUG using existing canonical base",
+                    "canonicalBaseContentY",
+                    canonicalBaseContentY,
+                    "baseContentY(before)",
+                    baseContentY
+                );
+                baseContentY = canonicalBaseContentY;
+                applyScroll();
+            } else {
+                const delta = glowCenter - lineCenter;
+                const newBase = baseContentY + delta;
+
+                console.log(
+                    "SNAP DEBUG applying",
+                    "baseBefore",
+                    baseContentY,
+                    "delta",
+                    delta,
+                    "newBase",
+                    newBase
+                );
+
+                baseContentY = newBase;
+                applyScroll();
+                canonicalBaseContentY = baseContentY; // remember as canonical
+
+                // Record song start point for BPM/drag logic
+                songStartBaseContentY = baseContentY;
+                songStartFontSize = viewerFontSize;
+                songStartLineHeight = viewerLineHeight;
+                songStartLineIndex = typeof targetIndex === "number" ? targetIndex : 0;
+                console.log(
+                    "START POINT captured",
+                    {
+                        songStartBaseContentY,
+                        songStartFontSize,
+                        songStartLineHeight,
+                        songStartLineIndex,
+                    }
+                );
+            }
+
+            if (initialSnapBaseContentY === null) {
+                initialSnapBaseContentY = baseContentY;
+            }
+
+            // Reset elapsed time on fresh snap so timer restarts from 0
+            elapsedTime = 0;
+            updateResetEnabled();
+
+            console.log(
+                "SNAP DEBUG result",
+                "baseAfter",
+                baseContentY,
+                "transform",
+                viewerContent.style.transform
+            );
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function bpmToPixelsPerSecond(bpm, linesPerMeasure) {
+            const beatsPerSecond = bpm / 60;
+            const measuresPerSecond = beatsPerSecond / 4;
+            const linesPerSecond = measuresPerSecond * linesPerMeasure;
+            const pixelsPerLine = viewerFontSize * viewerLineHeight;
+            return linesPerSecond * pixelsPerLine;
+        }
+
+
+
+        function bpmToPixelsPerSecond(bpm, linesPerMeasure) {
+            const beatsPerSecond = bpm / 60;
+            const measuresPerSecond = beatsPerSecond / 4;
+            const linesPerSecond = measuresPerSecond * linesPerMeasure;
+            const pixelsPerLine = viewerFontSize * viewerLineHeight;
+            return linesPerSecond * pixelsPerLine;
+        }
+
+        function getPixelsPerSecond() {
+            if (songBPM !== null) {
+                return bpmToPixelsPerSecond(songBPM, linesPerMeasure);
+            }
+            return (maxPixelsPerSecond * speedPercent) / 100;
+        }
+
+        function autoScroll(timestamp) {
+            if (!isScrolling) return;
+
+            const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
+            if (pixelsPerSecond === 0) {
+                pauseScroll();
+                return;
+            }
+
+            if (lastFrameTime == null) {
+                lastFrameTime = timestamp;
+                if (!startTime) startTime = timestamp;
+                debugLog("autoScroll first frame, baseContentY", baseContentY.toFixed(2));
+                scrollAnimationId = requestAnimationFrame(autoScroll);
+                return;
+            }
+
+            const delta = timestamp - lastFrameTime;
+            lastFrameTime = timestamp;
+            elapsedTime = timestamp - startTime;
+            updateTimeDisplay();
+
+            const distance = (pixelsPerSecond * delta) / 1000;
+
+            baseContentY -= distance;
+            applyScroll();
+
+            const railRect = viewer.getBoundingClientRect();
+            const contentRect = viewerContent.getBoundingClientRect();
+
+            if (contentRect.bottom <= railRect.top + railRect.height * 0.4) {
+                pauseScroll();
+                setStatus("End of lyrics");
+                resetBtn.classList.add("btn-attention");
+                setTimeout(() => resetBtn.classList.remove("btn-attention"), 900);
+                return;
+            }
+
+            scrollAnimationId = requestAnimationFrame(autoScroll);
+            updateResetEnabled();
+        }
+
+        function startScroll() {
+            if (isScrolling) return;
+
+            const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
+            if (pixelsPerSecond === 0) {
+                setStatus("Speed is 0 – raise scroll speed in Settings");
+                startBtn.classList.add("btn-attention");
+                setTimeout(() => startBtn.classList.remove("btn-attention"), 900);
+                return;
+            }
+
+            isScrolling = true;
+            setStatus("Scrolling");
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            lastFrameTime = null;
+            startTime = performance.now();
+            debugLog(
+                "startScroll begin, pixelsPerSecond",
+                pixelsPerSecond.toFixed(2),
+                "baseContentY",
+                baseContentY.toFixed(2)
+            );
+            scrollAnimationId = requestAnimationFrame(autoScroll);
+            updateResetEnabled();
+        }
+
+        function pauseScroll() {
+            if (!isScrolling) return;
+            isScrolling = false;
+            setStatus("Paused");
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+                scrollAnimationId = null;
+            }
+            debugLog("pauseScroll paused at transform", viewerContent.style.transform);
+            updateResetEnabled();
+        }
+
+        function resetScroll() {
+            if (!currentSong) {
+                console.log('RESET aborted, no currentSong');
+                return;
+            }
+
+            console.log('RESET entry', {
+                baseContentY,
+                canonicalBaseContentY,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+                viewerFontSize,
+                viewerLineHeight,
+                isStageMode,
+                isScrolling,
+            });
+
+            // Stop scrolling and reset time
+            pauseScroll();
+            elapsedTime = 0;
+            updateTimeDisplay(0);
+
+            // Determine whether baseline START POINT can still be trusted
+            const layoutMatchesStart =
+                songStartBaseContentY != null &&
+                songStartFontSize === viewerFontSize &&
+                songStartLineHeight === viewerLineHeight;
+
+            console.log('RESET layout check', {
+                layoutMatchesStart,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+                currentFontSize: viewerFontSize,
+                currentLineHeight: viewerLineHeight,
+            });
+
+            if (layoutMatchesStart) {
+                // Case 1: layout unchanged; use original START POINT only.
+                baseContentY = songStartBaseContentY;
+                canonicalBaseContentY = songStartBaseContentY;
+                console.log('RESET using START POINT layout unchanged', {
+                    baseContentY,
+                    canonicalBaseContentY,
+                });
+                applyScroll();
+            } else {
+                // Case 2: layout changed (font / spacing). Reset to 0 and re-snap via geometry.
+                baseContentY = 0;
+                canonicalBaseContentY = 0;
+                console.log('RESET fallback layout changed, zeroing base before snap', {
+                    baseContentY,
+                    canonicalBaseContentY,
+                    viewerFontSize,
+                    viewerLineHeight,
+                });
+                applyScroll();
+
+                // Only do Stage snap in Stage mode
+                if (isStageMode) {
+                    // Use double RAF to avoid zero-rect geometry
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            console.log('RESET Stage mode: calling snapFirstLineIntoGlow from resetScroll');
+                            snapFirstLineIntoGlow(true);
+                        });
+                    });
+                }
+            }
+
+            // Reset drag state and viewport scroll
+            isDragging = false;
+            dragStartY = null;
+            dragStartBaseY = 0;
+            viewer.parentElement.scrollTop = 0;
+            viewer.scrollTop = 0;
+
+            updateResetEnabled();
+
+            console.log('RESET exit', {
+                baseContentY,
+                canonicalBaseContentY,
+                transform: viewerContent.style.transform,
+                parentScroll: viewer.parentElement.scrollTop,
+                viewerScroll: viewer.scrollTop,
+                layoutMatchesStart,
+            });
+        }
+
+
+
+
+
+
+
+
+
+        function logStageState(tag) {
+            const rect = viewerContent.getBoundingClientRect();
+            console.log(
+                "STATE",
+                tag,
+                {
+                    baseContentY,
+                    canonicalBaseContentY,
+                    elapsedTime,
+                    isScrolling,
+                    isDragging,
+                    dragStartY,
+                    dragStartBaseY,
+                    transform: viewerContent.style.transform,
+                    contentTop: rect.top,
+                    contentBottom: rect.bottom,
+                }
+            );
+        }
+
+        // NEW: compute baseContentY that centers the first non-blank lyric line in the glow
+        function computeFirstLineGlowBase(tag = "COMPUTE_GLOW_BASE") {
+            const lines = document.querySelectorAll(".viewer-content-line");
+            const glowBand = document.querySelector(".viewer-highlight");
+
+            const viewerRect = viewer.getBoundingClientRect();
+            const glowRect = glowBand ? glowBand.getBoundingClientRect() : null;
+
+            if (!lines.length || !glowBand || !glowRect) {
+                console.log("GLOW BASE DEBUG abort", {
+                    tag,
+                    lineCount: lines.length,
+                    hasGlow: !!glowBand,
+                    glowRect,
+                });
+                return null;
+            }
+
+            // Choose first non-blank line as the target lyric line
+            let firstLine = lines[0];
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].textContent.trim()) {
+                    firstLine = lines[i];
+                    break;
+                }
+            }
+
+            const lineRect = firstLine.getBoundingClientRect();
+
+            const glowCenter =
+                glowRect.top + glowRect.height / 2 - viewerRect.top;
+            const lineCenter =
+                lineRect.top + lineRect.height / 2 - viewerRect.top;
+
+            console.log("GLOW BASE DEBUG geometry", {
+                tag,
+                viewerRect,
+                glowRect,
+                lineRect,
+                glowCenter,
+                lineCenter,
+            });
+
+            if (
+                !Number.isFinite(glowCenter) ||
+                !Number.isFinite(lineCenter) ||
+                glowRect.height === 0 ||
+                lineRect.height === 0
+            ) {
+                console.log("GLOW BASE DEBUG invalid geometry", {
+                    tag,
+                    glowRect,
+                    lineRect,
+                    glowCenter,
+                    lineCenter,
+                });
+                return null;
+            }
+
+            const delta = glowCenter - lineCenter;
+            const targetBase = baseContentY + delta;
+
+            console.log("GLOW BASE DEBUG result", {
+                tag,
+                baseBefore: baseContentY,
+                delta,
+                targetBase,
+                fontSize: viewerFontSize,
+                lineHeight: viewerLineHeight,
+            });
+
+            return targetBase;
+        }
+
+        // Drag wiring for stage viewer (pointer)
+        viewer.addEventListener("pointerdown", (e) => {
+            if (!isStageMode) return;
+            e.preventDefault();
+            viewer.setPointerCapture(e.pointerId);
+            handleDragStart(e.clientY);
+        });
+
+        viewer.addEventListener("pointermove", (e) => {
+            if (!isStageMode) return;
+            if (!isDragging) return;
+            handleDragMove(e.clientY);
+        });
+
+        viewer.addEventListener("pointerup", () => {
+            if (!isStageMode) return;
+            handleDragEnd();
+        });
+
+        viewer.addEventListener("pointercancel", () => {
+            if (!isStageMode) return;
+            handleDragEnd();
+        });
+
+
+        function goToInitialStageState(caller = "unknown") {
+            console.log("LyricFlow RESET begin", {
+                caller,
+                isStageMode,
+                isScrolling,
+                baseContentY,
+                transform: viewerContent.style.transform || "none",
+                viewerFontSize,
+                viewerLineHeight,
+                canonicalBaseContentY,
+            });
+
+            logStageState("RESETbefore-pause");
+            pauseScroll();
+
+            const canUseLoadSnapshot =
+                caller === "loadSongIntoUI" &&
+                loadSnapshotBaseContentY != null &&
+                loadSnapshotFontSize === viewerFontSize &&
+                loadSnapshotLineHeight === viewerLineHeight;
+
+            const hasCanonical = canonicalBaseContentY != null;
+
+            console.log("RESET snapshot check", {
+                caller,
+                canUseLoadSnapshot,
+                loadSnapshotBaseContentY,
+                loadSnapshotFontSize,
+                loadSnapshotLineHeight,
+                viewerFontSize,
+                viewerLineHeight,
+                canonicalBaseContentY,
+                hasCanonical,
+            });
+
+            if (canUseLoadSnapshot) {
+                // Exact resume of a prior Stage state
+                baseContentY = loadSnapshotBaseContentY;
+                canonicalBaseContentY = loadSnapshotBaseContentY;
+            } else if (hasCanonical && caller !== "settingsChange") {
+                // Known good rest position for this song -> reuse
+                console.log("RESET using canonical baseContentY", {
+                    caller,
+                    canonicalBaseContentY,
+                });
+                baseContentY = canonicalBaseContentY;
+            } else {
+                // First time in Stage for this song or after settings change.
+                // Start from neutral zero; snap will compute canonicalBaseContentY.
+                console.log("RESET falling back to geometry snap", {
+                    caller,
+                    baseContentY,
+                    viewerFontSize,
+                    viewerLineHeight,
+                });
+                baseContentY = 0;
+                // leave canonicalBaseContentY as-is (may be null) – snap will overwrite.
+            }
+
+            elapsedTime = 0;
+            applyScroll();
+
+            logStageState("RESETafter-zero-or-canonical");
+
+            console.log("LyricFlow RESET after base set", {
+                caller,
+                canUseLoadSnapshot,
+                loadSnapshotBaseContentY,
+                baseContentY: baseContentY.toFixed(2),
+                canonicalBaseContentY:
+                    canonicalBaseContentY == null
+                        ? "null"
+                        : canonicalBaseContentY.toFixed(2),
+            });
+
+            // Only snap when Stage is visible; Edit mode geometry is invalid
+            if (isStageMode) {
+                snapAfterLayout();
+            }
+        }
+
+
+
+
+
+
+
+
+        function snapAfterLayout() {
+            // Wait for layout/paint so DOMRects are valid
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    console.log(
+                        "LAYOUT DEBUG: calling snapFirstLineIntoGlow after layout",
+                        {
+                            baseContentY,
+                            viewerFontSize,
+                            viewerLineHeight,
+                            canonicalBaseContentY,
+                        }
+                    );
+                    snapFirstLineIntoGlow(true);
+                });
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function handleDragStart(y) {
+            console.log('DRAG: start', { y, wasScrollingBeforeDrag: isScrolling });
+            logStageState('DRAG start');
+            snapPending = false;           // keep this line
+            wasScrollingBeforeDrag = isScrolling;
+            if (isScrolling) pauseScroll();
+
+            isDragging = true;
+
+            viewerContent.style.transition = "none";
+            viewer.style.cursor = "grabbing";
+            viewerContent.style.opacity = 0.8;
+
+            dragStartY = y;
+            dragStartBaseY = baseContentY;
+
+            setStatus("Manual drag");
+        }
+
+
+        function clampDragY(rawY) {
+            const viewerRect = viewer.getBoundingClientRect();
+            const contentRect = viewerContent.getBoundingClientRect();
+            const viewerHeight = viewerRect.height;
+            const contentHeight = contentRect.height;
+
+            // How much extra room you allow beyond the natural edges
+            const padding = viewerHeight * 0.3; // 30% of screen height
+
+            let topLimit, bottomLimit;
+
+            if (contentHeight <= viewerHeight) {
+                // Short content: allow some wiggle but never lose it entirely
+                const wiggle = viewerHeight * 0.5;
+                topLimit = wiggle;
+                bottomLimit = -wiggle;
+            } else {
+                // Tall content:
+                // - topLimit: you can't push content so far down that the first line goes below the bottom
+                // - bottomLimit: you can't push so far up that the last line goes above the top
+                topLimit = padding;
+                bottomLimit = viewerHeight - contentHeight - padding;
+            }
+
+            const clamped = Math.max(bottomLimit, Math.min(topLimit, rawY));
+
+            debugLog("clampDragY", {
+                before: rawY,
+                after: clamped,
+                viewerHeight,
+                contentHeight,
+                topLimit,
+                bottomLimit
+            });
+
+            return clamped;
+        }
+
+
+
+
+
+
+
+
+        function handleDragMove(y) {
+            if (!isDragging) return;
+
+            const deltaY = y - dragStartY;
+            const dampedDelta = deltaY;
+
+            let unclampedY = dragStartBaseY + dampedDelta;
+
+            const newY = clampDragY(unclampedY);
+            baseContentY = newY;
+            applyScroll();
+
+            console.log('DRAG: move', { y, deltaY, unclampedY, newY });
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            console.log('DRAG: end BEFORE');
+            logStageState('DRAG end BEFORE');
+
+            isDragging = false;
+            viewer.style.cursor = 'grab';
+            viewerContent.style.opacity = 1;
+            viewerContent.style.transition = 'transform 0.08s ease-out';
+
+            console.log('DRAG: end AFTER flags reset, will decide resume');
+            const shouldResume =
+                wasScrollingBeforeDrag && isStageMode && wasScrollingBeforeDrag !== false;
+            console.log('DRAG: end shouldResume', { shouldResume, wasScrollingBeforeDrag, isStageMode });
+
+            if (shouldResume) {
+                startScroll();
+            } else {
+                const effective = Math.max(0, getPixelsPerSecond());
+                setStatus(effective === 0 ? 'Ready • speed 0' : 'Ready');
+                updateResetEnabled();
+            }
+
+            logStageState('DRAG end AFTER');
+        }
+
+
+
+        function rebuildViewerFromEditor() {
+            const text = editor.value;
+            viewerContent.innerHTML = '';
+
+            const lines = text.split('\n');
+            lines.forEach(rawLine => {
+                const line = rawLine.replace(/\r/g, '');
+                const isBlank = !line.trim();
+                const span = document.createElement('span');
+                span.className = 'viewer-content-line';
+                span.textContent = isBlank ? '\u00A0' : line;
+                viewerContent.appendChild(span);
+            });
+
+            // Keep content aligned where it is; don't zero + snap here.
+            // Stage reset / load will take care of snapping when needed.
+            // If you really want to reset when editing, you can leave baseContentY = 0,
+            // but don't call snapFirstLineIntoGlow from here.
+
+            baseContentY = 0;
+            applyScroll();
+
+            setStatus('Viewer mirrored from editor');
+        }
+
+
+
+        editor.addEventListener("input", rebuildViewerFromEditor);
+
+        clearEditorBtn.addEventListener("click", () => {
+            editor.value = "";
+            rebuildViewerFromEditor();
+        });
+
+        /* Mode toggle */
+
+        modeToggle.addEventListener("click", () => {
+            isStageMode = !isStageMode;
+            if (isStageMode) {
+                viewerCard.classList.remove("hidden");
+                editorCard.classList.add("hidden");
+                bottomBar.classList.remove("hidden");
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Stage mode</strong> <small>· tap for edit</small>";
+                setStatus("Ready");
+                settingsBtnBottom.classList.remove("hidden");
+                // Show stage-only buttons
+                document.querySelectorAll('.stage-only').forEach(el => el.classList.remove('hidden'));
+            } else {
+                pauseScroll();
+                viewerCard.classList.add("hidden");
+                editorCard.classList.remove("hidden");
+                bottomBar.classList.add("hidden");
+                modeToggle.querySelector("span").innerHTML =
+                    "<strong>Edit mode</strong> <small>· tap for stage</small>";
+                setStatus("Edit lyrics – viewer mirrors automatically");
+                settingsBtnBottom.classList.add("hidden");
+                // Hide stage-only buttons
+                document.querySelectorAll('.stage-only').forEach(el => el.classList.add('hidden'));
+            }
+        });
+
+
+
+        /* Transport */
+
+        startBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            startScroll();
+        });
+
+        pauseBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            pauseScroll();
+        });
+
+        // AFTER:
+        resetBtn.addEventListener('click', () => {
+            // Always reset the current song back to start, using current settings.
+            resetScroll();
+        })
+
+
+
+
+
+
+
+        /* Keyboard */
+
+        document.addEventListener("keydown", (e) => {
+            if (!isStageMode) return;
+            if (e.target === editor) return;
+
+            if (e.code === "Space") {
+                const now = Date.now();
+                if (now - lastSpaceTime < 150) return;
+                lastSpaceTime = now;
+                e.preventDefault();
+                if (isScrolling) pauseScroll();
+                else startScroll();
+            }
+
+            if (e.key === "r" || e.key === "R") {
+                resetScroll();
+            }
+        });
+
+        /* Settings: scroll speed, font, spacing */
+
+        function updateSpeedModeUI() {
+            const isBPMMode = speedModeBPM.checked;
+
+            percentModeFields.classList.toggle("hidden", isBPMMode);
+            bpmModeFields.classList.toggle("hidden", !isBPMMode);
+            bpmModeFields2.classList.toggle("hidden", !isBPMMode);
+
+            if (isBPMMode) {
+                songBPM = parseInt(bpmInput.value, 10) || 120;
+                linesPerMeasure = parseInt(linesPerMeasureInput.value, 10) || 4;
+            } else {
+                songBPM = null;
+            }
+
+            if (isStageMode && !isScrolling) {
+                const pps = getPixelsPerSecond();
+                setStatus(pps === 0 ? "Ready (speed 0)" : "Ready");
+            }
+        }
+
+        function openSettings() {
+            if (songBPM !== null) {
+                speedModeBPM.checked = true;
+                bpmInput.value = songBPM;
+                linesPerMeasureInput.value = String(linesPerMeasure || 4);
+            } else {
+                speedModePercent.checked = true;
+                speedPercentSlider.value = String(speedPercent);
+                speedPercentLabel.textContent = `${speedPercent}%`;
+            }
+
+            updateSpeedModeUI();
+
+            fontSizeSlider.value = String(viewerFontSize);
+            lineSpacingSlider.value = String(viewerLineHeight);
+            settingsOverlay.classList.remove("hidden");
+        }
+
+
+        settingsBtnBottom.addEventListener("click", () => {
+            if (!isStageMode) return;
+            openSettings();
+        });
+
+        settingsOverlay.addEventListener("click", (e) => {
+            if (e.target.dataset.closeSettings !== undefined || e.target === settingsOverlay) {
+                settingsOverlay.classList.add("hidden");
+            }
+        });
+
+        settingsOverlay
+            .querySelectorAll("[data-close-settings]")
+            .forEach((el) =>
+                el.addEventListener("click", () => settingsOverlay.classList.add("hidden"))
+            );
+
+        speedModePercent.addEventListener("change", updateSpeedModeUI);
+        speedModeBPM.addEventListener("change", updateSpeedModeUI);
+
+        bpmInput.addEventListener("input", () => {
+            songBPM = parseInt(bpmInput.value, 10) || 120;
+        });
+
+        linesPerMeasureInput.addEventListener("change", () => {
+            linesPerMeasure = parseInt(linesPerMeasureInput.value, 10) || 4;
+        });
+
+        speedPercentSlider.addEventListener("input", () => {
+            const raw = parseInt(speedPercentSlider.value, 10) || 0;
+            speedPercent = Math.max(0, Math.min(100, raw));
+            speedPercentLabel.textContent = `${speedPercent}%`;
+            setStatus(isScrolling ? "Scrolling" : "Ready");
+        });
+
+        fontSizeSlider.addEventListener('input', () => {
+            console.log('FONT DEBUG change BEFORE', {
+                oldFontSize: viewerFontSize,
+                newFontSizeRaw: fontSizeSlider.value,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+                songStartLineIndex,
+                loadSnapshotBaseContentY,
+                loadSnapshotFontSize,
+                loadSnapshotLineHeight,
+                isStageMode,
+            });
+
+            viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
+            applyFontSize();
+
+            // Invalidate geometry snapshots, keep line index so we can re-snap same line
+            songStartBaseContentY = null;
+            songStartFontSize = null;
+            songStartLineHeight = null;
+
+            loadSnapshotBaseContentY = null;
+            loadSnapshotFontSize = null;
+            loadSnapshotLineHeight = null;
+
+            console.log('FONT DEBUG after invalidate snapshots', {
+                viewerFontSize,
+                songStartBaseContentY,
+                songStartLineIndex,
+                loadSnapshotBaseContentY,
+            });
+
+            if (isStageMode) {
+                baseContentY = 0;
+                canonicalBaseContentY = 0;
+                applyScroll();
+                console.log('FONT DEBUG Stage mode: zeroed base, scheduling fresh snap');
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        console.log('FONT DEBUG calling snapFirstLineIntoGlow after layout');
+                        snapFirstLineIntoGlow(true);
+                    });
+                });
+            }
+        });
+
+
+
+        lineSpacingSlider.addEventListener('input', () => {
+            console.log('LINEHEIGHT DEBUG change BEFORE', {
+                oldLineHeight: viewerLineHeight,
+                newLineHeightRaw: lineSpacingSlider.value,
+                songStartBaseContentY,
+                songStartFontSize,
+                songStartLineHeight,
+                songStartLineIndex,
+                loadSnapshotBaseContentY,
+                loadSnapshotFontSize,
+                loadSnapshotLineHeight,
+                isStageMode,
+            });
+
+            viewerLineHeight = parseFloat(lineSpacingSlider.value) || 1.9;
+            applyFontSize();
+
+            // Invalidate geometry snapshots, keep line index so we can re-snap same line
+            songStartBaseContentY = null;
+            songStartFontSize = null;
+            songStartLineHeight = null;
+
+            loadSnapshotBaseContentY = null;
+            loadSnapshotFontSize = null;
+            loadSnapshotLineHeight = null;
+
+            console.log('LINEHEIGHT DEBUG after invalidate snapshots', {
+                viewerLineHeight,
+                songStartBaseContentY,
+                songStartLineIndex,
+                loadSnapshotBaseContentY,
+            });
+
+            if (isStageMode) {
+                baseContentY = 0;
+                canonicalBaseContentY = 0;
+                applyScroll();
+                console.log('LINEHEIGHT DEBUG Stage mode: zeroed base, scheduling fresh snap');
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        console.log('LINEHEIGHT DEBUG calling snapFirstLineIntoGlow after layout');
+                        snapFirstLineIntoGlow(true);
+                    });
+                });
+            }
+        });
+
+
+
+
+        /* Info modals */
+
+        stageInfoBtn.addEventListener("click", () => {
+            if (!isStageMode) return;
+            stageInfoOverlay.classList.remove("hidden");
+        });
+
+        stageInfoOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeStageInfo !== undefined ||
+                e.target === stageInfoOverlay
+            ) {
+                stageInfoOverlay.classList.add("hidden");
+            }
+        });
+
+        stageInfoOverlay
+            .querySelectorAll("[data-close-stage-info]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    stageInfoOverlay.classList.add("hidden")
+                )
+            );
+
+        editorInfoBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            editInfoOverlay.classList.remove("hidden");
+        });
+
+        editInfoOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeEditInfo !== undefined ||
+                e.target === editInfoOverlay
+            ) {
+                editInfoOverlay.classList.add("hidden");
+            }
+        });
+
+        editInfoOverlay
+            .querySelectorAll("[data-close-edit-info]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    editInfoOverlay.classList.add("hidden")
+                )
+            );
+
+        /* Save / load / playlists */
+
+        function makeSongId() {
+            return (
+                Date.now().toString(36) +
+                "-" +
+                Math.random().toString(36).slice(2, 8)
+            );
+        }
+
+        function saveSongsToStorage() {
+            try {
+                localStorage.setItem("lyricflow-songs", JSON.stringify(savedSongs));
+            } catch (e) {
+                alert(
+                    "Could not save songs – your browser storage is disabled or full."
+                );
+            }
+        }
+
+        function loadSongsFromStorage() {
+            try {
+                const stored = localStorage.getItem("lyricflow-songs");
+                savedSongs = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                savedSongs = [];
+            }
+        }
+
+        saveSongBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            if (!editor.value.trim()) {
+                alert("Type or paste some lyrics before saving.");
+                return;
+            }
+
+            const existingSong =
+                currentSongId && savedSongs.find((s) => s.id === currentSongId);
+
+            songTitleInput.value = existingSong ? existingSong.name : "";
+            playlistInput.value = existingSong
+                ? (existingSong.playlist || "Set 1")
+                : (currentPlaylistName || "Set 1");
+
+            saveOverlay.classList.remove("hidden");
+            songTitleInput.focus();
+        });
+
+        saveOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeSave !== undefined ||
+                e.target === saveOverlay
+            ) {
+                saveOverlay.classList.add("hidden");
+            }
+        });
+
+        saveOverlay
+            .querySelectorAll("[data-close-save]")
+            .forEach((el) =>
+                el.addEventListener("click", () => saveOverlay.classList.add("hidden"))
+            );
+
+        saveConfirmBtn.addEventListener("click", () => {
+            const title = songTitleInput.value.trim() || "Untitled";
+            const playlistName = playlistInput.value.trim() || "Set 1";
+            const content = editor.value.trim();
+
+            if (!content) {
+                alert("Lyrics are empty – nothing to save.");
+                return;
+            }
+
+            const speedToSave = Math.max(
+                1,
+                parseInt(scrollSpeed || DEFAULT_SCROLL_SPEED, 10)
+            );
+
+            const performanceFields = {
+                speed: speedToSave,
+                speedPercent,
+                fontSize: viewerFontSize,
+                lineHeight: viewerLineHeight,
+                bpm: songBPM,
+                linesPerMeasure,
+                version: 2,
+            };
+
+            const loadedSong = currentSongId
+                ? savedSongs.find((s) => s.id === currentSongId)
+                : null;
+
+            let song;
+
+            if (loadedSong) {
+                const isSameNameAndPlaylist =
+                    loadedSong.name === title &&
+                    (loadedSong.playlist || "Set 1") === (playlistName || "Set 1");
+
+                if (!isSameNameAndPlaylist) {
+                    // User changed name or playlist: treat as new song instead of overwriting
+                    song = {
+                        id: makeSongId(),
+                        name: title,
+                        playlist: playlistName,
+                        content,
+                        createdAt: new Date().toISOString(),
+                        ...performanceFields,
+                    };
+                    savedSongs.push(song);
+                } else {
+                    // Same name + playlist: update the existing loaded song
+                    song = loadedSong;
+                    song.name = title;
+                    song.playlist = playlistName;
+                    song.content = content;
+                    Object.assign(song, performanceFields);
+                }
+            } else {
+                // No song loaded: always create new
+                song = {
+                    id: makeSongId(),
+                    name: title,
+                    playlist: playlistName,
+                    content,
+                    createdAt: new Date().toISOString(),
+                    ...performanceFields,
+                };
+                savedSongs.push(song);
+            }
+
+            saveSongsToStorage();
+            currentSongId = song.id;
+            currentPlaylistName = song.playlist || "Set 1";
+            buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
+            updateStagePlaylistUI();
+
+            saveOverlay.classList.add("hidden");
+            setStatus("Saved " + song.name);
+        });
+
+
+
+        loadSongBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildPlaylistSelect();
+            buildLoadSongList();
+            loadOverlay.classList.remove("hidden");
+        });
+
+
+        loadOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeLoad !== undefined ||
+                e.target === loadOverlay
+            ) {
+                loadOverlay.classList.add("hidden");
+            }
+        });
+
+        loadOverlay
+            .querySelectorAll("[data-close-load]")
+            .forEach((el) =>
+                el.addEventListener("click", () => loadOverlay.classList.add("hidden"))
+            );
+
+        function buildPlaylistSelect() {
+            const playlists = Array.from(
+                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
+            ).sort();
+            playlistSelect.innerHTML = "";
+            playlists.forEach((p) => {
+                const opt = document.createElement("option");
+                opt.value = p;
+                opt.textContent = p;
+                playlistSelect.appendChild(opt);
+            });
+            if (!playlists.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No playlists";
+                playlistSelect.appendChild(opt);
+            }
+        }
+
+        function buildLoadSongList() {
+            const playlistName = playlistSelect.value || "Set 1";
+            loadSongList.innerHTML = "";
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === playlistName)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "track-item";
+                const label = document.createElement("span");
+                label.textContent = `${index + 1}. ${s.name}`;
+                const speedSpan = document.createElement("span");
+
+                if (typeof s.bpm === "number") {
+                    speedSpan.textContent = `${s.bpm} BPM`;
+                } else {
+                    const sp = typeof s.speedPercent === "number" ? s.speedPercent : 0;
+                    speedSpan.textContent = `${sp}%`;
+                }
+
+                item.appendChild(label);
+                item.appendChild(speedSpan);
+                item.addEventListener("click", () => {
+                    loadOverlay.classList.add("hidden");
+                    loadSongIntoUI(s);
+                });
+                loadSongList.appendChild(item);
+            });
+
+            if (!songs.length) {
+                loadSongList.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
+            }
+        }
+
+        playlistSelect.addEventListener("change", buildLoadSongList);
+
+
+
+
+
+        // AFTER:
+        function loadSongIntoUI(song) {
+            console.log("LOAD:entry", {
+                songId: song.id,
+                songName: song.name,
+                baseContentYBefore: baseContentY.toFixed(2),
+                transformBefore: viewerContent.style.transform
+            });
+            logStageState('LOAD:before-apply-settings');
+
+            currentSong = song; // remember last loaded song
+
+            currentSongId = song.id;
+            currentPlaylistName = song.playlist || "Set 1";
+
+            editor.value = song.content || "";
+            rebuildViewerFromEditor();
+
+            const savedSpeed = typeof song.speed === "number" ? song.speed : 0;
+            scrollSpeed = savedSpeed > 0 ? savedSpeed : DEFAULT_SCROLL_SPEED;
+
+            if (typeof song.speedPercent === "number") {
+                speedPercent = Math.max(0, Math.min(100, song.speedPercent));
+            }
+            if (typeof song.fontSize === "number") {
+                viewerFontSize = song.fontSize;
+            }
+            if (typeof song.lineHeight === "number") {
+                viewerLineHeight = song.lineHeight;
+            }
+
+            if (typeof song.bpm === "number") {
+                songBPM = song.bpm;
+                linesPerMeasure = song.linesPerMeasure || 4;
+            } else {
+                songBPM = null;
+            }
+
+            applyFontSize();
+            logStageState('LOAD:after-apply-settings');
+
+            buildCurrentPlaylistOrder(currentPlaylistName, currentSongId);
+            updateStagePlaylistUI();
+
+            console.log('LOAD:before-goToInitial');
+            goToInitialStageState("loadSongIntoUI");
+
+            requestAnimationFrame(() => {
+                const highlight = document.querySelector(".viewer-highlight");
+                const firstLine = viewerContent.querySelector(".viewer-content-line");
+                const viewerRect = viewer.getBoundingClientRect();
+                const highlightRect = highlight ? highlight.getBoundingClientRect() : null;
+                const lineRect = firstLine ? firstLine.getBoundingClientRect() : null;
+
+                console.log("LOAD:after-goToInitialStageState", {
+                    baseContentY: baseContentY.toFixed(2),
+                    transform: viewerContent.style.transform,
+                    viewerRectTop: viewerRect.top.toFixed(2),
+                    viewerRectBottom: viewerRect.bottom.toFixed(2),
+                    highlightRect: highlightRect ? {
+                        top: highlightRect.top.toFixed(2),
+                        bottom: highlightRect.bottom.toFixed(2),
+                        height: highlightRect.height.toFixed(2)
+                    } : null,
+                    lineRect: lineRect ? {
+                        top: lineRect.top.toFixed(2),
+                        bottom: lineRect.bottom.toFixed(2),
+                        height: lineRect.height.toFixed(2)
+                    } : null
+                });
+                logStageState('LOAD:final');
+            });
+
+            setStatus(`Loaded ${song.name}`);
+
+        }
+
+
+        // AFTER:
+        function reloadSongIntoUI() {
+            if (!currentSong) return;
+
+            // Rebuild lyrics content from the saved song.
+            editor.value = currentSong.lyrics || '';
+            rebuildViewerFromEditor();
+
+            // Re-apply current settings (scroll mode, font size, spacing) without touching scroll position.
+            applyFontSize();
+            // If you have any UI refresh like updateSpeedModeUI(), keep those here too.
+
+            // Do NOT call goToInitialStageState from reload; resetScroll/loadSongIntoUI will own that.
+        }
+
+
+        // AFTER: place near reloadSongIntoUI / loadSongIntoUI
+
+        function rebuildSongContentOnly() {
+            if (!currentSong) return;
+            // Just mirror saved lyrics into editor + viewer.
+            editor.value = currentSong.lyrics || '';
+            const text = editor.value;
+            viewerContent.innerHTML = '';
+            const lines = text.split('\n');
+            lines.forEach(rawLine => {
+                const line = rawLine.replace(/\r/g, '');
+                const isBlank = !line.trim();
+                const span = document.createElement('span');
+                span.className = 'viewer-content-line';
+                span.textContent = isBlank ? '\u00A0' : line;
+                viewerContent.appendChild(span);
+            });
+        }
+
+
+
+        function buildCurrentPlaylistOrder(playlistName, focusSongId) {
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            currentPlaylistSongIds = songs.map((s) => s.id);
+            const idx = currentPlaylistSongIds.indexOf(focusSongId);
+            currentSongId = idx >= 0 ? focusSongId : songs[0]?.id || null;
+        }
+
+        function updateStagePlaylistUI() {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) {
+                playlistPill.classList.add("hidden");
+                prevSongBtn.classList.add("hidden");
+                nextSongBtn.classList.add("hidden");
+                return;
+            }
+
+            const idx = currentPlaylistSongIds.indexOf(currentSongId);
+            const total = currentPlaylistSongIds.length;
+            playlistPillText.textContent = currentPlaylistName || "Set 1";
+            playlistPillIndex.textContent = `${idx + 1}/${total}`;
+            playlistPill.classList.remove("hidden");
+
+            prevSongBtn.classList.toggle("hidden", idx <= 0);
+            nextSongBtn.classList.toggle("hidden", idx >= total - 1);
+        }
+
+        editPlaylistBtn.addEventListener("click", () => {
+            if (isStageMode) return;
+            buildEditPlaylistSelect();
+            buildEditPlaylistList();
+            editPlaylistOverlay.classList.remove("hidden");
+        });
+
+        editPlaylistOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeEditPlaylist !== undefined ||
+                e.target === editPlaylistOverlay
+            ) {
+                editPlaylistOverlay.classList.add("hidden");
+            }
+        });
+
+        editPlaylistOverlay
+            .querySelectorAll("[data-close-edit-playlist]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    editPlaylistOverlay.classList.add("hidden")
+                )
+            );
+
+        function buildEditPlaylistSelect() {
+            const playlists = Array.from(
+                new Set(savedSongs.map((s) => s.playlist || "Set 1"))
+            ).sort();
+            editPlaylistSelect.innerHTML = "";
+            playlists.forEach((p) => {
+                const opt = document.createElement("option");
+                opt.value = p;
+                opt.textContent = p;
+                editPlaylistSelect.appendChild(opt);
+            });
+            if (!playlists.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No playlists";
+                editPlaylistSelect.appendChild(opt);
+            }
+        }
+        function buildEditPlaylistList() {
+            const playlistName = editPlaylistSelect.value || "Set 1";
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (playlistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            playlistEditList.innerHTML = "";
+
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "playlist-edit-item";
+
+                const mainRow = document.createElement("div");
+                mainRow.style.display = "flex";
+                mainRow.style.alignItems = "center";
+                mainRow.style.justifyContent = "space-between";
+                mainRow.style.gap = "6px";
+
+                const nameSpan = document.createElement("span");
+                nameSpan.className = "playlist-edit-name";
+                nameSpan.textContent = s.name;
+
+                const controls = document.createElement("div");
+                controls.className = "playlist-edit-controls";
+
+                const upBtn = document.createElement("button");
+                upBtn.textContent = "↑";
+                upBtn.disabled = index === 0;
+                upBtn.addEventListener("click", () => {
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx <= 0) return;
+                    const prevIdx = idx - 1;
+                    const prevSong = savedSongs[prevIdx];
+                    if ((prevSong.playlist || "Set 1") !== (s.playlist || "Set 1")) return;
+
+                    savedSongs.splice(idx, 1);
+                    savedSongs.splice(prevIdx, 0, s);
+                    saveSongsToStorage();
+                    buildEditPlaylistList();
+                });
+
+                const downBtn = document.createElement("button");
+                downBtn.textContent = "↓";
+                downBtn.disabled = index === songs.length - 1;
+                downBtn.addEventListener("click", () => {
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx < 0 || idx >= savedSongs.length - 1) return;
+                    const nextIdx = idx + 1;
+                    const nextSong = savedSongs[nextIdx];
+                    if ((nextSong.playlist || "Set 1") !== (s.playlist || "Set 1")) return;
+
+                    savedSongs.splice(idx, 1);
+                    savedSongs.splice(nextIdx, 0, s);
+                    saveSongsToStorage();
+                    buildEditPlaylistList();
+                });
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "✕";
+                deleteBtn.addEventListener("click", () => {
+                    if (!confirm(`Delete "${s.name}" from ${s.playlist || "Set 1"}?`)) return;
+                    const idx = savedSongs.findIndex((x) => x.id === s.id);
+                    if (idx >= 0) {
+                        savedSongs.splice(idx, 1);
+                        saveSongsToStorage();
+                        buildEditPlaylistList();
+                    }
+                });
+
+                const infoBtn = document.createElement("button");
+                infoBtn.textContent = "i";
+                infoBtn.addEventListener("click", () => {
+                    showSongInfo(s);
+                });
+
+                controls.appendChild(upBtn);
+                controls.appendChild(downBtn);
+                controls.appendChild(deleteBtn);
+                controls.appendChild(infoBtn);
+
+                mainRow.appendChild(nameSpan);
+                mainRow.appendChild(controls);
+                item.appendChild(mainRow);
+
+                playlistEditList.appendChild(item);
+            });
+
+            if (!songs.length) {
+                playlistEditList.innerHTML =
+                    '<p style="color: var(--text-muted); text-align: center; padding: 16px;">No songs in this playlist</p>';
+            }
+        }
+
+
+
+
+        editPlaylistSelect.addEventListener("change", buildEditPlaylistList);
+
+        function showSongInfo(song) {
+            songInfoTitle.value = song.name;
+            songInfoPlaylist.value = song.playlist || "Set 1";
+
+            if (typeof song.bpm === "number") {
+                songInfoScroll.value = `${song.bpm} BPM`;
+            } else {
+                songInfoScroll.value = `${song.speedPercent ?? 0}% speed`;
+            }
+
+            songInfoFont.value = `${song.fontSize ?? 28}px`;
+            songInfoLineHeight.value = song.lineHeight ?? 2.4;
+            songInfoLinesPerMeasure.value = song.linesPerMeasure ?? 4;
+
+            songInfoOverlay.classList.remove("hidden");
+        }
+
+        songInfoOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closeSongInfo !== undefined ||
+                e.target === songInfoOverlay
+            ) {
+                songInfoOverlay.classList.add("hidden");
+            }
+        });
+
+        songInfoOverlay
+            .querySelectorAll("[data-close-song-info]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    songInfoOverlay.classList.add("hidden")
+                )
+            );
+
+
+        playlistPill.addEventListener("click", () => {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const songs = savedSongs
+                .filter((s) => (s.playlist || "Set 1") === (currentPlaylistName || "Set 1"))
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            playlistSelectTitle.textContent = currentPlaylistName || "Set 1";
+            trackList.innerHTML = "";
+
+            songs.forEach((s, index) => {
+                const item = document.createElement("div");
+                item.className = "track-item";
+                const label = document.createElement("span");
+                label.textContent = `${index + 1}. ${s.name}`;
+                const speedSpan = document.createElement("span");
+
+                if (typeof s.bpm === "number") {
+                    speedSpan.textContent = `${s.bpm} BPM`;
+                } else {
+                    const sp = typeof s.speedPercent === "number" ? s.speedPercent : 0;
+                    speedSpan.textContent = `Speed ${sp}%`;
+                }
+
+                item.appendChild(label);
+                item.appendChild(speedSpan);
+                item.addEventListener("click", () => {
+                    playlistSelectOverlay.classList.add("hidden");
+                    loadSongIntoUI(s);
+                });
+                trackList.appendChild(item);
+            });
+
+            playlistSelectOverlay.classList.remove("hidden");
+        });
+
+        playlistSelectOverlay.addEventListener("click", (e) => {
+            if (
+                e.target.dataset.closePlaylistSelect !== undefined ||
+                e.target === playlistSelectOverlay
+            ) {
+                playlistSelectOverlay.classList.add("hidden");
+            }
+        });
+
+        playlistSelectOverlay
+            .querySelectorAll("[data-close-playlist-select]")
+            .forEach((el) =>
+                el.addEventListener("click", () =>
+                    playlistSelectOverlay.classList.add("hidden")
+                )
+            );
+
+        prevSongBtn.addEventListener("click", () => {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const idx = currentPlaylistSongIds.indexOf(currentSongId);
+            if (idx <= 0) return;
+            const newId = currentPlaylistSongIds[idx - 1];
+            const song = savedSongs.find((s) => s.id === newId);
+            if (!song) return;
+            loadSongIntoUI(song);
+        });
+
+        nextSongBtn.addEventListener("click", () => {
+            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
+            const idx = currentPlaylistSongIds.indexOf(currentSongId);
+            if (idx >= currentPlaylistSongIds.length - 1) return;
+            const newId = currentPlaylistSongIds[idx + 1];
+            const song = savedSongs.find((s) => s.id === newId);
+            if (!song) return;
+            loadSongIntoUI(song);
+        });
+
+        // mouse drag (fallback)
+        viewer.addEventListener("mousedown", (e) => {
+            if (!isStageMode) return;
+            e.preventDefault();
+            handleDragStart(e.clientY);
+        });
+
+        window.addEventListener("load", () => {
+            applyFontSize();
+            goToInitialStageState("window.load");
+        });
+
+
+        window.addEventListener("mouseup", () => {
+            handleDragEnd();
+        });
+
+        // touch drag
+        viewer.addEventListener(
+            "touchstart",
+            (e) => {
+                if (!isStageMode) return;
+                const touch = e.touches[0];
+                e.preventDefault();
+                handleDragStart(touch.clientY);
+            },
+            { passive: false }
+        );
+
+        window.addEventListener(
+            "touchmove",
+            (e) => {
+                if (!isDragging) return;
+                const touch = e.touches[0];
+                e.preventDefault();
+                handleDragMove(touch.clientY);
+            },
+            { passive: false }
+        );
+
+        window.addEventListener("touchend", () => {
+            handleDragEnd();
+        });
+
+        /* Init */
+
+        loadSongsFromStorage();
+
+        window.addEventListener("load", () => {
+            applyFontSize();
+            goToInitialStageState();
+        });
+
+
+        // Disable double‑tap to zoom on the whole document
+        let lastTouchEnd = 0;
+        document.addEventListener(
+            "touchend",
+            function (event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            },
+            { passive: false }
+        );
+    </script>
 </body>
 </html>
