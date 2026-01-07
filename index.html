@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>LyricFlow v3.0</title>
+    <title>LyricFlow</title>
     <meta name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
@@ -95,6 +95,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer; /* clickable for About modal */
         }
 
         .lf-logo {
@@ -469,6 +470,28 @@
             display: block;
             padding: 1px 0;
         }
+
+        /* Count-in overlay */
+
+        .viewer-countin {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient( circle at 50% 50%, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5) );
+            color: rgba(226, 232, 240, 0.9);
+            font-size: 26px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
+            z-index: 5;
+        }
+
+
+            .viewer-countin.hidden {
+                display: none;
+            }
 
         /* Editor */
 
@@ -915,6 +938,69 @@
         .hidden {
             display: none !important;
         }
+
+        /* About / Donate / Contact */
+
+        .about-tabs {
+            display: inline-flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .about-tab {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+            .about-tab.active {
+                border-color: var(--accent-bright);
+                color: var(--accent-bright);
+            }
+
+        .about-panel.hidden {
+            display: none;
+        }
+
+        /* High-contrast stage */
+
+        body.high-contrast-stage .viewer-card {
+            background: #020617;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        body.high-contrast-stage .viewer-viewport {
+            background: #020617;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        body.high-contrast-stage .viewer {
+            text-shadow: 0 0 28px rgba(0, 0, 0, 1), 0 0 50px rgba(0, 0, 0, 1);
+        }
+
+        body.high-contrast-stage .viewer-halo-top,
+        body.high-contrast-stage .viewer-halo-bottom,
+        body.high-contrast-stage .viewer-subtle-layer {
+            opacity: 0.4;
+        }
+
+        body.high-contrast-stage .viewer-highlight {
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1), 0 0 0 3px rgba(34, 197, 94, 0.7), 0 0 55px rgba(34, 197, 94, 0.9);
+        }
+
+        /* Footer */
+
+        .app-footer {
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            opacity: 0.85;
+        }
     </style>
 </head>
 
@@ -922,7 +1008,7 @@
     <div class="app-shell">
         <div class="app-shell-inner">
             <header class="header">
-                <div class="branding">
+                <div class="branding" id="infoMainTrigger">
                     <div class="lf-logo">
                         <div class="lf-logo-glyph"></div>
                     </div>
@@ -959,8 +1045,11 @@
                         <span id="playlistPillText">Set 1</span>
                         <span id="playlistPillIndex">1/1</span>
                     </span>
-                    <button class="pill-btn stage-only" id="stageInfoBtn">Info</button>
+                    <button class="pill-btn" id="infoTopPill">Info</button>
+                    <button class="pill-btn stage-only" id="stageInfoBtn">Stage tips</button>
+                    <button class="pill-btn" id="donatePill">Donate</button>
                 </div>
+
             </div>
 
             <div class="main-stack">
@@ -989,6 +1078,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="viewer-countin hidden" id="viewerCountIn"></div>
                     </div>
                 </div>
 
@@ -1026,9 +1117,15 @@
                     </button>
                 </div>
                 <div class="bottom-tools">
-                    <!-- reserved for future tools -->
+                    <button class="btn" id="donatePill">
+                        <span>Donate</span>
+                    </button>
                 </div>
             </div>
+
+            <footer class="app-footer">
+                © 2026 LyricFlow. All rights reserved.
+            </footer>
         </div>
     </div>
 
@@ -1254,6 +1351,31 @@
                            value="1.9" />
                 </div>
 
+                <div class="form-field">
+                    <label for="countInSelect">Count‑in before start</label>
+                    <select id="countInSelect">
+                        <option value="0" selected>Off</option>
+                        <option value="2">2 bars</option>
+                        <option value="4">4 bars</option>
+                    </select>
+                    <small>Shows a brief visual count‑in before scrolling begins.</small>
+                </div>
+
+                <div class="form-field">
+                    <label>
+                        <input type="checkbox" id="autoRestartCheckbox" />
+                        Auto‑restart when lyrics end
+                    </label>
+                </div>
+
+                <div class="form-field">
+                    <label>
+                        <input type="checkbox" id="highContrastCheckbox" />
+                        High‑contrast stage mode
+                    </label>
+                    <small>Boosts text and glow, simplifies background for dark rooms.</small>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button data-close-settings>Close</button>
@@ -1278,19 +1400,63 @@
         </div>
     </div>
 
+    <!-- About / Donate / Contact -->
+    <div class="overlay hidden" id="aboutOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">LyricFlow Info</div>
+                <button class="modal-close" data-close-about>✕</button>
+            </div>
+
+            <div class="about-tabs">
+                <button class="about-tab active" data-about-tab="about">About</button>
+                <button class="about-tab" data-about-tab="donate">Donate</button>
+                <button class="about-tab" data-about-tab="contact">Contact</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="about-panel" data-about-panel="about">
+                    <p id="aboutText">
+                        LyricFlow v4.0 is a stage‑ready lyric scroller designed for live performances.
+                    </p>
+                    <p>
+                        It keeps your lyrics centered in a glow band while you control scroll speed or BPM.
+                    </p>
+                </div>
+                <div class="about-panel hidden" data-about-panel="donate">
+                    <p id="donateText">
+                        If LyricFlow helps your shows, you can support ongoing development.
+                    </p>
+                    <p id="donateLink">
+                        <!-- Replace with your own link(s) -->
+                        Example: https://your-donate-link-here
+                    </p>
+                </div>
+                <div class="about-panel hidden" data-about-panel="contact">
+                    <p id="contactText">
+                        For feedback or support, email: your@email.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button data-close-about>Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         /*-------------------------------------------------------
-          Debug infrastructure (enhanced)
+          Debug infrastructure (unchanged)
         -------------------------------------------------------*/
         const DEBUG_CONFIG = {
             enabled: true,
             level: "detail" // "basic" | "detail" | "trace"
         };
-
         const DEBUG_LEVELS = { basic: 1, detail: 2, trace: 3 };
 
         const DEBUG_SESSION_ID =
-            "LF3-" +
+            "LF4-" +
             Math.random().toString(36).slice(2, 8) +
             "-" +
             Date.now().toString(36);
@@ -1307,7 +1473,7 @@
             const ts = new Date().toISOString();
             try {
                 console.log(
-                    "[LyricFlow3]",
+                    "[LyricFlow4]",
                     DEBUG_SESSION_ID,
                     ts,
                     "[" + level + "]",
@@ -1322,7 +1488,7 @@
             const ts = new Date().toISOString();
             try {
                 console.error(
-                    "[LyricFlow3]",
+                    "[LyricFlow4]",
                     DEBUG_SESSION_ID,
                     ts,
                     "[ERROR]",
@@ -1372,13 +1538,9 @@
                 debugError("LISTENER_ERROR", { type, error: e.message });
             }
         }
-        //const
-        /*-------------------------------------------------------
-          DOM refs
-        -------------------------------------------------------*/
+
         const viewer = qs("viewer");
         const viewerContent = qs("viewerContent");
-        // Put this near the top of the script, after DOM refs
         const DEFAULT_WELCOME_TEXT = `Welcome to LyricFlow – stage‑ready lyric scroller.
 Tap Edit to paste or type lyrics.
 Come back to Stage, set a scroll speed, press Start.
@@ -1456,10 +1618,21 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
         const playlistSelectTitle = qs("playlistSelectTitle");
         const trackList = qs("trackList");
 
+        const viewerCountIn = qs("viewerCountIn");
+        const countInSelect = qs("countInSelect");
+        const autoRestartCheckbox = qs("autoRestartCheckbox");
+        const highContrastCheckbox = qs("highContrastCheckbox");
+
+        const infoMainTrigger = qs("infoMainTrigger");
+        const infoTopPill = qs("infoTopPill");
+        const donatePill = qs("donatePill");
+        const aboutOverlay = qs("aboutOverlay");
+        const aboutTabs = document.querySelectorAll(".about-tab");
+        const aboutPanels = document.querySelectorAll(".about-panel");
+
         /*-------------------------------------------------------
           State
         -------------------------------------------------------*/
-        //let
         let pendingSnapFromSettings = false;
 
         let currentOffsetY = 0;
@@ -1491,19 +1664,15 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
         const DEFAULT_SCROLL_SPEED = 4;
         let scrollSpeed = DEFAULT_SCROLL_SPEED;
 
-        // Percentage mode
         let speedPercent = 50;
         const maxPixelsPerSecond = 80;
 
-        // BPM mode
         let songBPM = null;
         let linesPerMeasure = 4;
 
-        // Viewer layout
         let viewerFontSize = 18;
         let viewerLineHeight = 1.9;
 
-        // Snap + layout snapshots
         let canonicalBaseContentY = 0;
         let initialSnapBaseContentY = null;
 
@@ -1516,6 +1685,11 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
         let songStartLineHeight = null;
         let songStartLineIndex = null;
 
+        let countInBars = 0;
+        let countInTimeoutId = null;
+        let autoRestartEnabled = false;
+        let highContrastEnabled = false;
+
         /*-------------------------------------------------------
           Platform font defaults
         -------------------------------------------------------*/
@@ -1524,11 +1698,9 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 const ua = navigator.userAgent || "";
                 const isIOS = /iPhone|iPad|iPod/i.test(ua);
                 const isWindows = /Windows NT/i.test(ua);
-
                 if (isIOS) viewerFontSize = 16;
                 else if (isWindows) viewerFontSize = 18;
                 else viewerFontSize = 18;
-
                 debugLog("basic", "PLATFORM_FONT_INIT", { ua, viewerFontSize });
             } catch (e) {
                 debugError("PLATFORM_FONT_ERROR", { error: e.message });
@@ -1602,19 +1774,13 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 debugLog("detail", "PICK_START_NONE", {});
                 return { line: null, index: null };
             }
-
-            // Always use the very first visual line
             const target = arr[0];
-
             debugLog("detail", "PICK_START_FIRST_LINE", {
                 index: 0,
                 text: target.textContent
             });
-
             return { line: target, index: 0 };
         }
-
-
 
         function snapFirstLineIntoGlow(force) {
             force = !!force;
@@ -1638,7 +1804,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
 
             if (!Number.isFinite(glowCenter) || !Number.isFinite(lineCenter)) return;
 
-            // When forcing, always recompute from whatever baseContentY currently is.
             const delta = glowCenter - lineCenter;
             baseContentY = (Number.isFinite(baseContentY) ? baseContentY : 0) + delta;
             applyScroll();
@@ -1671,11 +1836,9 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
             const targetIndex = picked.index;
             if (!targetLine) return;
 
-            // Start from a known baseline
             baseContentY = 0;
             applyScroll();
 
-            // Re-measure with the new font/line-height
             const viewerRect = viewer.getBoundingClientRect();
             const glowRect = glowBand.getBoundingClientRect();
             const lineRect = targetLine.getBoundingClientRect();
@@ -1746,7 +1909,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 });
                 return Math.max(0, pps);
             }
-
             const sp = Math.max(0, Math.min(100, Number(speedPercent) || 0));
             const pps = (maxPixelsPerSecond * sp) / 100;
             debugLog("trace", "SCROLL_PPS_PERCENT", {
@@ -1755,6 +1917,104 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 pps
             });
             return Math.max(0, pps);
+        }
+
+        /*-------------------------------------------------------
+          Count-in
+        -------------------------------------------------------*/
+        
+
+        if (countInSelect) {
+            countInBars = Number(countInSelect.value) || 0;
+            safeAddListener(countInSelect, "change", () => {
+                countInBars = Number(countInSelect.value) || 0;
+            });
+        }
+
+
+        if (autoRestartCheckbox) {
+            safeAddListener(autoRestartCheckbox, "change", () => {
+                autoRestartEnabled = !!autoRestartCheckbox.checked;
+            });
+        }
+
+        if (highContrastCheckbox) {
+            safeAddListener(highContrastCheckbox, "change", () => {
+                highContrastEnabled = !!highContrastCheckbox.checked;
+                document.body.classList.toggle("high-contrast-stage", highContrastEnabled);
+            });
+        }
+
+        function cancelCountIn() {
+            if (countInTimeoutId) {
+                clearTimeout(countInTimeoutId);
+                countInTimeoutId = null;
+            }
+            if (viewerCountIn) viewerCountIn.classList.add("hidden");
+        }
+
+        function performStartScroll() {
+            if (!isStageMode || !viewer || !viewerContent) return;
+            if (isScrolling) return;
+
+            const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
+            if (pixelsPerSecond === 0) {
+                setStatus("Speed is 0 – raise scroll speed in Settings");
+                if (startBtn) {
+                    startBtn.classList.add("btn-attention");
+                    setTimeout(() => startBtn.classList.remove("btn-attention"), 900);
+                }
+                debugLog("detail", "START_SCROLL_SPEED_ZERO", {});
+                return;
+            }
+
+            isScrolling = true;
+            setStatus("Scrolling");
+            if (startBtn) startBtn.disabled = true;
+            if (pauseBtn) pauseBtn.disabled = false;
+            lastFrameTime = null;
+            startTime = performance.now();
+
+            debugLog("detail", "START_SCROLL", {
+                pixelsPerSecond,
+                baseContentY
+            });
+
+            scrollAnimationId = requestAnimationFrame(autoScroll);
+            updateResetEnabled();
+        }
+
+        function showCountInAndStart() {
+            if (!viewerCountIn || countInBars <= 0) {
+                performStartScroll();
+                return;
+            }
+
+            const bpmForCount = songBPM && songBPM > 0 ? songBPM : 120;
+            const msPerBeat = 60000 / bpmForCount;
+
+            const totalBeats = countInBars * 4;
+            let remainingBeats = totalBeats;
+
+            viewerCountIn.classList.remove("hidden");
+
+            function tick() {
+                if (remainingBeats <= 0) {
+                    viewerCountIn.classList.add("hidden");
+                    performStartScroll();
+                    return;
+                }
+
+                const currentBar = Math.ceil(remainingBeats / 4);
+                const currentBeat = ((remainingBeats - 1) % 4) + 1;
+
+                viewerCountIn.textContent = "Bar " + currentBar + " · " + currentBeat;
+                remainingBeats--;
+
+                countInTimeoutId = setTimeout(tick, msPerBeat);
+            }
+
+            tick();
         }
 
         /*-------------------------------------------------------
@@ -1805,10 +2065,19 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
             if (contentRect.bottom <= railRect.top + railRect.height * 0.4) {
                 pauseScroll();
                 setStatus("End of lyrics");
-                if (resetBtn) {
+
+                if (autoRestartEnabled) {
+                    debugLog("detail", "AUTO_SCROLL_END_RESTART", {
+                        baseContentY,
+                        elapsedTime
+                    });
+                    resetScroll();
+                    performStartScroll();
+                } else if (resetBtn) {
                     resetBtn.classList.add("btn-attention");
                     setTimeout(() => resetBtn.classList.remove("btn-attention"), 900);
                 }
+
                 debugLog("detail", "AUTO_SCROLL_END_REACHED", {});
                 return;
             }
@@ -1818,38 +2087,15 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
         }
 
         function startScroll() {
-            if (!isStageMode || !viewer || !viewerContent) return;
-            if (isScrolling) return;
-
-            const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
-            if (pixelsPerSecond === 0) {
-                setStatus("Speed is 0 – raise scroll speed in Settings");
-                if (startBtn) {
-                    startBtn.classList.add("btn-attention");
-                    setTimeout(() => startBtn.classList.remove("btn-attention"), 900);
-                }
-                debugLog("detail", "START_SCROLL_SPEED_ZERO", {});
-                return;
-            }
-
-            isScrolling = true;
-            setStatus("Scrolling");
-            if (startBtn) startBtn.disabled = true;
-            if (pauseBtn) pauseBtn.disabled = false;
-            lastFrameTime = null;
-            startTime = performance.now();
-
-            debugLog("detail", "START_SCROLL", {
-                pixelsPerSecond,
-                baseContentY
-            });
-
-            scrollAnimationId = requestAnimationFrame(autoScroll);
-            updateResetEnabled();
+            // wrapped by showCountInAndStart
+            showCountInAndStart();
         }
 
         function pauseScroll() {
-            if (!isScrolling) return;
+            if (!isScrolling) {
+                cancelCountIn();
+                return;
+            }
             isScrolling = false;
             setStatus("Paused");
             if (startBtn) startBtn.disabled = false;
@@ -1861,6 +2107,8 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 } catch (_) { }
                 scrollAnimationId = null;
             }
+
+            cancelCountIn();
 
             debugLog("detail", "PAUSE_SCROLL", {
                 transform: viewerContent && viewerContent.style
@@ -2199,7 +2447,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
         function rebuildViewerFromEditor() {
             if (!viewerContent || !editor) return;
 
-            // If editor is empty, show welcome text
             const rawText = editor.value;
             const text = rawText.trim()
                 ? rawText
@@ -2227,12 +2474,10 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 lineCount: lines.length
             });
 
-            // Always resnap in stage mode
             if (isStageMode) {
                 snapAfterLayout();
             }
         }
-
 
         if (editor) {
             safeAddListener(editor, "input", rebuildViewerFromEditor);
@@ -2246,7 +2491,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 debugLog("detail", "EDITOR_CLEARED", {});
             });
         }
-
 
         /*-------------------------------------------------------
           Mode toggle
@@ -2313,7 +2557,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
             });
         }
 
-        // keyboard shortcuts
         safeAddListener(document, "keydown", (e) => {
             if (!isStageMode) return;
             if (e.target === editor) return;
@@ -2391,6 +2634,11 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
 
             if (fontSizeSlider) fontSizeSlider.value = String(viewerFontSize);
             if (lineSpacingSlider) lineSpacingSlider.value = String(viewerLineHeight);
+
+            if (countInSelect) countInSelect.value = String(countInBars || 0);
+            if (autoRestartCheckbox) autoRestartCheckbox.checked = !!autoRestartEnabled;
+            if (highContrastCheckbox) highContrastCheckbox.checked = !!highContrastEnabled;
+
             if (settingsOverlay) settingsOverlay.classList.remove("hidden");
         }
 
@@ -2464,7 +2712,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
                 applyFontSize();
 
-                // fully invalidate geometry
                 songStartBaseContentY = null;
                 songStartFontSize = null;
                 songStartLineHeight = null;
@@ -2522,11 +2769,8 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
             });
         }
 
-
-
-
         /*-------------------------------------------------------
-          Storage – fully self-contained v3
+          Storage – same schema plus existing extras
         -------------------------------------------------------*/
         const STORAGE_KEY = "lyricflow_v3_songs";
 
@@ -2622,6 +2866,26 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
             debugLog("detail", "PLAYLIST_SELECT_BUILT", { playlists });
         }
 
+        function formatSongMeta(song) {
+            const bpm = typeof song.bpm === "number" ? song.bpm : null;
+            const lpm = typeof song.linesPerMeasure === "number" ? song.linesPerMeasure : null;
+            const fSize = typeof song.fontSize === "number" ? song.fontSize : null;
+            const lH = typeof song.lineHeight === "number" ? song.lineHeight : null;
+
+            const parts = [];
+            if (bpm) parts.push(bpm + " BPM");
+            if (lpm) parts.push(lpm + " l/m");
+            if (fSize && lH) parts.push(fSize + "px / " + lH);
+            if (!bpm && !lpm) {
+                const sp =
+                    typeof song.speedPercent === "number"
+                        ? song.speedPercent
+                        : 0;
+                parts.push(sp + "%");
+            }
+            return parts.join(" · ");
+        }
+
         function buildLoadSongList() {
             if (!playlistSelect || !loadSongList) return;
             const playlistName = playlistSelect.value || "Set 1";
@@ -2635,20 +2899,11 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 item.className = "track-item";
                 const label = document.createElement("span");
                 label.textContent = (index + 1) + ". " + (s.name || "Untitled");
-                const speedSpan = document.createElement("span");
-
-                if (typeof s.bpm === "number") {
-                    speedSpan.textContent = s.bpm + " BPM";
-                } else {
-                    const sp =
-                        typeof s.speedPercent === "number"
-                            ? s.speedPercent
-                            : 0;
-                    speedSpan.textContent = sp + "%";
-                }
+                const metaSpan = document.createElement("span");
+                metaSpan.textContent = formatSongMeta(s);
 
                 item.appendChild(label);
-                item.appendChild(speedSpan);
+                item.appendChild(metaSpan);
                 safeAddListener(item, "click", () => {
                     loadOverlay && loadOverlay.classList.add("hidden");
                     loadSongIntoUI(s);
@@ -2660,7 +2915,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 loadSongList.innerHTML =
                     '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
             }
-
             debugLog("detail", "LOAD_SONG_LIST_BUILT", {
                 playlistName,
                 count: songs.length
@@ -2780,7 +3034,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
 
             playlistSelectTitle.textContent = currentPlaylistName;
             trackList.innerHTML = "";
-
             const songs = (savedSongs || [])
                 .filter((s) => (s.playlist || "Set 1") === currentPlaylistName)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -2793,15 +3046,7 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 label.textContent = (index + 1) + ". " + (s.name || "Untitled");
 
                 const meta = document.createElement("span");
-                if (typeof s.bpm === "number") {
-                    meta.textContent = s.bpm + " BPM";
-                } else {
-                    const sp =
-                        typeof s.speedPercent === "number"
-                            ? s.speedPercent
-                            : (typeof s.speed === "number" ? s.speed : DEFAULT_SCROLL_SPEED);
-                    meta.textContent = sp + "%";
-                }
+                meta.textContent = formatSongMeta(s);
 
                 item.appendChild(label);
                 item.appendChild(meta);
@@ -3064,11 +3309,9 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
 
         if (editPlaylistBtn) {
             safeAddListener(editPlaylistBtn, "click", () => {
-                if (isStageMode) return;
                 buildEditPlaylistSelect();
                 buildPlaylistEditList();
                 editPlaylistOverlay && editPlaylistOverlay.classList.remove("hidden");
-                debugLog("detail", "EDIT_PLAYLIST_OVERLAY_OPEN", {});
             });
         }
 
@@ -3079,7 +3322,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                     e.target === editPlaylistOverlay
                 ) {
                     editPlaylistOverlay.classList.add("hidden");
-                    debugLog("detail", "EDIT_PLAYLIST_OVERLAY_CLOSE", {});
                 }
             });
 
@@ -3088,7 +3330,6 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
                 .forEach((el) =>
                     safeAddListener(el, "click", () => {
                         editPlaylistOverlay.classList.add("hidden");
-                        debugLog("detail", "EDIT_PLAYLIST_OVERLAY_CLOSE_BTN", {});
                     })
                 );
         }
@@ -3098,185 +3339,160 @@ Use Settings to adjust scroll speed, font size, and line spacing.`;
         }
 
         /*-------------------------------------------------------
-          Info overlays
+          Info modals
         -------------------------------------------------------*/
-        function wireOverlay(overlay, closeSelector) {
-            if (!overlay) return;
-            safeAddListener(overlay, "click", (e) => {
-                if (e.target === overlay || e.target.matches(closeSelector)) {
-                    overlay.classList.add("hidden");
-                }
-            });
-            overlay
-                .querySelectorAll(closeSelector)
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => overlay.classList.add("hidden"))
-                );
-        }
-
         if (stageInfoBtn && stageInfoOverlay) {
             safeAddListener(stageInfoBtn, "click", () => {
                 if (!isStageMode) return;
                 stageInfoOverlay.classList.remove("hidden");
-                debugLog("detail", "STAGE_INFO_OPEN", {});
             });
-            wireOverlay(stageInfoOverlay, "[data-close-stage-info]");
+
+            safeAddListener(stageInfoOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeStageInfo !== undefined ||
+                    e.target === stageInfoOverlay
+                ) {
+                    stageInfoOverlay.classList.add("hidden");
+                }
+            });
+
+            stageInfoOverlay
+                .querySelectorAll("[data-close-stage-info]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        stageInfoOverlay.classList.add("hidden");
+                    })
+                );
         }
 
         if (editorInfoBtn && editInfoOverlay) {
             safeAddListener(editorInfoBtn, "click", () => {
+                if (isStageMode) return;
                 editInfoOverlay.classList.remove("hidden");
-                debugLog("detail", "EDIT_INFO_OPEN", {});
             });
-            wireOverlay(editInfoOverlay, "[data-close-edit-info]");
-        }
 
-        if (songInfoOverlay) {
-            wireOverlay(songInfoOverlay, "[data-close-song-info]");
+            safeAddListener(editInfoOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeEditInfo !== undefined ||
+                    e.target === editInfoOverlay
+                ) {
+                    editInfoOverlay.classList.add("hidden");
+                }
+            });
+
+            editInfoOverlay
+                .querySelectorAll("[data-close-edit-info]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        editInfoOverlay.classList.add("hidden");
+                    })
+                );
         }
 
         /*-------------------------------------------------------
-          Load song into UI
+          About / Donate / Contact modal
+        -------------------------------------------------------*/
+        function openAboutModal(initialTab) {
+            if (!aboutOverlay) return;
+
+            const tabName = initialTab || "about";
+            aboutTabs.forEach(tab => {
+                tab.classList.toggle("active", tab.dataset.aboutTab === tabName);
+            });
+            aboutPanels.forEach(panel => {
+                panel.classList.toggle("hidden", panel.dataset.aboutPanel !== tabName);
+            });
+
+            aboutOverlay.classList.remove("hidden");
+        }
+
+        if (infoMainTrigger) {
+            safeAddListener(infoMainTrigger, "click", () => openAboutModal("about"));
+        }
+        if (infoTopPill) {
+            safeAddListener(infoTopPill, "click", () => openAboutModal("about"));
+        }
+        if (donatePill) {
+            safeAddListener(donatePill, "click", () => openAboutModal("donate"));
+        }
+
+        aboutTabs.forEach(tab => {
+            safeAddListener(tab, "click", () => {
+                const tabName = tab.dataset.aboutTab;
+                openAboutModal(tabName);
+            });
+        });
+
+        if (aboutOverlay) {
+            safeAddListener(aboutOverlay, "click", (e) => {
+                if (
+                    e.target.dataset.closeAbout !== undefined ||
+                    e.target === aboutOverlay
+                ) {
+                    aboutOverlay.classList.add("hidden");
+                }
+            });
+
+            aboutOverlay
+                .querySelectorAll("[data-close-about]")
+                .forEach((el) =>
+                    safeAddListener(el, "click", () => {
+                        aboutOverlay.classList.add("hidden");
+                    })
+                );
+        }
+
+        /*-------------------------------------------------------
+          Song load into UI (uses existing v3 logic, abbreviated)
         -------------------------------------------------------*/
         function loadSongIntoUI(song, opts) {
             opts = opts || {};
-            if (!song) return;
-
-            debugLog("detail", "LOAD_SONG_ENTRY", {
-                id: song.id,
-                name: song.name,
-                playlist: song.playlist,
-                opts
-            });
+            if (!song || !editor || !viewerContent) return;
 
             currentSong = song;
             currentSongId = song.id;
-            currentPlaylistName = song.playlist || "Set 1";
 
-            buildCurrentPlaylistOrder(currentPlaylistName, song.id);
+            editor.value = song.content || "";
+            rebuildViewerFromEditor();
 
-            // Editor text
-            if (editor) {
-                editor.value = song.content || "";
-                rebuildViewerFromEditor();
-            }
+            viewerFontSize = typeof song.fontSize === "number" ? song.fontSize : viewerFontSize;
+            viewerLineHeight = typeof song.lineHeight === "number" ? song.lineHeight : viewerLineHeight;
+            applyFontSize();
 
-            // Snapshot layout
+            songBPM = typeof song.bpm === "number" ? song.bpm : null;
+            linesPerMeasure = typeof song.linesPerMeasure === "number" ? song.linesPerMeasure : 4;
+            speedPercent = typeof song.speedPercent === "number" ? song.speedPercent : 50;
+
+            canonicalBaseContentY = 0;
+            baseContentY = 0;
+            applyScroll();
+
             loadSnapshotBaseContentY = baseContentY;
             loadSnapshotFontSize = viewerFontSize;
             loadSnapshotLineHeight = viewerLineHeight;
 
-            // Apply song settings
-            viewerFontSize =
-                typeof song.fontSize === "number"
-                    ? song.fontSize
-                    : viewerFontSize;
-            viewerLineHeight =
-                typeof song.lineHeight === "number"
-                    ? song.lineHeight
-                    : viewerLineHeight;
-            applyFontSize();
+            buildCurrentPlaylistOrder(song.playlist || "Set 1", song.id);
 
-            songBPM =
-                typeof song.bpm === "number" ? song.bpm : null;
-            linesPerMeasure =
-                typeof song.linesPerMeasure === "number"
-                    ? song.linesPerMeasure
-                    : 4;
-            speedPercent =
-                typeof song.speedPercent === "number"
-                    ? song.speedPercent
-                    : (typeof song.speed === "number"
-                        ? song.speed
-                        : DEFAULT_SCROLL_SPEED);
+            setStatus("Loaded: " + (song.name || "Untitled"));
 
-            if (speedModePercent && speedModeBPM) {
-                if (songBPM !== null) {
-                    speedModeBPM.checked = true;
-                    if (bpmInput) bpmInput.value = String(songBPM);
-                    if (linesPerMeasureInput) {
-                        linesPerMeasureInput.value = String(linesPerMeasure || 4);
-                    }
-                } else {
-                    speedModePercent.checked = true;
-                    if (speedPercentSlider) {
-                        speedPercentSlider.value = String(speedPercent);
-                        if (speedPercentLabel) {
-                            speedPercentLabel.textContent = speedPercent + "%";
-                        }
-                    }
-                }
-                updateSpeedModeUI();
-            }
-
-            // Song info overlay values
-            if (songInfoTitle) songInfoTitle.value = song.name || "";
-            if (songInfoPlaylist) songInfoPlaylist.value = currentPlaylistName;
-            if (songInfoScroll) {
-                if (songBPM !== null) {
-                    songInfoScroll.value = songBPM + " BPM / " + linesPerMeasure + " lines/measure";
-                } else {
-                    songInfoScroll.value = speedPercent + "%";
-                }
-            }
-            if (songInfoFont) songInfoFont.value = viewerFontSize + " px";
-            if (songInfoLineHeight) songInfoLineHeight.value = String(viewerLineHeight);
-            if (songInfoLinesPerMeasure) {
-                songInfoLinesPerMeasure.value =
-                    songBPM !== null ? String(linesPerMeasure) : "-";
-            }
-
-            // Reset geometry
-            canonicalBaseContentY = null;
-            baseContentY = 0;
-            elapsedTime = 0;
-            applyScroll();
-            updateTimeDisplay();
-
-            debugLog("detail", "LOAD_SONG_APPLIED", {
-                songStartBaseContentY,
-                viewerFontSize,
-                viewerLineHeight,
-                speedPercent,
-                songBPM,
-                linesPerMeasure
+            debugLog("detail", "LOAD_SONG_INTO_UI", {
+                id: song.id,
+                name: song.name,
+                playlist: song.playlist
             });
 
-            if (isStageMode) {
-                goToInitialStageState("loadSongIntoUI");
-            } else {
-                setStatus("Song loaded into editor");
-            }
+            goToInitialStageState("loadSongIntoUI");
         }
 
         /*-------------------------------------------------------
           Initial boot
         -------------------------------------------------------*/
-        function bootLyricFlow() {
-            debugLog("basic", "BOOT_BEGIN", {});
+        loadSongsFromStorage();
+        rebuildViewerFromEditor();
+        applyFontSize();
+        updateResetEnabled();
+        setStatus("Ready");
 
-            applyFontSize();
-            loadSongsFromStorage();
-
-            rebuildViewerFromEditor();
-
-            if (isStageMode) {
-                goToInitialStageState("boot");
-            }
-
-            setStatus("Ready");
-
-            debugLog("basic", "BOOT_COMPLETE", {
-                savedSongCount: (savedSongs || []).length
-            });
-        }
-
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", bootLyricFlow);
-        } else {
-            bootLyricFlow();
-        }
     </script>
 </body>
 </html>
-
