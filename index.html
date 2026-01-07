@@ -1372,12 +1372,19 @@
                 debugError("LISTENER_ERROR", { type, error: e.message });
             }
         }
-
+        //const
         /*-------------------------------------------------------
           DOM refs
         -------------------------------------------------------*/
         const viewer = qs("viewer");
         const viewerContent = qs("viewerContent");
+        // Put this near the top of the script, after DOM refs
+        const DEFAULT_WELCOME_TEXT = `Welcome to LyricFlow – stage‑ready lyric scroller.
+Tap Edit to paste or type lyrics.
+Come back to Stage, set a scroll speed, press Start.
+Drag lines during the song to fine‑tune your pace.
+Use Settings to adjust scroll speed, font size, and line spacing.`;
+
 
         const modeToggle = qs("modeToggle");
         const viewerCard = qs("viewerCard");
@@ -1452,6 +1459,9 @@
         /*-------------------------------------------------------
           State
         -------------------------------------------------------*/
+        //let
+        let pendingSnapFromSettings = false;
+
         let currentOffsetY = 0;
         let currentSong = null;
 
@@ -1588,84 +1598,36 @@
         -------------------------------------------------------*/
         function pickStartLyricLine(lines) {
             const arr = Array.from(lines);
-            const canReuseIndex =
-                songStartLineIndex != null &&
-                songStartLineIndex >= 0 &&
-                songStartLineIndex < arr.length &&
-                baseContentY !== 0;
-
-            if (canReuseIndex) {
-                const saved = arr[songStartLineIndex];
-                if (saved && saved.textContent.trim()) {
-                    debugLog("detail", "PICK_START_REUSE", {
-                        index: songStartLineIndex,
-                        text: saved.textContent
-                    });
-                    return { line: saved, index: songStartLineIndex };
-                }
-            }
-
-            let firstNonBlank = -1;
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i].textContent.trim()) {
-                    firstNonBlank = i;
-                    break;
-                }
-            }
-            if (firstNonBlank === -1) {
+            if (!arr.length) {
                 debugLog("detail", "PICK_START_NONE", {});
                 return { line: null, index: null };
             }
 
-            let startIndex = firstNonBlank + 1;
-            if (startIndex >= arr.length || !arr[startIndex].textContent.trim()) {
-                startIndex = firstNonBlank;
-            }
+            // Always use the very first visual line
+            const target = arr[0];
 
-            debugLog("detail", "PICK_START_COMPUTED", {
-                index: startIndex,
-                text: arr[startIndex].textContent
+            debugLog("detail", "PICK_START_FIRST_LINE", {
+                index: 0,
+                text: target.textContent
             });
 
-            return { line: arr[startIndex], index: startIndex };
+            return { line: target, index: 0 };
         }
+
+
 
         function snapFirstLineIntoGlow(force) {
             force = !!force;
-            debugLog("detail", "SNAP_ENTRY", {
-                force,
-                isStageMode,
-                isDragging,
-                isScrolling,
-                baseContentY,
-                canonicalBaseContentY,
-                viewerFontSize,
-                viewerLineHeight
-            });
-
-            if (!isStageMode || isDragging || isScrolling || !viewer || !viewerContent) {
-                return;
-            }
+            if (!isStageMode || isDragging || isScrolling || !viewer || !viewerContent) return;
 
             const lines = safeQuerySelectorAll(".viewer-content-line");
             const glowBand = safeQuerySelector(".viewer-highlight");
-
-            if (!lines.length || !glowBand) {
-                debugError("SNAP_MISSING_ELEMENTS", {
-                    hasLines: !!lines.length,
-                    hasGlow: !!glowBand
-                });
-                return;
-            }
+            if (!lines.length || !glowBand) return;
 
             const picked = pickStartLyricLine(lines);
             const targetLine = picked.line;
             const targetIndex = picked.index;
-
-            if (!targetLine) {
-                debugError("SNAP_NO_TARGET_LINE", {});
-                return;
-            }
+            if (!targetLine) return;
 
             const viewerRect = viewer.getBoundingClientRect();
             const glowRect = glowBand.getBoundingClientRect();
@@ -1674,57 +1636,18 @@
             const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
             const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
 
-            const invalid =
-                !Number.isFinite(glowCenter) ||
-                !Number.isFinite(lineCenter) ||
-                glowRect.height === 0 ||
-                lineRect.height === 0 ||
-                viewerRect.height === 0;
+            if (!Number.isFinite(glowCenter) || !Number.isFinite(lineCenter)) return;
 
-            debugLog("detail", "SNAP_GEOMETRY", {
-                glowCenter,
-                lineCenter,
-                targetIndex,
-                lineText: targetLine.textContent,
-                invalid
-            });
+            // When forcing, always recompute from whatever baseContentY currently is.
+            const delta = glowCenter - lineCenter;
+            baseContentY = (Number.isFinite(baseContentY) ? baseContentY : 0) + delta;
+            applyScroll();
 
-            if (invalid) {
-                debugError("SNAP_INVALID_GEOMETRY", {
-                    glowRect,
-                    lineRect,
-                    viewerRect
-                });
-                return;
-            }
-
-            if (canonicalBaseContentY != null && !force) {
-                baseContentY = canonicalBaseContentY;
-                applyScroll();
-            } else {
-                const delta = glowCenter - lineCenter;
-                const newBase = baseContentY + delta;
-                baseContentY = newBase;
-                applyScroll();
-                canonicalBaseContentY = baseContentY;
-
-                songStartBaseContentY = baseContentY;
-                songStartFontSize = viewerFontSize;
-                songStartLineHeight = viewerLineHeight;
-                songStartLineIndex =
-                    typeof targetIndex === "number" ? targetIndex : 0;
-
-                debugLog("detail", "SNAP_SONG_START_CAPTURED", {
-                    songStartBaseContentY,
-                    songStartFontSize,
-                    songStartLineHeight,
-                    songStartLineIndex
-                });
-            }
-
-            if (initialSnapBaseContentY === null) {
-                initialSnapBaseContentY = baseContentY;
-            }
+            canonicalBaseContentY = baseContentY;
+            songStartBaseContentY = baseContentY;
+            songStartFontSize = viewerFontSize;
+            songStartLineHeight = viewerLineHeight;
+            songStartLineIndex = typeof targetIndex === "number" ? targetIndex : 0;
 
             elapsedTime = 0;
             updateResetEnabled();
@@ -1732,7 +1655,54 @@
             debugLog("detail", "SNAP_RESULT", {
                 baseContentY,
                 canonicalBaseContentY,
-                transform: viewerContent.style.transform
+                targetIndex
+            });
+        }
+
+        function snapFirstLineClean() {
+            if (!isStageMode || !viewer || !viewerContent) return;
+
+            const lines = safeQuerySelectorAll(".viewer-content-line");
+            const glowBand = safeQuerySelector(".viewer-highlight");
+            if (!lines.length || !glowBand) return;
+
+            const picked = pickStartLyricLine(lines);
+            const targetLine = picked.line;
+            const targetIndex = picked.index;
+            if (!targetLine) return;
+
+            // Start from a known baseline
+            baseContentY = 0;
+            applyScroll();
+
+            // Re-measure with the new font/line-height
+            const viewerRect = viewer.getBoundingClientRect();
+            const glowRect = glowBand.getBoundingClientRect();
+            const lineRect = targetLine.getBoundingClientRect();
+
+            const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
+            const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
+            if (!Number.isFinite(glowCenter) || !Number.isFinite(lineCenter)) return;
+
+            const delta = glowCenter - lineCenter;
+            baseContentY = delta;
+            applyScroll();
+
+            canonicalBaseContentY = baseContentY;
+            songStartBaseContentY = baseContentY;
+            songStartFontSize = viewerFontSize;
+            songStartLineHeight = viewerLineHeight;
+            songStartLineIndex = typeof targetIndex === "number" ? targetIndex : 0;
+
+            elapsedTime = 0;
+            updateResetEnabled();
+
+            debugLog("detail", "SNAP_CLEAN_RESULT", {
+                baseContentY,
+                canonicalBaseContentY,
+                targetIndex,
+                glowCenter,
+                lineCenter
             });
         }
 
@@ -2228,7 +2198,13 @@
         -------------------------------------------------------*/
         function rebuildViewerFromEditor() {
             if (!viewerContent || !editor) return;
-            const text = editor.value || "";
+
+            // If editor is empty, show welcome text
+            const rawText = editor.value;
+            const text = rawText.trim()
+                ? rawText
+                : DEFAULT_WELCOME_TEXT;
+
             viewerContent.innerHTML = "";
 
             const lines = text.split("\n");
@@ -2247,13 +2223,16 @@
             setStatus("Viewer mirrored from editor");
 
             debugLog("detail", "VIEWER_REBUILT", {
+                fromEditorEmpty: !rawText.trim(),
                 lineCount: lines.length
             });
 
+            // Always resnap in stage mode
             if (isStageMode) {
                 snapAfterLayout();
             }
         }
+
 
         if (editor) {
             safeAddListener(editor, "input", rebuildViewerFromEditor);
@@ -2267,6 +2246,7 @@
                 debugLog("detail", "EDITOR_CLEARED", {});
             });
         }
+
 
         /*-------------------------------------------------------
           Mode toggle
@@ -2479,87 +2459,71 @@
                 });
             });
         }
-
         if (fontSizeSlider) {
             safeAddListener(fontSizeSlider, "input", () => {
-                debugLog("detail", "FONT_CHANGE_BEFORE", {
-                    oldFontSize: viewerFontSize,
-                    newFontSizeRaw: fontSizeSlider.value,
-                    songStartBaseContentY,
-                    songStartFontSize,
-                    songStartLineHeight,
-                    songStartLineIndex,
-                    loadSnapshotBaseContentY,
-                    loadSnapshotFontSize,
-                    loadSnapshotLineHeight,
-                    isStageMode
-                });
-
                 viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
                 applyFontSize();
 
+                // fully invalidate geometry
                 songStartBaseContentY = null;
                 songStartFontSize = null;
                 songStartLineHeight = null;
-
+                songStartLineIndex = null;
                 loadSnapshotBaseContentY = null;
                 loadSnapshotFontSize = null;
                 loadSnapshotLineHeight = null;
+                canonicalBaseContentY = null;
 
-                debugLog("detail", "FONT_CHANGE_AFTER_INVALIDATE", {
-                    viewerFontSize,
-                    songStartLineIndex
-                });
+                baseContentY = 0;
+                applyScroll();
 
-                if (isStageMode) {
-                    baseContentY = 0;
-                    canonicalBaseContentY = 0;
-                    applyScroll();
-                    snapAfterLayout();
+                debugLog("detail", "FONT_CHANGE_INVALIDATE", { viewerFontSize });
+
+                if (isStageMode && !pendingSnapFromSettings) {
+                    pendingSnapFromSettings = true;
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            pendingSnapFromSettings = false;
+                            snapFirstLineClean();
+                        });
+                    });
                 }
             });
         }
 
         if (lineSpacingSlider) {
             safeAddListener(lineSpacingSlider, "input", () => {
-                debugLog("detail", "LINEHEIGHT_CHANGE_BEFORE", {
-                    oldLineHeight: viewerLineHeight,
-                    newLineHeightRaw: lineSpacingSlider.value,
-                    songStartBaseContentY,
-                    songStartFontSize,
-                    songStartLineHeight,
-                    songStartLineIndex,
-                    loadSnapshotBaseContentY,
-                    loadSnapshotFontSize,
-                    loadSnapshotLineHeight,
-                    isStageMode
-                });
-
-                viewerLineHeight =
-                    parseFloat(lineSpacingSlider.value) || 1.9;
+                viewerLineHeight = parseFloat(lineSpacingSlider.value) || 1.9;
                 applyFontSize();
 
                 songStartBaseContentY = null;
                 songStartFontSize = null;
                 songStartLineHeight = null;
-
+                songStartLineIndex = null;
                 loadSnapshotBaseContentY = null;
                 loadSnapshotFontSize = null;
                 loadSnapshotLineHeight = null;
+                canonicalBaseContentY = null;
 
-                debugLog("detail", "LINEHEIGHT_CHANGE_AFTER_INVALIDATE", {
-                    viewerLineHeight,
-                    songStartLineIndex
-                });
+                baseContentY = 0;
+                applyScroll();
 
-                if (isStageMode) {
-                    baseContentY = 0;
-                    canonicalBaseContentY = 0;
-                    applyScroll();
-                    snapAfterLayout();
+                debugLog("detail", "LINEHEIGHT_CHANGE_INVALIDATE", { viewerLineHeight });
+
+                if (isStageMode && !pendingSnapFromSettings) {
+                    pendingSnapFromSettings = true;
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            pendingSnapFromSettings = false;
+                            snapFirstLineClean();
+                        });
+                    });
                 }
             });
         }
+
+
+
 
         /*-------------------------------------------------------
           Storage – fully self-contained v3
