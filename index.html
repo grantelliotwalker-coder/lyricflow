@@ -1,1025 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>LyricFlow</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-
-    <style>
-        :root {
-            --bg: #070b10;
-            --card: #111827;
-            --accent: #22c55e;
-            --accent-soft: rgba(34, 197, 94, 0.12);
-            --accent-bright: #22c55e;
-            --text-main: #e5e7eb;
-            --text-soft: #9ca3af;
-            --text-muted: #6b7280;
-            --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
-            --danger: #f97373;
-            --danger-border: rgba(248, 113, 113, 0.6);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
-            color: var(--text-main);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-            overflow: hidden;
-        }
-
-        body {
-            display: flex;
-            align-items: stretch;
-            justify-content: center;
-            padding: 14px;
-        }
-
-        .app-shell {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-            max-width: 1080px;
-            max-height: 100%;
-            margin: 0 auto;
-            padding: 14px 14px 10px;
-            border-radius: 30px;
-            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
-            border: 1px solid rgba(148, 163, 184, 0.28);
-            box-shadow: var(--shadow-soft);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .app-shell::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
-            opacity: 0.85;
-            mix-blend-mode: soft-light;
-        }
-
-        .app-shell-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            height: 100%;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .branding {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-
-        .lf-logo {
-            width: 30px;
-            height: 30px;
-            border-radius: 12px;
-            background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.9), transparent 55%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), radial-gradient(circle at 30% 90%, rgba(59, 130, 246, 1), transparent 65%), linear-gradient(135deg, #020617, #020617);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(0, 0, 0, 0.9);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .lf-logo-glyph {
-            position: relative;
-            width: 20px;
-            height: 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(148, 163, 184, 0.7);
-            background: radial-gradient(circle at 0 0, #020617, #020617);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
-        }
-
-        .lf-logo-glyph::before {
-            content: "L";
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 0.06em;
-            color: #bbf7d0;
-            position: absolute;
-            left: 4px;
-            top: 4px;
-        }
-
-        .lf-logo-glyph::after {
-            content: "F";
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            color: #22c55e;
-            position: absolute;
-            right: 4px;
-            bottom: 4px;
-        }
-
-        .app-title-block {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .app-title {
-            font-size: 18px;
-            font-weight: 620;
-            letter-spacing: 0.02em;
-            color: #e5e7eb;
-            text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
-        }
-
-        .app-subtitle {
-            font-size: 11px;
-            color: var(--text-soft);
-        }
-
-        .mode-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(71, 85, 105, 0.9);
-            color: var(--text-soft);
-            font-size: 11px;
-            cursor: pointer;
-            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .mode-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-        }
-
-        .mode-toggle span strong {
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-size: 10px;
-            color: #e5e7eb;
-        }
-
-        .mode-toggle span small {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        /* Status + playlist row */
-        .top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .status-line {
-            font-size: 11px;
-            color: var(--text-soft);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0 2px;
-        }
-
-        .status-label {
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-pill-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 999px;
-            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-        }
-
-        .status-time {
-            opacity: 0.8;
-        }
-
-        .header-right {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .pill-label {
-            font-size: 10px;
-            color: var(--text-soft);
-            padding: 4px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .pill-label strong {
-            font-weight: 600;
-        }
-
-        .icon-btn {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 11px;
-            padding: 4px 7px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .icon-btn span {
-            font-size: 11px;
-        }
-
-        .pill-btn {
-            border-radius: 999px;
-            padding: 4px 10px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        /* Central viewer */
-        .main-stack {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .viewer-card {
-            flex: 1;
-            min-height: 0;
-            border-radius: 22px;
-            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.99)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-            border: 1px solid rgba(55, 65, 81, 0.95);
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.95);
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .viewer-viewport {
-            flex: 1;
-            min-height: 0;
-            position: relative;
-            overflow: hidden;
-            border-radius: 18px;
-            background: radial-gradient(circle at 0 -25%, rgba(34, 197, 94, 0.28), transparent 60%), radial-gradient(circle at 100% 120%, rgba(59, 130, 246, 0.28), transparent 60%), linear-gradient(#020617, #020617);
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.85);
-        }
-
-        .viewer-halo-top,
-        .viewer-halo-bottom,
-        .viewer-highlight,
-        .viewer-subtle-layer {
-            pointer-events: none;
-        }
-
-        .viewer-halo-top {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 90px;
-            background: radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.42), transparent 70%);
-            filter: blur(12px);
-            opacity: 0.8;
-        }
-
-        .viewer-halo-bottom {
-            position: absolute;
-            bottom: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 100px;
-            background: radial-gradient(circle at 50% 0, rgba(34, 197, 94, 0.26), transparent 70%), radial-gradient(circle at 50% 0, rgba(59, 130, 246, 0.18), transparent 70%);
-            filter: blur(14px);
-            opacity: 0.9;
-        }
-
-        .viewer-highlight {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 100%;
-            height: 50%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.26)), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.03), rgba(15, 23, 42, 0.35));
-            border-radius: 40px;
-            border: 1px solid rgba(148, 163, 184, 0.28);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 0 2px rgba(34, 197, 94, 0.16), 0 20px 40px rgba(0, 0, 0, 0.9), 0 -16px 35px rgba(15, 23, 42, 0.95), 0 0 50px rgba(34, 197, 94, 0.45);
-            mix-blend-mode: screen;
-            opacity: 0.75;
-        }
-
-        .viewer-subtle-layer {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 0 50%, rgba(15, 23, 42, 0.6), transparent 60%), radial-gradient(circle at 100% 50%, rgba(15, 23, 42, 0.75), transparent 60%);
-            opacity: 0.85;
-            mix-blend-mode: multiply;
-        }
-
-        .viewer-text-rail {
-            position: absolute;
-            inset: 18px 10px;
-            border-radius: 32px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 10px;
-            -webkit-mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
-            mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
-        }
-
-        .viewer {
-            position: relative;
-            width: 100%;
-            max-width: 820px;
-            margin: 0 auto;
-            color: rgba(226, 232, 240, 0.98);
-            font-size: 20px;
-            line-height: 1.9;
-            text-align: center;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            padding: 0 4px;
-            text-shadow: 0 0 20px rgba(15, 23, 42, 0.95), 0 0 40px rgba(0, 0, 0, 0.85);
-            cursor: grab;
-            touch-action: none;
-            transition: transform 0.08s ease-out;
-        }
-
-        .viewer:active {
-            cursor: grabbing;
-        }
-
-        .viewer-content {
-            position: relative;
-            display: inline-block;
-            will-change: transform;
-            transform: translateY(0px);
-        }
-
-        .viewer-overlay-top,
-        .viewer-overlay-bottom {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 70px;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .viewer-overlay-top {
-            top: -4px;
-            background: linear-gradient( to bottom, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
-        }
-
-        .viewer-overlay-bottom {
-            bottom: -4px;
-            background: linear-gradient( to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
-        }
-
-        .viewer-gradient-border-top,
-        .viewer-gradient-border-bottom {
-            position: absolute;
-            left: 20%;
-            right: 20%;
-            height: 2px;
-            border-radius: 999px;
-            background: linear-gradient( to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0) );
-            box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
-            opacity: 0.8;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .viewer-gradient-border-top {
-            top: 24%;
-        }
-
-        .viewer-gradient-border-bottom {
-            bottom: 24%;
-        }
-
-        .viewer-content-line {
-            display: block;
-            padding: 1px 0;
-        }
-
-        /* Count-in overlay */
-        .viewer-countin {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient( circle at 50% 50%, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5) );
-            color: rgba(226, 232, 240, 0.9);
-            font-size: 26px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            text-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
-            z-index: 5;
-        }
-
-        .viewer-countin.hidden {
-            display: none;
-        }
-
-        /* Bottom transport bar */
-        .bottom-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.97);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .transport-buttons {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .transport-buttons .btn {
-            flex: 1;
-            justify-content: center;
-        }
-
-        .btn {
-            border: none;
-            cursor: pointer;
-            border-radius: 999px;
-            font-size: 11px;
-            padding: 7px 18px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-soft);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
-        }
-
-        .btn span {
-            font-size: 13px;
-        }
-
-        .btn-primary {
-            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-            color: #020617;
-            border-color: rgba(74, 222, 128, 0.6);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(22, 163, 74, 0.7), 0 0 35px rgba(34, 197, 94, 0.8);
-        }
-
-        .btn-reset {
-            padding: 6px 10px;
-            font-size: 10px;
-            border-color: rgba(248, 113, 113, 0.6);
-            color: var(--danger);
-        }
-
-        .btn:hover {
-            transform: translateY(-0.5px) translateZ(0);
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
-            opacity: 0.97;
-        }
-
-        .btn:active {
-            transform: translateY(1px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
-        }
-
-        .btn-attention {
-            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.85), 0 0 18px rgba(34, 197, 94, 0.8), 0 0 45px rgba(34, 197, 94, 0.85);
-        }
-
-        .bottom-tools {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        #settingsBtnBottom.btn {
-            padding: 7px 16px;
-            font-size: 11px;
-        }
-
-        #settingsBtnBottom.btn span:first-child {
-            font-size: 15px;
-        }
-
-        /* Modals */
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 40;
-        }
-
-        .overlay.hidden {
-            display: none;
-        }
-
-        .modal {
-            max-width: 360px;
-            width: 90%;
-            border-radius: 18px;
-            background: rgba(15, 23, 42, 0.98);
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
-            padding: 12px 14px 10px;
-            color: var(--text-soft);
-            font-size: 13px;
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
-
-        .modal-title {
-            font-size: 13px;
-            font-weight: 550;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #e5e7eb;
-        }
-
-        .modal-close {
-            border: none;
-            background: transparent;
-            color: var(--text-soft);
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .modal-body p {
-            margin: 6px 0;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 8px;
-        }
-
-        .modal-footer button {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 1);
-            color: var(--text-soft);
-            font-size: 11px;
-            padding: 4px 10px;
-            cursor: pointer;
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-top: 4px;
-        }
-
-        .form-field label {
-            font-size: 11px;
-            color: var(--text-soft);
-        }
-
-        .form-field input,
-        .form-field select {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 1);
-            color: var(--text-main);
-            padding: 6px 10px;
-            font-size: 13px;
-            outline: none;
-        }
-
-        .viewer::-webkit-scrollbar,
-        #editor::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .viewer::-webkit-scrollbar-thumb,
-        #editor::-webkit-scrollbar-thumb {
-            background: rgba(75, 85, 99, 0.9);
-            border-radius: 999px;
-        }
-
-        .viewer::-webkit-scrollbar-track,
-        #editor::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .app-shell {
-                padding: 12px 10px 8px;
-                border-radius: 26px;
-            }
-
-            .viewer {
-                font-size: 18px;
-            }
-
-            .bottom-bar {
-                padding: 6px 8px;
-            }
-
-            .btn {
-                padding: 7px 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 8px 6px;
-            }
-
-            .app-shell {
-                border-radius: 22px;
-            }
-
-            .viewer {
-                font-size: 17px;
-            }
-
-            .branding {
-                max-width: 62%;
-            }
-
-            .btn {
-                padding: 6px 12px;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* High-contrast stage */
-        body.high-contrast-stage .viewer-card {
-            background: #020617;
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        body.high-contrast-stage .viewer-viewport {
-            background: #020617;
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        body.high-contrast-stage .viewer {
-            text-shadow: 0 0 28px rgba(0, 0, 0, 1), 0 0 50px rgba(0, 0, 0, 1);
-        }
-
-        body.high-contrast-stage .viewer-halo-top,
-        body.high-contrast-stage .viewer-halo-bottom,
-        body.high-contrast-stage .viewer-subtle-layer {
-            opacity: 0.4;
-        }
-
-        body.high-contrast-stage .viewer-highlight {
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1), 0 0 0 3px rgba(34, 197, 94, 0.7), 0 0 55px rgba(34, 197, 94, 0.9);
-        }
-
-        /* Footer */
-        .app-footer {
-            margin-top: 4px;
-            font-size: 10px;
-            color: var(--text-muted);
-            text-align: center;
-            opacity: 0.85;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LyricFlow – Stage</title>
+
+<style>
+body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    background: #111;
+    border-bottom: 1px solid #222;
+}
+
+.viewer-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.viewer-content {
+    position: absolute;
+    width: 100%;
+    padding: 40vh 60px;
+    box-sizing: border-box;
+    will-change: transform;
+}
+
+.viewer-content-line {
+    display: block;
+    font-size: 40px;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    background: #222;
+    border: 1px solid #333;
+    color: white;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #333;
+}
+
+.hidden {
+    display: none;
+}
+
+.playlist-pill {
+    background: #1e1e1e;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+</style>
 </head>
-
 <body>
-    <div class="app-shell">
-        <div class="app-shell-inner">
-            <header class="header">
-                <div class="branding" id="infoMainTrigger">
-                    <div class="lf-logo">
-                        <div class="lf-logo-glyph"></div>
-                    </div>
-                    <div class="app-title-block">
-                        <div class="app-title">LyricFlow</div>
-                        <div class="app-subtitle">Stage‑ready lyric scroller</div>
-                    </div>
-                </div>
-                <!-- Mode toggle now goes to playlist.html -->
-                <div class="mode-toggle" id="modeToggle" onclick="window.location.href='playlist.html'">
-                    <div class="mode-dot"></div>
-                    <span>
-                        <strong>Stage mode</strong>
-                        <small>· tap for playlist</small>
-                    </span>
-                </div>
-            </header>
 
-            <div class="top-row">
-                <div class="status-line">
-                    <div class="status-label">
-                        <span class="status-pill-dot"></span>
-                        <span id="statusText">Ready</span>
-                        <span class="status-time">· <span id="timeDisplay">0:00</span></span>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <button id="prevSongBtn" class="icon-btn hidden" title="Previous song">
-                        <span>⏮</span>
-                    </button>
-                    <button id="nextSongBtn" class="icon-btn hidden" title="Next song">
-                        <span>⏭</span>
-                    </button>
-                    <span id="playlistPill" class="pill-label hidden">
-                        <span id="playlistPillText">Set 1</span>
-                        <span id="playlistPillIndex">1/1</span>
-                    </span>
-                    <button class="pill-btn" id="infoTopPill">Info</button>
-                    <button class="pill-btn stage-only" id="stageInfoBtn">Stage tips</button>
-                    <button class="pill-btn" id="donatePill">Donate</button>
-                </div>
-            </div>
+<div class="app-shell">
 
-            <div class="main-stack">
-                <!-- Viewer ALWAYS visible now -->
-                <div class="viewer-card" id="viewerCard">
-                    <div class="viewer-viewport">
-                        <div class="viewer-halo-top"></div>
-                        <div class="viewer-halo-bottom"></div>
-                        <div class="viewer-subtle-layer"></div>
-                        <div class="viewer-highlight"></div>
-
-                        <div class="viewer-text-rail">
-                            <div class="viewer-overlay-top"></div>
-                            <div class="viewer-overlay-bottom"></div>
-                            <div class="viewer-gradient-border-top"></div>
-                            <div class="viewer-gradient-border-bottom"></div>
-
-                            <div class="viewer" id="viewer">
-                                <div class="viewer-content" id="viewerContent">
-                                    <span class="viewer-content-line">
-                                        Welcome to LyricFlow – stage‑ready lyric scroller.
-                                        Tap the mode toggle (top right) for Playlist Editor.
-                                        Edit songs there, then return here to perform.
-                                        Set scroll speed, press Start, drag to adjust.
-                                        Use Settings for font size and spacing.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="viewer-countin hidden" id="viewerCountIn"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bottom-bar" id="bottomBar">
-                <div class="transport-buttons">
-                    <button id="start" class="btn btn-primary">
-                        <span>▶ Start</span>
-                    </button>
-                    <button id="pause" class="btn">
-                        <span>⏸ Pause</span>
-                    </button>
-                    <button id="resetBtn" class="btn btn-reset">
-                        <span>⏹ Reset</span>
-                    </button>
-                    <button id="settingsBtnBottom" class="btn">
-                        <span>⚙ Settings</span>
-                    </button>
-                </div>
-            </div>
-
-            <footer class="app-footer">
-                © 2026 LyricFlow. All rights reserved.
-            </footer>
-        </div>
+<header class="app-header">
+    <div class="playlist-pill">
+        <span id="playlistPillText"></span>
+        <span id="playlistPillIndex"></span>
     </div>
 
-    <!-- Stage info modal -->
-    <div class="overlay hidden" id="stageInfoOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Stage mode</div>
-                <button class="modal-close" data-close-stage-info>✕</button>
-            </div>
-            <div class="modal-body">
-                <p>• Stage shows only the live lyric window and transport controls.</p>
-                <p>• Edit songs in Playlist Editor (tap mode toggle), then return here.</p>
-                <p>• Set scroll speed or BPM, press Start, read lines inside the glow.</p>
-                <p>• Drag lyrics up/down during song to fine‑tune position.</p>
-                <p>Space = Start/Pause, R = Reset (desktop).</p>
-            </div>
-            <div class="modal-footer">
-                <button data-close-stage-info>Got it</button>
-            </div>
-        </div>
+    <div class="controls">
+        <button id="prevSongBtn">⏮</button>
+        <button id="start">▶</button>
+        <button id="pause" class="hidden">⏸</button>
+        <button id="resetBtn">⟳</button>
+        <button id="nextSongBtn">⏭</button>
     </div>
+</header>
 
-    <!-- Settings modal (stub - add your settings JS here) -->
-    <div class="overlay hidden" id="settingsOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Settings</div>
-                <button class="modal-close" id="closeSettings">✕</button>
-            </div>
-            <div class="modal-body">
-                <p>Stage performance settings go here.</p>
-            </div>
-        </div>
-    </div>
+<div class="viewer-container">
+    <div id="viewerContent" class="viewer-content"></div>
+</div>
 
-    <script>
-        // Clean STAGE-ONLY JavaScript
-        // All playlist/editor code removed
-        
-        const qs = id => document.getElementById(id);
-        
-        // Stage elements only
-        const viewer = qs('viewer');
-        const viewerContent = qs('viewerContent');
-        const statusText = qs('statusText');
-        const timeDisplay = qs('timeDisplay');
-        const viewerCountIn = qs('viewerCountIn');
-        const startBtn = qs('start');
-        const pauseBtn = qs('pause');
-        const resetBtn = qs('resetBtn');
-        const modeToggle = qs('modeToggle');
-        const stageInfoOverlay = qs('stageInfoOverlay');
-        const infoMainTrigger = qs('infoMainTrigger');
-        const infoTopPill = qs('infoTopPill');
-        const stageInfoBtn = qs('stageInfoBtn');
-        const donatePill = qs('donatePill');
+</div>
 
-        let isRunning = false;
-        let scrollSpeed = 0.5;
-        let startTime = 0;
-        let animationId = null;
+<script>
+const STORAGE_KEY = 'lyricflow_songs';
+const CURRENT_KEY = 'lyricflow_currentSongId';
 
-        // Welcome text (static for stage)
-        viewerContent.innerHTML = `
-            <span class="viewer-content-line">
-                Welcome to LyricFlow – stage‑ready lyric scroller.
-                Tap the mode toggle (top right) for Playlist Editor.
-                Edit songs there, then return here to perform.
-                Set scroll speed, press Start, drag to adjust.
-                Use Settings for font size and spacing.
-            </span>
-        `;
+const qs = id => document.getElementById(id);
 
-        // Simple scroll animation (paste your lyrics here)
-        function startScroll() {
-            if (isRunning) return;
-            isRunning = true;
-            startBtn.classList.add('hidden');
-            pauseBtn.classList.remove('hidden');
-            statusText.textContent = 'Scrolling';
-            
-            const content = viewerContent;
-            let scrollPos = 0;
-            
-            function animate() {
-                if (!isRunning) return;
-                scrollPos += scrollSpeed;
-                content.style.transform = `translateY(-${scrollPos}px)`;
-                animationId = requestAnimationFrame(animate);
-            }
-            animate();
-        }
+const viewerContent = qs('viewerContent');
+const startBtn = qs('start');
+const pauseBtn = qs('pause');
+const resetBtn = qs('resetBtn');
+const prevSongBtn = qs('prevSongBtn');
+const nextSongBtn = qs('nextSongBtn');
+const playlistPillText = qs('playlistPillText');
+const playlistPillIndex = qs('playlistPillIndex');
 
-        function pauseScroll() {
-            isRunning = false;
-            if (animationId) cancelAnimationFrame(animationId);
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-            statusText.textContent = 'Paused';
-        }
+let allSongs = [];
+let playlistSongs = [];
+let currentIndex = 0;
 
-        function resetScroll() {
-            isRunning = false;
-            if (animationId) cancelAnimationFrame(animationId);
-            viewerContent.style.transform = 'translateY(0px)';
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-            statusText.textContent = 'Ready';
-        }
+let isRunning = false;
+let animationId = null;
+let scrollPos = 0;
+let scrollSpeed = 0.5;
 
-        // Event listeners (STAGE ONLY)
-        startBtn.onclick = startScroll;
-        pauseBtn.onclick = pauseScroll;
-        resetBtn.onclick = resetScroll;
-        modeToggle.onclick = () => window.location.href = 'playlist.html';
+let isDragging = false;
+let dragStartY = 0;
+let dragStartScroll = 0;
 
-        // Stage info modal
-        [stageInfoBtn, infoTopPill, infoMainTrigger].forEach(btn => {
-            if (btn) btn.onclick = () => stageInfoOverlay.classList.remove('hidden');
-        });
+/* LOAD SONGS */
 
-        stageInfoOverlay.onclick = e => {
-            if (e.target.dataset.closeStageInfo || e.target === stageInfoOverlay) {
-                stageInfoOverlay.classList.add('hidden');
-            }
-        };
+function loadSongs() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return;
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', e => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                isRunning ? pauseScroll() : startScroll();
-            }
-            if (e.code === 'KeyR') {
-                resetScroll();
-            }
-        });
+    allSongs = JSON.parse(stored);
+    if (!Array.isArray(allSongs) || !allSongs.length) return;
 
-        // Clock
-        function updateClock() {
-            const now = new Date();
-            timeDisplay.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+    const currentId = localStorage.getItem(CURRENT_KEY);
+    const currentSong = allSongs.find(s => s.id === currentId);
 
-        statusText.textContent = 'Stage Ready';
-    </script>
+    if (!currentSong) return;
+
+    playlistSongs = allSongs.filter(s => s.playlist === currentSong.playlist);
+
+    currentIndex = playlistSongs.findIndex(s => s.id === currentId);
+    if (currentIndex === -1) currentIndex = 0;
+
+    renderSong();
+}
+
+function renderSong() {
+    const song = playlistSongs[currentIndex];
+    if (!song) return;
+
+    viewerContent.innerHTML = song.content
+        .split('\n')
+        .map(line => `<span class="viewer-content-line">${line || '&nbsp;'}</span>`)
+        .join('');
+
+    playlistPillText.textContent = song.playlist;
+    playlistPillIndex.textContent = ` ${currentIndex + 1}/${playlistSongs.length}`;
+
+    scrollSpeed = song.scrollSpeed || 0.5;
+
+    resetScroll(false);
+}
+
+/* SCROLL ENGINE */
+
+function animate() {
+    if (!isRunning) return;
+    scrollPos += scrollSpeed;
+    viewerContent.style.transform = `translateY(-${scrollPos}px)`;
+    animationId = requestAnimationFrame(animate);
+}
+
+function startScroll() {
+    if (isRunning) return;
+    isRunning = true;
+    startBtn.classList.add('hidden');
+    pauseBtn.classList.remove('hidden');
+    animate();
+}
+
+function pauseScroll() {
+    isRunning = false;
+    cancelAnimationFrame(animationId);
+    startBtn.classList.remove('hidden');
+    pauseBtn.classList.add('hidden');
+}
+
+function resetScroll(updateButtons = true) {
+    isRunning = false;
+    cancelAnimationFrame(animationId);
+    scrollPos = 0;
+    viewerContent.style.transform = 'translateY(0px)';
+    if (updateButtons) {
+        startBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+    }
+}
+
+/* NAVIGATION */
+
+function nextSong() {
+    if (!playlistSongs.length) return;
+    currentIndex = (currentIndex + 1) % playlistSongs.length;
+    localStorage.setItem(CURRENT_KEY, playlistSongs[currentIndex].id);
+    renderSong();
+}
+
+function prevSong() {
+    if (!playlistSongs.length) return;
+    currentIndex = (currentIndex - 1 + playlistSongs.length) % playlistSongs.length;
+    localStorage.setItem(CURRENT_KEY, playlistSongs[currentIndex].id);
+    renderSong();
+}
+
+/* DRAG SCROLL */
+
+viewerContent.addEventListener('mousedown', e => {
+    isDragging = true;
+    dragStartY = e.clientY;
+    dragStartScroll = scrollPos;
+    pauseScroll();
+});
+
+document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const delta = e.clientY - dragStartY;
+    scrollPos = dragStartScroll - delta;
+    viewerContent.style.transform = `translateY(-${scrollPos}px)`;
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+viewerContent.addEventListener('touchstart', e => {
+    isDragging = true;
+    dragStartY = e.touches[0].clientY;
+    dragStartScroll = scrollPos;
+    pauseScroll();
+});
+
+document.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const delta = e.touches[0].clientY - dragStartY;
+    scrollPos = dragStartScroll - delta;
+    viewerContent.style.transform = `translateY(-${scrollPos}px)`;
+});
+
+document.addEventListener('touchend', () => {
+    isDragging = false;
+});
+
+/* BUTTON EVENTS */
+
+startBtn.onclick = startScroll;
+pauseBtn.onclick = pauseScroll;
+resetBtn.onclick = () => resetScroll();
+nextSongBtn.onclick = nextSong;
+prevSongBtn.onclick = prevSong;
+
+/* KEYBOARD */
+
+document.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        isRunning ? pauseScroll() : startScroll();
+    }
+    if (e.code === 'ArrowRight') nextSong();
+    if (e.code === 'ArrowLeft') prevSong();
+    if (e.code === 'KeyR') resetScroll();
+});
+
+/* INIT */
+
+loadSongs();
+
+if (!playlistSongs.length) {
+    viewerContent.innerHTML = `
+        <span class="viewer-content-line">
+            No playlist selected.
+            Open playlist page and choose a song.
+        </span>
+    `;
+}
+</script>
+
 </body>
 </html>
