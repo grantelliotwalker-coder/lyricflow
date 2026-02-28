@@ -556,22 +556,35 @@
 </head>
 
 <body>
-    <!-- Back to Stage button -->
-    <button class="back-btn" onclick="window.location.href='index.html'">← Back to Stage</button>
+    
 
     <div class="app-shell">
         <div class="app-shell-inner">
             <header class="header">
-                <div class="branding">
-                    <div class="lf-logo">
-                        <div class="lf-logo-glyph"></div>
-                    </div>
-                    <div class="app-title-block">
-                        <div class="app-title">LyricFlow</div>
-                        <div class="app-subtitle">Playlist Editor</div>
-                    </div>
-                </div>
-            </header>
+    <div class="branding">
+        <div class="lf-logo">
+            <div class="lf-logo-glyph"></div>
+        </div>
+        <div class="app-title-block">
+            <div class="app-title">LyricFlow</div>
+            <div class="app-subtitle">Playlist Editor</div>
+        </div>
+    </div>
+    
+    <!-- Back button moved to right side, next to status -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="status-line">
+            <div class="status-label">
+                <span class="status-pill-dot"></span>
+                <span id="statusText">Playlist Editor</span>
+            </div>
+        </div>
+        <button class="back-btn" onclick="window.location.href='index.html'" style="padding: 6px 12px; font-size: 11px; min-width: 110px;">
+            ← Back to Stage
+        </button>
+    </div>
+</header>
+
 
             <div class="top-row">
                 <div class="status-line">
