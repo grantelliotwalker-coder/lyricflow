@@ -161,6 +161,41 @@
             color: var(--text-soft);
         }
 
+        /* Mode toggle for playlist page */
+        .mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            color: var(--text-soft);
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .mode-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .mode-toggle span strong {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 10px;
+            color: #e5e7eb;
+        }
+
+        .mode-toggle span small {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
         /* Status row */
         .top-row {
             display: flex;
@@ -194,16 +229,6 @@
             border-radius: 999px;
             background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
             box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-        }
-
-        .status-time {
-            opacity: 0.8;
-        }
-
-        .header-right {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
         /* Editor */
@@ -347,8 +372,9 @@
         }
 
         .modal {
-            max-width: 360px;
+            max-width: 420px;
             width: 90%;
+            max-height: 80vh;
             border-radius: 18px;
             background: rgba(15, 23, 42, 0.98);
             border: 1px solid rgba(75, 85, 99, 0.95);
@@ -356,6 +382,7 @@
             padding: 12px 14px 10px;
             color: var(--text-soft);
             font-size: 13px;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -390,6 +417,7 @@
             display: flex;
             justify-content: flex-end;
             margin-top: 8px;
+            gap: 6px;
         }
 
         .modal-footer button {
@@ -429,11 +457,36 @@
             background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
             border-color: rgba(74, 222, 128, 0.7);
             color: #020617;
-            margin-left: 6px;
         }
 
-        .playlist-edit-list {
-            max-height: 220px;
+        /* Pagination for playlists */
+        .playlist-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .playlist-page-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid rgba(75, 85, 99, 0.8);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .playlist-page-btn.active,
+        .playlist-page-btn:hover {
+            background: var(--accent-bright);
+            color: #020617;
+            border-color: var(--accent);
+        }
+
+        .playlist-edit-list,
+        .track-list {
+            max-height: 300px;
             overflow-y: auto;
             margin-top: 6px;
             padding-right: 4px;
@@ -444,7 +497,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 6px;
-            padding: 4px 0;
+            padding: 6px 0;
             font-size: 12px;
             border-bottom: 1px solid rgba(31, 41, 55, 0.9);
         }
@@ -461,45 +514,46 @@
         .playlist-edit-controls {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
         }
 
         .playlist-edit-controls button {
-            border-radius: 999px;
+            border-radius: 4px;
             border: 1px solid rgba(75, 85, 99, 0.95);
             background: rgba(15, 23, 42, 1);
             color: var(--text-soft);
             font-size: 10px;
-            padding: 2px 6px;
+            padding: 2px 5px;
             cursor: pointer;
-        }
-
-        .track-list {
-            max-height: 260px;
-            overflow-y: auto;
-            margin-top: 6px;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .track-item {
-            padding: 6px 8px;
+            padding: 8px 10px;
             border-radius: 10px;
             border: 1px solid rgba(55, 65, 81, 0.9);
             background: rgba(15, 23, 42, 0.98);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 12px;
             cursor: pointer;
-            margin-bottom: 4px;
-        }
-
-        .track-item span:first-child {
-            opacity: 0.8;
+            margin-bottom: 6px;
+            transition: all 0.2s;
         }
 
         .track-item:hover {
-            background: rgba(30, 64, 175, 0.35);
+            background: rgba(30, 64, 175, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+
+        .track-item span:first-child {
+            opacity: 0.9;
         }
 
         #editor::-webkit-scrollbar {
@@ -515,26 +569,13 @@
             background: transparent;
         }
 
-        /* Back button */
-        .back-btn {
-            position: absolute;
-            top: 24px;
-            left: 24px;
-            z-index: 1000;
-            padding: 8px 16px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.98);
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            color: var(--text-soft);
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.9);
-        }
-
-        .back-btn:hover {
-            background: rgba(34, 197, 94, 0.15);
-            border-color: var(--accent);
-            color: var(--accent-bright);
+        /* Footer */
+        .app-footer {
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            opacity: 0.85;
         }
 
         @media (max-width: 768px) {
@@ -545,46 +586,36 @@
                 padding: 12px 10px 8px;
                 border-radius: 26px;
             }
-            .back-btn {
-                top: 20px;
-                left: 20px;
-                padding: 6px 12px;
-                font-size: 11px;
+            .playlist-edit-list,
+            .track-list {
+                max-height: 250px;
             }
         }
     </style>
 </head>
 
 <body>
-    
-
     <div class="app-shell">
         <div class="app-shell-inner">
             <header class="header">
-    <div class="branding">
-        <div class="lf-logo">
-            <div class="lf-logo-glyph"></div>
-        </div>
-        <div class="app-title-block">
-            <div class="app-title">LyricFlow</div>
-            <div class="app-subtitle">Playlist Editor</div>
-        </div>
-    </div>
-    
-    <!-- Back button moved to right side, next to status -->
-    <div style="display: flex; align-items: center; gap: 8px;">
-        <div class="status-line">
-            <div class="status-label">
-                <span class="status-pill-dot"></span>
-                <span id="statusText">Playlist Editor</span>
-            </div>
-        </div>
-        <button class="back-btn" onclick="window.location.href='index.html'" style="padding: 6px 12px; font-size: 11px; min-width: 110px;">
-            ← Back to Stage
-        </button>
-    </div>
-</header>
-
+                <div class="branding">
+                    <div class="lf-logo">
+                        <div class="lf-logo-glyph"></div>
+                    </div>
+                    <div class="app-title-block">
+                        <div class="app-title">LyricFlow</div>
+                        <div class="app-subtitle">Playlist Editor</div>
+                    </div>
+                </div>
+                <!-- Mode toggle - Back to Stage -->
+                <div class="mode-toggle" id="modeToggle" onclick="window.location.href='index.html'">
+                    <div class="mode-dot"></div>
+                    <span>
+                        <strong>Playlist mode</strong>
+                        <small>· tap for stage</small>
+                    </span>
+                </div>
+            </header>
 
             <div class="top-row">
                 <div class="status-line">
@@ -602,9 +633,8 @@
                             <div class="editor-title">Lyrics editor</div>
                             <div class="editor-buttons">
                                 <button class="tiny-btn" id="editorInfoBtn">i</button>
-                                <button class="tiny-btn primary" id="saveSongBtn">Save</button>
+                                <button class="tiny-btn primary" id="saveSongBtn">Save As</button>
                                 <button class="tiny-btn" id="loadSongBtn">Load</button>
-                                <button class="tiny-btn primary" id="editPlaylistBtn">Edit playlist</button>
                                 <button class="tiny-btn tiny-btn-danger" id="clearEditorBtn">Clear</button>
                             </div>
                         </div>
@@ -614,10 +644,14 @@
                             <span id="currentSongIndex">-</span>
                         </div>
                         <textarea id="editor"
-                                  placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;All playlist functionality is available: Save/Load songs, Edit playlists, reorder tracks, delete songs."></textarea>
+                                  placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;Save As → creates new song (never overwrites).&#10;Load → sends lyrics to stage window."></textarea>
                     </div>
                 </div>
             </div>
+
+            <footer class="app-footer">
+                © 2026 LyricFlow. All rights reserved.
+            </footer>
         </div>
     </div>
 
@@ -629,11 +663,11 @@
                 <button class="modal-close" data-close-edit-info>✕</button>
             </div>
             <div class="modal-body">
-                <p>• Full playlist editing mode - no stage viewer</p>
-                <p>• Save/Load songs with title & playlist assignment</p>
-                <p>• Edit playlists: reorder tracks with ↑↓, delete with ✕</p>
-                <p>• All saved songs persist across sessions</p>
-                <p>• Click <em>Back to Stage</em> when ready to perform</p>
+                <p>• <strong>Save As</strong> always creates new song (never overwrites)</p>
+                <p>• <strong>Load</strong> sends lyrics to stage window automatically</p>
+                <p>• Unlimited songs per playlist with pagination</p>
+                <p>• Reorder with ↑↓, delete with ✕ in Edit Playlist</p>
+                <p>• Tap "Playlist mode" (top right) to return to stage</p>
             </div>
             <div class="modal-footer">
                 <button data-close-edit-info>Got it</button>
@@ -641,11 +675,11 @@
         </div>
     </div>
 
-    <!-- Save song -->
+    <!-- Save song (Save As - always new) -->
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">Save song</div>
+                <div class="modal-title">Save As New Song</div>
                 <button class="modal-close" data-close-save>✕</button>
             </div>
             <div class="modal-body">
@@ -657,10 +691,13 @@
                     <label for="playlistInput">Playlist</label>
                     <input id="playlistInput" type="text" value="Set 1" />
                 </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">
+                    This will create a <strong>new song</strong> (never overwrites)
+                </p>
             </div>
             <div class="modal-footer">
                 <button data-close-save>Cancel</button>
-                <button class="btn-primary-small" id="saveConfirmBtn">Save</button>
+                <button class="btn-primary-small" id="saveConfirmBtn">Save New</button>
             </div>
         </div>
     </div>
@@ -678,6 +715,7 @@
                     <select id="playlistSelect"></select>
                 </div>
                 <div class="track-list" id="loadSongList"></div>
+                <div class="playlist-pagination" id="loadPagination"></div>
             </div>
             <div class="modal-footer">
                 <button data-close-load>Cancel</button>
@@ -698,6 +736,7 @@
                     <select id="editPlaylistSelect"></select>
                 </div>
                 <div class="playlist-edit-list" id="playlistEditList"></div>
+                <div class="playlist-pagination" id="editPagination"></div>
             </div>
             <div class="modal-footer">
                 <button data-close-edit-playlist>Close</button>
@@ -706,7 +745,6 @@
     </div>
 
     <script>
-        // Simplified playlist-only JavaScript (extracted and adapted from original)
         const qs = id => document.getElementById(id);
         
         // Elements
@@ -716,7 +754,6 @@
         const editInfoOverlay = qs('editInfoOverlay');
         const saveSongBtn = qs('saveSongBtn');
         const loadSongBtn = qs('loadSongBtn');
-        const editPlaylistBtn = qs('editPlaylistBtn');
         const clearEditorBtn = qs('clearEditorBtn');
         const saveOverlay = qs('saveOverlay');
         const songTitleInput = qs('songTitleInput');
@@ -725,13 +762,18 @@
         const loadOverlay = qs('loadOverlay');
         const playlistSelect = qs('playlistSelect');
         const loadSongList = qs('loadSongList');
+        const loadPagination = qs('loadPagination');
         const editPlaylistOverlay = qs('editPlaylistOverlay');
         const editPlaylistSelect = qs('editPlaylistSelect');
         const playlistEditList = qs('playlistEditList');
+        const editPagination = qs('editPagination');
         const playlistEditDetails = qs('playlistEditDetails');
 
         let savedSongs = [];
         let currentSong = null;
+        const SONGS_PER_PAGE = 10;
+        let currentLoadPage = 0;
+        let currentEditPage = 0;
 
         // Storage
         const STORAGE_KEY = 'lyricflow_v3_songs';
@@ -774,59 +816,102 @@
             }
         }
 
+        // Pagination helpers
+        function getPagesForPlaylist(playlistName, listType = 'load') {
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            return Math.ceil(songs.length / SONGS_PER_PAGE);
+        }
+
+        function buildPagination(pageContainer, currentPage, totalPages, callback) {
+            if (totalPages <= 1) {
+                pageContainer.style.display = 'none';
+                return;
+            }
+            pageContainer.style.display = 'flex';
+            pageContainer.innerHTML = `
+                <button class="playlist-page-btn ${currentPage === 0 ? 'active' : ''}" onclick="${callback}(0)">1</button>
+                ${totalPages > 2 ? `
+                    ${currentPage > 1 ? `<span>...</span>` : ''}
+                    <button class="playlist-page-btn ${currentPage === 1 ? 'active' : ''}" onclick="${callback}(1)">${2}</button>
+                    ${currentPage === totalPages - 2 ? `<button class="playlist-page-btn ${currentPage === totalPages - 2 ? 'active' : ''}" onclick="${callback}(totalPages-2)">${totalPages-1}</button>` : ''}
+                    ${currentPage < totalPages - 2 ? `<span>...</span>` : ''}
+                ` : ''}
+                <button class="playlist-page-btn ${currentPage === totalPages - 1 ? 'active' : ''}" onclick="${callback}(totalPages-1)">${totalPages}</button>
+            `;
+        }
+
         // Playlist functions
         function buildPlaylistSelect() {
-            if (!playlistSelect) return;
             const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
-            playlistSelect.innerHTML = playlists.length 
-                ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
-                : '<option value="">No playlists</option>';
+            if (playlistSelect) {
+                playlistSelect.innerHTML = playlists.length 
+                    ? playlists.map(p => `<option value="${p}">${p} (${savedSongs.filter(s => s.playlist === p).length})</option>`).join('')
+                    : '<option value="Set 1">Set 1</option>';
+            }
+            if (editPlaylistSelect) {
+                editPlaylistSelect.innerHTML = playlists.length 
+                    ? playlists.map(p => `<option value="${p}">${p} (${savedSongs.filter(s => s.playlist === p).length})</option>`).join('')
+                    : '<option value="Set 1">Set 1</option>';
+            }
         }
 
         function buildLoadSongList() {
-            if (!playlistSelect || !loadSongList) return;
             const playlistName = playlistSelect.value || 'Set 1';
-            const songs = savedSongs
-                .filter(s => (s.playlist || 'Set 1') === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            const totalPages = Math.ceil(songs.length / SONGS_PER_PAGE);
+            const startIdx = currentLoadPage * SONGS_PER_PAGE;
+            const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
 
-            loadSongList.innerHTML = songs.length 
-                ? songs.map((s, i) => 
+            loadSongList.innerHTML = pageSongs.length 
+                ? pageSongs.map((s, i) => 
                     `<div class="track-item" onclick="loadSongIntoEditor('${s.id}')">
-                        <span>${i+1}. ${s.name}</span>
+                        <span>${startIdx + i + 1}. ${s.name}</span>
                     </div>`
                 ).join('')
-                : '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
+                : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+
+            buildPagination(loadPagination, currentLoadPage, totalPages, 'setLoadPage');
+        }
+
+        function setLoadPage(page) {
+            currentLoadPage = Math.max(0, Math.min(page, getPagesForPlaylist(playlistSelect.value) - 1));
+            buildLoadSongList();
         }
 
         function buildEditPlaylistSelect() {
-            if (!editPlaylistSelect) return;
             const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
             editPlaylistSelect.innerHTML = playlists.length 
                 ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
-                : '<option value="">No playlists</option>';
+                : '<option value="Set 1">Set 1</option>';
         }
 
         function buildPlaylistEditList() {
-            if (!editPlaylistSelect || !playlistEditList) return;
             const playlistName = editPlaylistSelect.value || 'Set 1';
-            const songs = savedSongs
-                .filter(s => (s.playlist || 'Set 1') === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            const totalPages = Math.ceil(songs.length / SONGS_PER_PAGE);
+            const startIdx = currentEditPage * SONGS_PER_PAGE;
+            const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
 
-            playlistEditList.innerHTML = songs.map((s, i) => {
-                const idx = savedSongs.findIndex(x => x.id === s.id);
+            playlistEditList.innerHTML = pageSongs.map((s, i) => {
+                const globalIdx = savedSongs.findIndex(x => x.id === s.id);
                 return `
                     <div class="playlist-edit-item">
-                        <span class="playlist-edit-name">${i+1}. ${s.name}</span>
+                        <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
                         <div class="playlist-edit-controls">
-                            ${idx > 0 ? `<button onclick="moveSong(${idx}, -1)">↑</button>` : ''}
-                            ${idx < savedSongs.length - 1 ? `<button onclick="moveSong(${idx}, 1)">↓</button>` : ''}
-                            <button onclick="deleteSong('${s.id}')">✕</button>
+                            ${globalIdx > 0 ? `<button onclick="moveSong(${globalIdx}, -1)" title="Move up">↑</button>` : '<span style="width:24px;"></span>'}
+                            ${globalIdx < savedSongs.length - 1 ? `<button onclick="moveSong(${globalIdx}, 1)" title="Move down">↓</button>` : '<span style="width:24px;"></span>'}
+                            <button onclick="deleteSong('${s.id}')" title="Delete">✕</button>
                         </div>
                     </div>
                 `;
-            }).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs</p>';
+            }).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+
+            buildPagination(editPagination, currentEditPage, totalPages, 'setEditPage');
+        }
+
+        function setEditPage(page) {
+            currentEditPage = Math.max(0, Math.min(page, getPagesForPlaylist(editPlaylistSelect.value, 'edit') - 1));
+            buildPlaylistEditList();
         }
 
         // Song operations
@@ -837,6 +922,10 @@
             currentSong = song;
             editor.value = song.content;
             updatePlaylistDetails();
+            
+            // MARK AS CURRENT SONG FOR STAGE SYNC (like original behavior)
+            localStorage.setItem('lyricflow_currentSongId', song.id);
+            
             loadOverlay.classList.add('hidden');
             statusText.textContent = `Loaded: ${song.name}`;
         };
@@ -852,53 +941,82 @@
         };
 
         window.deleteSong = function(songId) {
-            if (!confirm('Delete this song?')) return;
+            if (!confirm('Delete this song permanently?')) return;
             savedSongs = savedSongs.filter(s => s.id !== songId);
             if (currentSong?.id === songId) {
                 currentSong = null;
                 editor.value = '';
+                playlistEditDetails.style.display = 'none';
             }
             saveSongsToStorage();
             buildPlaylistEditList();
             buildPlaylistSelect();
+            buildLoadSongList();
         };
 
         function updatePlaylistDetails() {
             if (!currentSong || !playlistEditDetails) return;
-            const idx = savedSongs.findIndex(s => s.id === currentSong.id);
             const playlistSongs = savedSongs.filter(s => s.playlist === currentSong.playlist);
+            const globalIdx = savedSongs.findIndex(s => s.id === currentSong.id);
             playlistEditDetails.style.display = 'grid';
             qs('currentSongTitle').textContent = currentSong.name;
             qs('currentPlaylist').textContent = currentSong.playlist;
-            qs('currentSongIndex').textContent = `${idx+1}/${playlistSongs.length}`;
+            qs('currentSongIndex').textContent = `${globalIdx + 1}/${savedSongs.length}`;
         }
 
-        // Event listeners
-        if (editorInfoBtn) editorInfoBtn.onclick = () => editInfoOverlay.classList.remove('hidden');
-        if (saveSongBtn) saveSongBtn.onclick = () => saveOverlay.classList.remove('hidden');
-        if (loadSongBtn) loadSongBtn.onclick = () => { buildPlaylistSelect(); buildLoadSongList(); loadOverlay.classList.remove('hidden'); };
-        if (editPlaylistBtn) editPlaylistBtn.onclick = () => { buildEditPlaylistSelect(); buildPlaylistEditList(); editPlaylistOverlay.classList.remove('hidden'); };
-        if (clearEditorBtn) clearEditorBtn.onclick = () => { editor.value = ''; currentSong = null; playlistEditDetails.style.display = 'none'; };
-
+        // SAVE AS NEW (never overwrites)
         if (saveConfirmBtn) saveConfirmBtn.onclick = () => {
             const title = songTitleInput.value.trim() || 'Untitled';
             const playlistName = playlistInput.value.trim() || 'Set 1';
-            const content = editor.value;
+            const content = editor.value.trim();
 
-            let song = currentSong;
-            if (!song) {
-                song = { id: 'song_' + Math.random().toString(36).slice(2), createdAt: new Date().toISOString() };
-                savedSongs.push(song);
+            if (!content) {
+                alert('Please add some lyrics first');
+                return;
             }
-            song.name = title;
-            song.playlist = playlistName;
-            song.content = content;
-            currentSong = song;
+
+            // Always create NEW song - never overwrite
+            const newSong = {
+                id: 'song_' + Math.random().toString(36).slice(2),
+                name: title,
+                playlist: playlistName,
+                content: content,
+                createdAt: new Date().toISOString()
+            };
             
+            savedSongs.push(newSong);
             saveSongsToStorage();
-            saveOverlay.classList.add('hidden');
+            
+            // Update current song reference
+            currentSong = newSong;
             updatePlaylistDetails();
-            statusText.textContent = 'Song saved';
+            
+            saveOverlay.classList.add('hidden');
+            songTitleInput.value = '';
+            playlistInput.value = playlistName;
+            statusText.textContent = `Saved: ${title}`;
+        };
+
+        // Event listeners
+        if (editorInfoBtn) editorInfoBtn.onclick = () => editInfoOverlay.classList.remove('hidden');
+        if (saveSongBtn) saveSongBtn.onclick = () => {
+            songTitleInput.value = currentSong?.name || '';
+            playlistInput.value = currentSong?.playlist || 'Set 1';
+            saveOverlay.classList.remove('hidden');
+        };
+        if (loadSongBtn) loadSongBtn.onclick = () => { 
+            buildPlaylistSelect(); 
+            currentLoadPage = 0;
+            buildLoadSongList(); 
+            loadOverlay.classList.remove('hidden'); 
+        };
+        if (clearEditorBtn) clearEditorBtn.onclick = () => { 
+            if (confirm('Clear all lyrics?')) {
+                editor.value = ''; 
+                currentSong = null; 
+                playlistEditDetails.style.display = 'none'; 
+                statusText.textContent = 'Cleared';
+            }
         };
 
         // Modal close handlers
@@ -916,11 +1034,12 @@
             }
         });
 
-        if (playlistSelect) playlistSelect.onchange = buildLoadSongList;
-        if (editPlaylistSelect) editPlaylistSelect.onchange = buildPlaylistEditList;
+        if (playlistSelect) playlistSelect.onchange = () => { currentLoadPage = 0; buildLoadSongList(); };
+        if (editPlaylistSelect) editPlaylistSelect.onchange = () => { currentEditPage = 0; buildPlaylistEditList(); };
 
         // Init
         loadSongsFromStorage();
+        buildPlaylistSelect();
         statusText.textContent = 'Playlist Editor - Ready';
     </script>
 </body>
