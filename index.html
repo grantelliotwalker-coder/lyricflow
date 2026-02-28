@@ -1,10 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>LyricFlow</title>
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>LyricFlow - Stage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
     <style>
         :root {
@@ -63,15 +62,15 @@
             overflow: hidden;
         }
 
-            .app-shell::before {
-                content: "";
-                position: absolute;
-                inset: 0;
-                pointer-events: none;
-                background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
-                opacity: 0.85;
-                mix-blend-mode: soft-light;
-            }
+        .app-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
+            opacity: 0.85;
+            mix-blend-mode: soft-light;
+        }
 
         .app-shell-inner {
             position: relative;
@@ -81,8 +80,6 @@
             gap: 8px;
             height: 100%;
         }
-
-        /* Header */
 
         .header {
             display: flex;
@@ -95,7 +92,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            cursor: pointer; /* clickable for About modal */
+            cursor: pointer;
         }
 
         .lf-logo {
@@ -124,27 +121,27 @@
             box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
         }
 
-            .lf-logo-glyph::before {
-                content: "L";
-                font-weight: 700;
-                font-size: 11px;
-                letter-spacing: 0.06em;
-                color: #bbf7d0;
-                position: absolute;
-                left: 4px;
-                top: 4px;
-            }
+        .lf-logo-glyph::before {
+            content: "L";
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            color: #bbf7d0;
+            position: absolute;
+            left: 4px;
+            top: 4px;
+        }
 
-            .lf-logo-glyph::after {
-                content: "F";
-                font-weight: 700;
-                font-size: 11px;
-                letter-spacing: 0.08em;
-                color: #22c55e;
-                position: absolute;
-                right: 4px;
-                bottom: 4px;
-            }
+        .lf-logo-glyph::after {
+            content: "F";
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            color: #22c55e;
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+        }
 
         .app-title-block {
             display: flex;
@@ -164,42 +161,6 @@
             font-size: 11px;
             color: var(--text-soft);
         }
-
-        .mode-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(71, 85, 105, 0.9);
-            color: var(--text-soft);
-            font-size: 11px;
-            cursor: pointer;
-            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .mode-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-        }
-
-        .mode-toggle span strong {
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-size: 10px;
-            color: #e5e7eb;
-        }
-
-        .mode-toggle span small {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        /* Status + playlist row */
 
         .top-row {
             display: flex;
@@ -258,9 +219,9 @@
             cursor: pointer;
         }
 
-            .pill-label strong {
-                font-weight: 600;
-            }
+        .pill-label strong {
+            font-weight: 600;
+        }
 
         .icon-btn {
             border-radius: 999px;
@@ -276,10 +237,6 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
         }
 
-            .icon-btn span {
-                font-size: 11px;
-            }
-
         .pill-btn {
             border-radius: 999px;
             padding: 4px 10px;
@@ -293,8 +250,6 @@
             cursor: pointer;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
         }
-
-        /* Central viewer / editor */
 
         .main-stack {
             flex: 1;
@@ -413,9 +368,9 @@
             transition: transform 0.08s ease-out;
         }
 
-            .viewer:active {
-                cursor: grabbing;
-            }
+        .viewer:active {
+            cursor: grabbing;
+        }
 
         .viewer-content {
             position: relative;
@@ -471,8 +426,6 @@
             padding: 1px 0;
         }
 
-        /* Count-in overlay */
-
         .viewer-countin {
             position: absolute;
             inset: 0;
@@ -488,130 +441,9 @@
             z-index: 5;
         }
 
-
-            .viewer-countin.hidden {
-                display: none;
-            }
-
-        /* Editor */
-
-        .editor-card {
-            flex: 1;
-            min-height: 0;
-            border-radius: 22px;
-            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%), radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%), linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.98), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
+        .viewer-countin.hidden {
+            display: none;
         }
-
-        .editor-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            height: 100%;
-            min-height: 0;
-        }
-
-        .editor-header-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 8px;
-            border-radius: 14px;
-            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
-            border: 1px solid rgba(55, 65, 81, 0.95);
-        }
-
-        .editor-title {
-            font-size: 12px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: rgba(226, 232, 240, 0.96);
-        }
-
-        .editor-buttons {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .playlist-edit-details {
-            margin-top: 4px;
-            padding: 4px 6px;
-            border-radius: 8px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            font-size: 11px;
-            color: var(--text-soft);
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 4px 8px;
-        }
-
-            .playlist-edit-details span {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-        .tiny-btn {
-            border-radius: 999px;
-            padding: 3px 8px;
-            border: 1px solid rgba(55, 65, 81, 0.98);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-            .tiny-btn.primary {
-                border-color: rgba(34, 197, 94, 0.8);
-                color: var(--accent-bright);
-            }
-
-        .tiny-btn-danger {
-            border-color: var(--danger-border);
-            color: var(--danger);
-        }
-
-        #editor {
-            flex: 1;
-            min-height: 0;
-            border-radius: 16px;
-            border: 1px solid rgba(75, 85, 99, 0.92);
-            background: rgba(15, 23, 42, 0.98);
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
-            padding: 8px 10px;
-            color: var(--text-main);
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            background-image: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
-        }
-
-            #editor::placeholder {
-                color: rgba(75, 85, 99, 0.95);
-            }
-
-        /* Bottom transport bar */
 
         .bottom-bar {
             display: flex;
@@ -633,11 +465,6 @@
             width: 100%;
         }
 
-            .transport-buttons .btn {
-                flex: 1;
-                justify-content: center;
-            }
-
         .btn {
             border: none;
             cursor: pointer;
@@ -651,11 +478,13 @@
             color: var(--text-soft);
             border: 1px solid rgba(55, 65, 81, 0.9);
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
+            flex: 1;
+            justify-content: center;
         }
 
-            .btn span {
-                font-size: 13px;
-            }
+        .btn span {
+            font-size: 13px;
+        }
 
         .btn-primary {
             background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
@@ -682,27 +511,14 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
         }
 
-        .btn-attention {
-            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.85), 0 0 18px rgba(34, 197, 94, 0.8), 0 0 45px rgba(34, 197, 94, 0.85);
-        }
-
-        .bottom-tools {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* bigger Settings button */
         #settingsBtnBottom.btn {
             padding: 7px 16px;
             font-size: 11px;
         }
 
-            #settingsBtnBottom.btn span:first-child {
-                font-size: 15px;
-            }
-
-        /* Modals */
+        #settingsBtnBottom.btn span:first-child {
+            font-size: 15px;
+        }
 
         .overlay {
             position: fixed;
@@ -714,9 +530,9 @@
             z-index: 40;
         }
 
-            .overlay.hidden {
-                display: none;
-            }
+        .overlay.hidden {
+            display: none;
+        }
 
         .modal {
             max-width: 360px;
@@ -764,15 +580,22 @@
             margin-top: 8px;
         }
 
-            .modal-footer button {
-                border-radius: 999px;
-                border: 1px solid rgba(75, 85, 99, 0.95);
-                background: rgba(15, 23, 42, 1);
-                color: var(--text-soft);
-                font-size: 11px;
-                padding: 4px 10px;
-                cursor: pointer;
-            }
+        .modal-footer button {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-soft);
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+            margin-left: 6px;
+        }
+
+        .modal-footer .btn-primary-small {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            border-color: rgba(74, 222, 128, 0.7);
+            color: #020617;
+        }
 
         .form-field {
             display: flex;
@@ -781,98 +604,21 @@
             margin-top: 4px;
         }
 
-            .form-field label {
-                font-size: 11px;
-                color: var(--text-soft);
-            }
-
-            .form-field input,
-            .form-field select {
-                border-radius: 999px;
-                border: 1px solid rgba(75, 85, 99, 0.95);
-                background: rgba(15, 23, 42, 1);
-                color: var(--text-main);
-                padding: 6px 10px;
-                font-size: 13px;
-                outline: none;
-            }
-
-        .modal-footer .btn-primary-small {
-            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-            border-color: rgba(74, 222, 128, 0.7);
-            color: #020617;
-            margin-left: 6px;
+        .form-field label {
+            font-size: 11px;
+            color: var(--text-soft);
         }
 
-        .playlist-edit-list {
-            max-height: 220px;
-            overflow-y: auto;
-            margin-top: 6px;
-            padding-right: 4px;
-        }
-
-        .playlist-edit-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            padding: 4px 0;
-            font-size: 12px;
-            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
-        }
-
-            .playlist-edit-item:last-child {
-                border-bottom: none;
-            }
-
-        .playlist-edit-name {
-            flex: 1;
+        .form-field input,
+        .form-field select {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
             color: var(--text-main);
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
         }
-
-        .playlist-edit-controls {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-            .playlist-edit-controls button {
-                border-radius: 999px;
-                border: 1px solid rgba(75, 85, 99, 0.95);
-                background: rgba(15, 23, 42, 1);
-                color: var(--text-soft);
-                font-size: 10px;
-                padding: 2px 6px;
-                cursor: pointer;
-            }
-
-        .track-list {
-            max-height: 260px;
-            overflow-y: auto;
-            margin-top: 6px;
-        }
-
-        .track-item {
-            padding: 6px 8px;
-            border-radius: 10px;
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            background: rgba(15, 23, 42, 0.98);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-bottom: 4px;
-        }
-
-            .track-item span:first-child {
-                opacity: 0.8;
-            }
-
-            .track-item:hover {
-                background: rgba(30, 64, 175, 0.35);
-            }
 
         .viewer::-webkit-scrollbar,
         #editor::-webkit-scrollbar {
@@ -939,35 +685,6 @@
             display: none !important;
         }
 
-        /* About / Donate / Contact */
-
-        .about-tabs {
-            display: inline-flex;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-
-        .about-tab {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 11px;
-            padding: 4px 10px;
-            cursor: pointer;
-        }
-
-            .about-tab.active {
-                border-color: var(--accent-bright);
-                color: var(--accent-bright);
-            }
-
-        .about-panel.hidden {
-            display: none;
-        }
-
-        /* High-contrast stage */
-
         body.high-contrast-stage .viewer-card {
             background: #020617;
             box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
@@ -991,25 +708,10 @@
         body.high-contrast-stage .viewer-highlight {
             box-shadow: 0 0 0 1px rgba(15, 23, 42, 1), 0 0 0 3px rgba(34, 197, 94, 0.7), 0 0 55px rgba(34, 197, 94, 0.9);
         }
-
-        /* Footer */
-
-        .app-footer {
-            margin-top: 4px;
-            font-size: 10px;
-            color: var(--text-muted);
-            text-align: center;
-            opacity: 0.85;
-        }
     </style>
 </head>
 
-<body>
-    <!-- Navigation button to open playlist page -->
-<button onclick="window.location.href='playlist.html'" style="position:absolute; top:10px; right:10px; z-index:1000;">
-  Go to Playlist
-</button>
-
+<body class="high-contrast-stage">
     <div class="app-shell">
         <div class="app-shell-inner">
             <header class="header">
@@ -1019,16 +721,10 @@
                     </div>
                     <div class="app-title-block">
                         <div class="app-title">LyricFlow</div>
-                        <div class="app-subtitle">Stage‑ready lyric scroller</div>
+                        <div class="app-subtitle">Stage Mode</div>
                     </div>
                 </div>
-                <div class="mode-toggle" id="modeToggle">
-                    <div class="mode-dot"></div>
-                    <span>
-                        <strong>Stage mode</strong>
-                        <small>· tap for edit</small>
-                    </span>
-                </div>
+                <button class="pill-btn" onclick="window.location.href='playlist.html'" id="playlistBtn">Playlist</button>
             </header>
 
             <div class="top-row">
@@ -1040,21 +736,14 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <button id="prevSongBtn" class="icon-btn hidden" title="Previous song">
-                        <span>⏮</span>
-                    </button>
-                    <button id="nextSongBtn" class="icon-btn hidden" title="Next song">
-                        <span>⏭</span>
-                    </button>
+                    <button id="prevSongBtn" class="icon-btn hidden" title="Previous song">⏮</button>
+                    <button id="nextSongBtn" class="icon-btn hidden" title="Next song">⏭</button>
                     <span id="playlistPill" class="pill-label hidden">
                         <span id="playlistPillText">Set 1</span>
                         <span id="playlistPillIndex">1/1</span>
                     </span>
-                    <button class="pill-btn" id="infoTopPill">Info</button>
-                    <button class="pill-btn stage-only" id="stageInfoBtn">Stage tips</button>
-                    <button class="pill-btn" id="donatePill">Donate</button>
+                    <button class="pill-btn" id="stageInfoBtn">Stage tips</button>
                 </div>
-
             </div>
 
             <div class="main-stack">
@@ -1074,11 +763,7 @@
                             <div class="viewer" id="viewer">
                                 <div class="viewer-content" id="viewerContent">
                                     <span class="viewer-content-line">
-                                        Welcome to LyricFlow – stage‑ready lyric scroller.
-                                        Tap Edit to paste or type lyrics.
-                                        Come back to Stage, set a scroll speed, press Start.
-                                        Drag lines during the song to fine‑tune your pace.
-                                        Use Settings to adjust scroll speed, font size, and line spacing.
+                                        Ready for lyrics from playlist.html
                                     </span>
                                 </div>
                             </div>
@@ -1087,2412 +772,357 @@
                         <div class="viewer-countin hidden" id="viewerCountIn"></div>
                     </div>
                 </div>
-
-                <div class="editor-card hidden" id="editorCard">
-                    <div class="editor-inner">
-                        <div class="editor-header-bar">
-                            <div class="editor-title">Lyrics editor</div>
-                            <div class="editor-buttons">
-                                <button class="tiny-btn" id="editorInfoBtn">i</button>
-                                <button class="tiny-btn primary" id="saveSongBtn">Save</button>
-                                <button class="tiny-btn" id="loadSongBtn">Load</button>
-                                <button class="tiny-btn" id="editPlaylistBtn">Edit playlist</button>
-                                <button class="tiny-btn tiny-btn-danger" id="clearEditorBtn">Clear</button>
-                            </div>
-                        </div>
-                        <textarea id="editor"
-                                  placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge)."></textarea>
-                    </div>
-                </div>
             </div>
 
             <div class="bottom-bar" id="bottomBar">
                 <div class="transport-buttons">
                     <button id="start" class="btn btn-primary">
-                        <span>Start</span>
+                        <span>▶ Start</span>
                     </button>
-                    <button id="pause" class="btn">
-                        <span>Pause</span>
+                    <button id="pause" class="btn hidden">
+                        <span>⏸ Pause</span>
                     </button>
                     <button id="resetBtn" class="btn btn-reset">
-                        <span>Reset</span>
+                        <span>⟲ Reset</span>
                     </button>
                     <button id="settingsBtnBottom" class="btn">
-                        <span>Settings</span>
+                        <span>⚙ Settings</span>
                     </button>
                 </div>
             </div>
 
             <footer class="app-footer">
-                © 2026 LyricFlow. All rights reserved.
+                © 2026 LyricFlow. Stage Mode - Load songs from playlist.html
             </footer>
         </div>
     </div>
 
-    <!-- Stage info -->
+    <!-- Stage info modal -->
     <div class="overlay hidden" id="stageInfoOverlay">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">Stage mode</div>
-                <button class="modal-close" data-close-stage-info>✕</button>
+                <div class="modal-title">Stage Mode</div>
+                <button class="modal-close" onclick="closeStageInfo()">✕</button>
             </div>
             <div class="modal-body">
-                <p>• Stage shows only the live lyric window and transport controls.</p>
-                <p>• Set a scroll speed or BPM, press Start, and read your lines inside the glow.</p>
-                <p>• Drag the lyrics up or down during a song to fine‑tune position.</p>
-                <p>• Space = Start/Pause, R = Reset (desktop).</p>
-                <p>BPM mode tips: look up tempo on a BPM tool or metronome app; start with “4 lines = 1 measure”; if scrolling is too fast, increase lines per measure; if too slow, decrease it.</p>
+                <p>• Load songs from playlist.html first</p>
+                <p>• Set scroll speed, press Start</p>
+                <p>• Drag lyrics up/down during song</p>
+                <p>• Space = Start/Pause, R = Reset</p>
+                <p>• Prev/Next navigate playlist</p>
             </div>
             <div class="modal-footer">
-                <button data-close-stage-info>Got it</button>
+                <button onclick="closeStageInfo()">Got it</button>
             </div>
         </div>
     </div>
 
-    <!-- Edit info -->
-    <div class="overlay hidden" id="editInfoOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Edit mode</div>
-                <button class="modal-close" data-close-edit-info>✕</button>
-            </div>
-            <div class="modal-body">
-                <p>• Type or paste your lyrics into the editor.</p>
-                <p>• The stage lyric window mirrors the editor automatically.</p>
-                <p>• Use blank lines to separate verses, chorus, or bridge sections.</p>
-                <p>• Use Save to store this song to your device.</p>
-            </div>
-            <div class="modal-footer">
-                <button data-close-edit-info>Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Save song -->
-    <div class="overlay hidden" id="saveOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Save song</div>
-                <button class="modal-close" data-close-save>✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label for="songTitleInput">Song title</label>
-                    <input id="songTitleInput" type="text" placeholder="e.g. Whole Lotta Love" />
-                </div>
-                <div class="form-field">
-                    <label for="playlistInput">Playlist</label>
-                    <input id="playlistInput" type="text" value="Set 1" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button data-close-save>Cancel</button>
-                <button class="btn-primary-small" id="saveConfirmBtn">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Load song -->
-    <div class="overlay hidden" id="loadOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Load song</div>
-                <button class="modal-close" data-close-load>✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label for="playlistSelect">Playlist</label>
-                    <select id="playlistSelect"></select>
-                </div>
-                <div class="track-list" id="loadSongList"></div>
-            </div>
-            <div class="modal-footer">
-                <button data-close-load>Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Song details -->
-    <div class="overlay hidden" id="songInfoOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Song details</div>
-                <button class="modal-close" data-close-song-info>✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label>Title</label>
-                    <input id="songInfoTitle" type="text" readonly />
-                </div>
-                <div class="form-field">
-                    <label>Playlist</label>
-                    <input id="songInfoPlaylist" type="text" readonly />
-                </div>
-                <div class="form-field">
-                    <label>Scroll mode</label>
-                    <input id="songInfoScroll" type="text" readonly />
-                </div>
-                <div class="form-field">
-                    <label>Font size</label>
-                    <input id="songInfoFont" type="text" readonly />
-                </div>
-                <div class="form-field">
-                    <label>Line height</label>
-                    <input id="songInfoLineHeight" type="text" readonly />
-                </div>
-                <div class="form-field">
-                    <label>Lines per measure</label>
-                    <input id="songInfoLinesPerMeasure" type="text" readonly />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button data-close-song-info>Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit playlist -->
-    <div class="overlay hidden" id="editPlaylistOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Edit playlist</div>
-                <button class="modal-close" data-close-edit-playlist>✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label for="editPlaylistSelect">Playlist</label>
-                    <select id="editPlaylistSelect"></select>
-                </div>
-                <div class="playlist-edit-list" id="playlistEditList"></div>
-            </div>
-            <div class="modal-footer">
-                <button data-close-edit-playlist>Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings -->
+    <!-- Settings modal -->
     <div class="overlay hidden" id="settingsOverlay">
         <div class="modal">
             <div class="modal-header">
                 <div class="modal-title">Settings</div>
-                <button class="modal-close" data-close-settings>✕</button>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
             </div>
             <div class="modal-body">
-
                 <div class="form-field">
-                    <label>
-                        <input type="radio" name="speedMode" value="percent" checked id="speedModePercent">
-                        Percentage mode
-                    </label>
+                    <label for="scrollSpeedInput">Scroll speed</label>
+                    <input id="scrollSpeedInput" type="range" min="0.1" max="3" step="0.1" value="0.8">
+                    <span id="scrollSpeedValue">0.8</span>
                 </div>
-
-                <div class="form-field" id="percentModeFields">
-                    <label for="speedPercentSlider">Scroll speed</label>
-                    <input id="speedPercentSlider"
-                           type="range"
-                           min="0"
-                           max="100"
-                           step="1"
-                           value="50" />
-                    <small id="speedPercentLabel">50%</small>
-                </div>
-
                 <div class="form-field">
-                    <label>
-                        <input type="radio" name="speedMode" value="bpm" id="speedModeBPM">
-                        BPM mode (tempo-based)
-                    </label>
+                    <label for="fontSizeInput">Font size</label>
+                    <input id="fontSizeInput" type="range" min="14" max="28" step="1" value="20">
+                    <span id="fontSizeValue">20px</span>
                 </div>
-
-                <div class="form-field hidden" id="bpmModeFields">
-                    <label for="bpmInput">Song BPM (tempo)</label>
-                    <input type="number"
-                           id="bpmInput"
-                           min="40"
-                           max="200"
-                           step="1"
-                           value="120"
-                           placeholder="e.g. 120">
-                    <small>Typical range: 60 (slow ballad) to 180 (fast rock)</small>
-                </div>
-
-                <div class="form-field hidden" id="bpmModeFields2">
-                    <label for="linesPerMeasureInput">Lines per measure</label>
-                    <select id="linesPerMeasureInput">
-                        <option value="0.25">0.25 lines/measure</option>
-                        <option value="0.5">0.5 lines/measure</option>
-                        <option value="0.75">0.75 lines/measure</option>
-                        <option value="1">1 line/measure</option>
-                        <option value="2">2 lines/measure</option>
-                        <option value="4" selected>4 lines/measure</option>
-                        <option value="8">8 lines/measure</option>
-                    </select>
-                    <small>How many lyric lines fit in one musical measure (usually 4 beats)</small>
-                </div>
-
                 <div class="form-field">
-                    <label for="fontSizeSlider">Font size</label>
-                    <input type="range"
-                           id="fontSizeSlider"
-                           min="10"
-                           max="50"
-                           step="1"
-                           value="20" />
+                    <label for="lineHeightInput">Line height</label>
+                    <input id="lineHeightInput" type="range" min="1.4" max="2.4" step="0.1" value="1.9">
+                    <span id="lineHeightValue">1.9</span>
                 </div>
-
-                <div class="form-field">
-                    <label for="lineSpacingSlider">Line spacing</label>
-                    <input type="range"
-                           id="lineSpacingSlider"
-                           min="1.2"
-                           max="4"
-                           step="0.1"
-                           value="1.9" />
-                </div>
-
-                <div class="form-field">
-                    <label for="countInSelect">Count‑in before start</label>
-                    <select id="countInSelect">
-                        <option value="0" selected>Off</option>
-                        <option value="2">2 bars</option>
-                        <option value="4">4 bars</option>
-                    </select>
-                    <small>Shows a brief visual count‑in before scrolling begins.</small>
-                </div>
-
-                <div class="form-field">
-                    <label>
-                        <input type="checkbox" id="autoRestartCheckbox" />
-                        Auto‑restart when lyrics end
-                    </label>
-                </div>
-
-                <div class="form-field">
-                    <label>
-                        <input type="checkbox" id="highContrastCheckbox" />
-                        High‑contrast stage mode
-                    </label>
-                    <small>Boosts text and glow, simplifies background for dark rooms.</small>
-                </div>
-
             </div>
             <div class="modal-footer">
-                <button data-close-settings>Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Playlist select (from pill) -->
-    <div class="overlay hidden" id="playlistSelectOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Select track</div>
-                <button class="modal-close" data-close-playlist-select>✕</button>
-            </div>
-            <div class="modal-body">
-                <p id="playlistSelectTitle"></p>
-                <div class="track-list" id="trackList"></div>
-            </div>
-            <div class="modal-footer">
-                <button data-close-playlist-select>Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- About / Donate / Contact -->
-    <div class="overlay hidden" id="aboutOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">LyricFlow Info</div>
-                <button class="modal-close" data-close-about>✕</button>
-            </div>
-
-            <div class="about-tabs">
-                <button class="about-tab active" data-about-tab="about">About</button>
-                <button class="about-tab" data-about-tab="donate">Donate</button>
-                <button class="about-tab" data-about-tab="contact">Contact</button>
-            </div>
-
-            <div class="modal-body">
-                <div class="about-panel" data-about-panel="about">
-                    <p id="aboutText">
-                        LyricFlow v4.0 is a stage‑ready lyric scroller designed for live performances.
-                    </p>
-                    <p>
-                        It keeps your lyrics centered in a glow band while you control scroll speed or BPM.
-                    </p>
-                </div>
-                <div class="about-panel hidden" data-about-panel="donate">
-                    <p id="donateText">
-                        If LyricFlow helps your shows, you can support ongoing development.
-                    </p>
-                    <p id="donateLink">
-                        <!-- Replace with your own link(s) -->
-                        Example: https://your-donate-link-here
-                    </p>
-                </div>
-                <div class="about-panel hidden" data-about-panel="contact">
-                    <p id="contactText">
-                        For feedback or support, email: your@email.
-                    </p>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button data-close-about>Close</button>
+                <button onclick="closeSettings()">Close</button>
             </div>
         </div>
     </div>
 
     <script>
-        /*-------------------------------------------------------
-          Debug infrastructure (unchanged)
-        -------------------------------------------------------*/
-        const DEBUG_CONFIG = {
-            enabled: true,
-            level: "detail" // "basic" | "detail" | "trace"
-        };
-        const DEBUG_LEVELS = { basic: 1, detail: 2, trace: 3 };
-
-        const DEBUG_SESSION_ID =
-            "LF4-" +
-            Math.random().toString(36).slice(2, 8) +
-            "-" +
-            Date.now().toString(36);
-
-        function debugShouldLog(level) {
-            if (!DEBUG_CONFIG.enabled || typeof console === "undefined") return false;
-            const target = DEBUG_LEVELS[DEBUG_CONFIG.level] || 1;
-            const here = DEBUG_LEVELS[level] || 1;
-            return here <= target;
-        }
-
-        function debugLog(level, tag, payload) {
-            if (!debugShouldLog(level)) return;
-            const ts = new Date().toISOString();
-            try {
-                console.log(
-                    "[LyricFlow4]",
-                    DEBUG_SESSION_ID,
-                    ts,
-                    "[" + level + "]",
-                    tag,
-                    payload || {}
-                );
-            } catch (_) { }
-        }
-
-        function debugError(tag, payload) {
-            if (typeof console === "undefined") return;
-            const ts = new Date().toISOString();
-            try {
-                console.error(
-                    "[LyricFlow4]",
-                    DEBUG_SESSION_ID,
-                    ts,
-                    "[ERROR]",
-                    tag,
-                    payload || {}
-                );
-            } catch (_) { }
-        }
-
-        /*-------------------------------------------------------
-          Safe DOM helpers
-        -------------------------------------------------------*/
-        function qs(id) {
-            const el = document.getElementById(id);
-            if (!el) {
-                debugError("MISSING_ELEMENT", { id });
-            }
-            return el;
-        }
-
-        function safeQuerySelector(selector) {
-            try {
-                return document.querySelector(selector);
-            } catch (e) {
-                debugError("QS_ERROR", { selector, error: e.message });
-                return null;
-            }
-        }
-
-        function safeQuerySelectorAll(selector) {
-            try {
-                return Array.from(document.querySelectorAll(selector));
-            } catch (e) {
-                debugError("QSA_ERROR", { selector, error: e.message });
-                return [];
-            }
-        }
-
-        function safeAddListener(target, type, handler, opts) {
-            if (!target || !type || typeof handler !== "function") {
-                debugError("LISTENER_BAD_ARGS", { target, type });
-                return;
-            }
-            try {
-                target.addEventListener(type, handler, opts || false);
-            } catch (e) {
-                debugError("LISTENER_ERROR", { type, error: e.message });
-            }
-        }
-
-        const viewer = qs("viewer");
-        const viewerContent = qs("viewerContent");
-        const DEFAULT_WELCOME_TEXT = `Welcome to LyricFlow – stage‑ready lyric scroller.
-Tap Edit to paste or type lyrics.
-Come back to Stage, set a scroll speed, press Start.
-Drag lines during the song to fine‑tune your pace.
-Use Settings to adjust scroll speed, font size, and line spacing.`;
-
-
-        const modeToggle = qs("modeToggle");
-        const viewerCard = qs("viewerCard");
-        const editorCard = qs("editorCard");
-        const bottomBar = qs("bottomBar");
-        const statusText = qs("statusText");
-        const timeDisplay = qs("timeDisplay");
-
-        const songInfoOverlay = qs("songInfoOverlay");
-        const songInfoTitle = qs("songInfoTitle");
-        const songInfoPlaylist = qs("songInfoPlaylist");
-        const songInfoScroll = qs("songInfoScroll");
-        const songInfoFont = qs("songInfoFont");
-        const songInfoLineHeight = qs("songInfoLineHeight");
-        const songInfoLinesPerMeasure = qs("songInfoLinesPerMeasure");
-
-        const startBtn = qs("start");
-        const pauseBtn = qs("pause");
-        const resetBtn = qs("resetBtn");
-
-        const prevSongBtn = qs("prevSongBtn");
-        const nextSongBtn = qs("nextSongBtn");
-        const playlistPill = qs("playlistPill");
-        const playlistPillText = qs("playlistPillText");
-        const playlistPillIndex = qs("playlistPillIndex");
-
-        const settingsBtnBottom = qs("settingsBtnBottom");
-
-        const stageInfoBtn = qs("stageInfoBtn");
-        const stageInfoOverlay = qs("stageInfoOverlay");
-
-        const editor = qs("editor");
-        const editorInfoBtn = qs("editorInfoBtn");
-        const editInfoOverlay = qs("editInfoOverlay");
-        const clearEditorBtn = qs("clearEditorBtn");
-
-        const saveSongBtn = qs("saveSongBtn");
-        const loadSongBtn = qs("loadSongBtn");
-        const editPlaylistBtn = qs("editPlaylistBtn");
-
-        const saveOverlay = qs("saveOverlay");
-        const songTitleInput = qs("songTitleInput");
-        const playlistInput = qs("playlistInput");
-        const saveConfirmBtn = qs("saveConfirmBtn");
-
-        const loadOverlay = qs("loadOverlay");
-        const playlistSelect = qs("playlistSelect");
-        const loadSongList = qs("loadSongList");
-
-        const editPlaylistOverlay = qs("editPlaylistOverlay");
-        const editPlaylistSelect = qs("editPlaylistSelect");
-        const playlistEditList = qs("playlistEditList");
-
-        const settingsOverlay = qs("settingsOverlay");
-        const speedPercentSlider = qs("speedPercentSlider");
-        const speedPercentLabel = qs("speedPercentLabel");
-        const fontSizeSlider = qs("fontSizeSlider");
-        const lineSpacingSlider = qs("lineSpacingSlider");
-
-        const speedModePercent = qs("speedModePercent");
-        const speedModeBPM = qs("speedModeBPM");
-        const percentModeFields = qs("percentModeFields");
-        const bpmModeFields = qs("bpmModeFields");
-        const bpmModeFields2 = qs("bpmModeFields2");
-        const bpmInput = qs("bpmInput");
-        const linesPerMeasureInput = qs("linesPerMeasureInput");
-
-        const playlistSelectOverlay = qs("playlistSelectOverlay");
-        const playlistSelectTitle = qs("playlistSelectTitle");
-        const trackList = qs("trackList");
-
-        const viewerCountIn = qs("viewerCountIn");
-        const countInSelect = qs("countInSelect");
-        const autoRestartCheckbox = qs("autoRestartCheckbox");
-        const highContrastCheckbox = qs("highContrastCheckbox");
-
-        const infoMainTrigger = qs("infoMainTrigger");
-        const infoTopPill = qs("infoTopPill");
-        const donatePill = qs("donatePill");
-        const aboutOverlay = qs("aboutOverlay");
-        const aboutTabs = document.querySelectorAll(".about-tab");
-        const aboutPanels = document.querySelectorAll(".about-panel");
-
-        /*-------------------------------------------------------
-          State
-        -------------------------------------------------------*/
-        let pendingSnapFromSettings = false;
-
-        let currentOffsetY = 0;
-        let currentSong = null;
-
-        let isStageMode = true;
-        let scrollAnimationId = null;
-        let isScrolling = false;
-        let lastFrameTime = null;
-        let startTime = null;
-        let elapsedTime = 0;
-
+        // Core state
+        let scrollSpeed = 0.8;
+        let fontSize = 20;
+        let lineHeight = 1.9;
+        let isPlaying = false;
+        let startTime = 0;
+        let currentY = 0;
+        let velocityY = 0;
+        let rafId = null;
+        let songs = JSON.parse(localStorage.getItem('lyricflow_songs') || '[]');
+        let currentPlaylist = localStorage.getItem('lyricflow_currentPlaylist') || 'Set 1';
+        let currentSongIndex = 0;
+        let currentSongId = localStorage.getItem('lyricflow_currentSongId') || null;
         let isDragging = false;
-        let dragStartY = 0;
-        let dragStartBaseY = 0;
+        let lastTouchY = 0;
 
-        let baseContentY = 0;
+        // DOM elements
+        const viewer = document.getElementById('viewer');
+        const viewerContent = document.getElementById('viewerContent');
+        const statusText = document.getElementById('statusText');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const startBtn = document.getElementById('start');
+        const pauseBtn = document.getElementById('pause');
+        const resetBtn = document.getElementById('resetBtn');
+        const prevSongBtn = document.getElementById('prevSongBtn');
+        const nextSongBtn = document.getElementById('nextSongBtn');
+        const playlistPill = document.getElementById('playlistPill');
+        const playlistPillText = document.getElementById('playlistPillText');
+        const playlistPillIndex = document.getElementById('playlistPillIndex');
 
-        let savedSongs = [];
-        let lastSpaceTime = 0;
+        // Settings elements
+        const scrollSpeedInput = document.getElementById('scrollSpeedInput');
+        const scrollSpeedValue = document.getElementById('scrollSpeedValue');
+        const fontSizeInput = document.getElementById('fontSizeInput');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const lineHeightInput = document.getElementById('lineHeightInput');
+        const lineHeightValue = document.getElementById('lineHeightValue');
 
-        let currentPlaylistName = null;
-        let currentPlaylistSongIds = null;
-        let currentSongId = null;
+        // Load settings
+        const savedSettings = JSON.parse(localStorage.getItem('lyricflow_settings') || '{}');
+        scrollSpeed = savedSettings.scrollSpeed || 0.8;
+        fontSize = savedSettings.fontSize || 20;
+        lineHeight = savedSettings.lineHeight || 1.9;
 
-        let snapPending = false;
-        let wasScrollingBeforeDrag = false;
+        // Apply settings
+        scrollSpeedInput.value = scrollSpeed;
+        scrollSpeedValue.textContent = scrollSpeed;
+        fontSizeInput.value = fontSize;
+        fontSizeValue.textContent = fontSize + 'px';
+        lineHeightInput.value = lineHeight;
+        lineHeightValue.textContent = lineHeight;
+        viewer.style.fontSize = fontSize + 'px';
+        viewer.style.lineHeight = lineHeight;
 
-        const DEFAULT_SCROLL_SPEED = 4;
-        let scrollSpeed = DEFAULT_SCROLL_SPEED;
-
-        let speedPercent = 50;
-        const maxPixelsPerSecond = 80;
-
-        let songBPM = null;
-        let linesPerMeasure = 4;
-
-        let viewerFontSize = 18;
-        let viewerLineHeight = 1.9;
-
-        let canonicalBaseContentY = 0;
-        let initialSnapBaseContentY = null;
-
-        let loadSnapshotBaseContentY = null;
-        let loadSnapshotFontSize = null;
-        let loadSnapshotLineHeight = null;
-
-        let songStartBaseContentY = null;
-        let songStartFontSize = null;
-        let songStartLineHeight = null;
-        let songStartLineIndex = null;
-
-        let countInBars = 0;
-        let countInTimeoutId = null;
-        let autoRestartEnabled = false;
-        let highContrastEnabled = false;
-
-        /*-------------------------------------------------------
-          Platform font defaults
-        -------------------------------------------------------*/
-        (function setPlatformDefaultFont() {
-            try {
-                const ua = navigator.userAgent || "";
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isWindows = /Windows NT/i.test(ua);
-                if (isIOS) viewerFontSize = 16;
-                else if (isWindows) viewerFontSize = 18;
-                else viewerFontSize = 18;
-                debugLog("basic", "PLATFORM_FONT_INIT", { ua, viewerFontSize });
-            } catch (e) {
-                debugError("PLATFORM_FONT_ERROR", { error: e.message });
+        // Storage sync with playlist.html
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'lyricflow_currentSongId') {
+                currentSongId = e.newValue;
+                localStorage.setItem('lyricflow_currentSongId', currentSongId);
+                loadSongIntoUI(currentSongId);
             }
-        })();
-
-        /*-------------------------------------------------------
-          Status + time
-        -------------------------------------------------------*/
-        function setStatus(text) {
-            if (!statusText) return;
-            statusText.textContent = text;
-            debugLog("detail", "STATUS", { text });
-        }
-
-        function formatTime(ms) {
-            const seconds = Math.max(0, Math.floor(ms / 1000));
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return mins + ":" + String(secs).padStart(2, "0");
-        }
-
-        function updateTimeDisplay() {
-            if (!timeDisplay) return;
-            timeDisplay.textContent = formatTime(elapsedTime);
-        }
-
-        /*-------------------------------------------------------
-          Layout application
-        -------------------------------------------------------*/
-        function applyScroll() {
-            if (!viewerContent || !viewerContent.style) return;
-            if (!Number.isFinite(baseContentY)) {
-                baseContentY = 0;
+            if (e.key === 'lyricflow_songs') {
+                songs = JSON.parse(e.newValue || '[]');
+                updatePlaylistDisplay();
             }
-            viewerContent.style.transform = "translateY(" + baseContentY + "px)";
-            debugLog("trace", "APPLY_SCROLL", { baseContentY });
-        }
-
-        function applyFontSize() {
-            if (!viewer) return;
-            const size = Number.isFinite(viewerFontSize) ? viewerFontSize : 18;
-            const lh = Number.isFinite(viewerLineHeight) ? viewerLineHeight : 1.9;
-            viewer.style.fontSize = size + "px";
-            viewer.style.lineHeight = String(lh);
-            debugLog("detail", "APPLY_FONT", { viewerFontSize: size, viewerLineHeight: lh });
-        }
-
-        function updateResetEnabled() {
-            if (!resetBtn) return;
-            const atStart =
-                !isScrolling &&
-                elapsedTime === 0 &&
-                baseContentY === canonicalBaseContentY;
-            resetBtn.disabled = atStart;
-            debugLog("trace", "RESET_ENABLED", {
-                atStart,
-                isScrolling,
-                elapsedTime,
-                baseContentY,
-                canonicalBaseContentY
-            });
-        }
-
-        /*-------------------------------------------------------
-          Start-line selection + snapping
-        -------------------------------------------------------*/
-        function pickStartLyricLine(lines) {
-            const arr = Array.from(lines);
-            if (!arr.length) {
-                debugLog("detail", "PICK_START_NONE", {});
-                return { line: null, index: null };
-            }
-            const target = arr[0];
-            debugLog("detail", "PICK_START_FIRST_LINE", {
-                index: 0,
-                text: target.textContent
-            });
-            return { line: target, index: 0 };
-        }
-
-        function snapFirstLineIntoGlow(force) {
-            force = !!force;
-            if (!isStageMode || isDragging || isScrolling || !viewer || !viewerContent) return;
-
-            const lines = safeQuerySelectorAll(".viewer-content-line");
-            const glowBand = safeQuerySelector(".viewer-highlight");
-            if (!lines.length || !glowBand) return;
-
-            const picked = pickStartLyricLine(lines);
-            const targetLine = picked.line;
-            const targetIndex = picked.index;
-            if (!targetLine) return;
-
-            const viewerRect = viewer.getBoundingClientRect();
-            const glowRect = glowBand.getBoundingClientRect();
-            const lineRect = targetLine.getBoundingClientRect();
-
-            const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
-            const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
-
-            if (!Number.isFinite(glowCenter) || !Number.isFinite(lineCenter)) return;
-
-            const delta = glowCenter - lineCenter;
-            baseContentY = (Number.isFinite(baseContentY) ? baseContentY : 0) + delta;
-            applyScroll();
-
-            canonicalBaseContentY = baseContentY;
-            songStartBaseContentY = baseContentY;
-            songStartFontSize = viewerFontSize;
-            songStartLineHeight = viewerLineHeight;
-            songStartLineIndex = typeof targetIndex === "number" ? targetIndex : 0;
-
-            elapsedTime = 0;
-            updateResetEnabled();
-
-            debugLog("detail", "SNAP_RESULT", {
-                baseContentY,
-                canonicalBaseContentY,
-                targetIndex
-            });
-        }
-
-        function snapFirstLineClean() {
-            if (!isStageMode || !viewer || !viewerContent) return;
-
-            const lines = safeQuerySelectorAll(".viewer-content-line");
-            const glowBand = safeQuerySelector(".viewer-highlight");
-            if (!lines.length || !glowBand) return;
-
-            const picked = pickStartLyricLine(lines);
-            const targetLine = picked.line;
-            const targetIndex = picked.index;
-            if (!targetLine) return;
-
-            baseContentY = 0;
-            applyScroll();
-
-            const viewerRect = viewer.getBoundingClientRect();
-            const glowRect = glowBand.getBoundingClientRect();
-            const lineRect = targetLine.getBoundingClientRect();
-
-            const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
-            const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
-            if (!Number.isFinite(glowCenter) || !Number.isFinite(lineCenter)) return;
-
-            const delta = glowCenter - lineCenter;
-            baseContentY = delta;
-            applyScroll();
-
-            canonicalBaseContentY = baseContentY;
-            songStartBaseContentY = baseContentY;
-            songStartFontSize = viewerFontSize;
-            songStartLineHeight = viewerLineHeight;
-            songStartLineIndex = typeof targetIndex === "number" ? targetIndex : 0;
-
-            elapsedTime = 0;
-            updateResetEnabled();
-
-            debugLog("detail", "SNAP_CLEAN_RESULT", {
-                baseContentY,
-                canonicalBaseContentY,
-                targetIndex,
-                glowCenter,
-                lineCenter
-            });
-        }
-
-        function snapAfterLayout() {
-            if (!viewerContent) return;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    debugLog("detail", "LAYOUT_SNAP_CALL", {
-                        baseContentY,
-                        viewerFontSize,
-                        viewerLineHeight,
-                        canonicalBaseContentY
-                    });
-                    snapFirstLineIntoGlow(true);
-                });
-            });
-        }
-
-        /*-------------------------------------------------------
-          Scroll maths
-        -------------------------------------------------------*/
-        function bpmToPixelsPerSecondInternal(bpm, lpm) {
-            bpm = Number(bpm) || 0;
-            lpm = Number(lpm) || 0;
-            if (bpm <= 0 || lpm <= 0 || !viewerFontSize || !viewerLineHeight) return 0;
-            const beatsPerSecond = bpm / 60;
-            const measuresPerSecond = beatsPerSecond / 4;
-            const linesPerSecond = measuresPerSecond * lpm;
-            const pixelsPerLine = viewerFontSize * viewerLineHeight;
-            const pps = linesPerSecond * pixelsPerLine;
-            return Number.isFinite(pps) ? pps : 0;
-        }
-
-        function getPixelsPerSecond() {
-            if (songBPM !== null) {
-                const pps = bpmToPixelsPerSecondInternal(songBPM, linesPerMeasure);
-                debugLog("trace", "SCROLL_PPS_BPM", {
-                    songBPM,
-                    linesPerMeasure,
-                    pps
-                });
-                return Math.max(0, pps);
-            }
-            const sp = Math.max(0, Math.min(100, Number(speedPercent) || 0));
-            const pps = (maxPixelsPerSecond * sp) / 100;
-            debugLog("trace", "SCROLL_PPS_PERCENT", {
-                speedPercent: sp,
-                maxPixelsPerSecond,
-                pps
-            });
-            return Math.max(0, pps);
-        }
-
-        /*-------------------------------------------------------
-          Count-in
-        -------------------------------------------------------*/
-        
-
-        if (countInSelect) {
-            countInBars = Number(countInSelect.value) || 0;
-            safeAddListener(countInSelect, "change", () => {
-                countInBars = Number(countInSelect.value) || 0;
-            });
-        }
-
-
-        if (autoRestartCheckbox) {
-            safeAddListener(autoRestartCheckbox, "change", () => {
-                autoRestartEnabled = !!autoRestartCheckbox.checked;
-            });
-        }
-
-        if (highContrastCheckbox) {
-            safeAddListener(highContrastCheckbox, "change", () => {
-                highContrastEnabled = !!highContrastCheckbox.checked;
-                document.body.classList.toggle("high-contrast-stage", highContrastEnabled);
-            });
-        }
-
-        function cancelCountIn() {
-            if (countInTimeoutId) {
-                clearTimeout(countInTimeoutId);
-                countInTimeoutId = null;
-            }
-            if (viewerCountIn) viewerCountIn.classList.add("hidden");
-        }
-
-        function performStartScroll() {
-            if (!isStageMode || !viewer || !viewerContent) return;
-            if (isScrolling) return;
-
-            const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
-            if (pixelsPerSecond === 0) {
-                setStatus("Speed is 0 – raise scroll speed in Settings");
-                if (startBtn) {
-                    startBtn.classList.add("btn-attention");
-                    setTimeout(() => startBtn.classList.remove("btn-attention"), 900);
-                }
-                debugLog("detail", "START_SCROLL_SPEED_ZERO", {});
-                return;
-            }
-
-            isScrolling = true;
-            setStatus("Scrolling");
-            if (startBtn) startBtn.disabled = true;
-            if (pauseBtn) pauseBtn.disabled = false;
-            lastFrameTime = null;
-            startTime = performance.now();
-
-            debugLog("detail", "START_SCROLL", {
-                pixelsPerSecond,
-                baseContentY
-            });
-
-            scrollAnimationId = requestAnimationFrame(autoScroll);
-            updateResetEnabled();
-        }
-
-        function showCountInAndStart() {
-            if (!viewerCountIn || countInBars <= 0) {
-                performStartScroll();
-                return;
-            }
-
-            const bpmForCount = songBPM && songBPM > 0 ? songBPM : 120;
-            const msPerBeat = 60000 / bpmForCount;
-
-            const totalBeats = countInBars * 4;
-            let remainingBeats = totalBeats;
-
-            viewerCountIn.classList.remove("hidden");
-
-            function tick() {
-                if (remainingBeats <= 0) {
-                    viewerCountIn.classList.add("hidden");
-                    performStartScroll();
-                    return;
-                }
-
-                const currentBar = Math.ceil(remainingBeats / 4);
-                const currentBeat = ((remainingBeats - 1) % 4) + 1;
-
-                viewerCountIn.textContent = "Bar " + currentBar + " · " + currentBeat;
-                remainingBeats--;
-
-                countInTimeoutId = setTimeout(tick, msPerBeat);
-            }
-
-            tick();
-        }
-
-        /*-------------------------------------------------------
-          Auto scroll
-        -------------------------------------------------------*/
-        function autoScroll(timestamp) {
-            if (!isScrolling || !viewer || !viewerContent) return;
-
-            const pixelsPerSecond = Math.max(0, getPixelsPerSecond());
-            if (pixelsPerSecond === 0) {
-                debugLog("detail", "AUTO_SCROLL_ZERO_SPEED", {});
-                pauseScroll();
-                return;
-            }
-
-            if (lastFrameTime == null) {
-                lastFrameTime = timestamp;
-                if (!startTime) startTime = timestamp;
-                debugLog("detail", "AUTO_SCROLL_FIRST_FRAME", {
-                    baseContentY,
-                    pixelsPerSecond
-                });
-                scrollAnimationId = requestAnimationFrame(autoScroll);
-                return;
-            }
-
-            const delta = timestamp - lastFrameTime;
-            lastFrameTime = timestamp;
-            elapsedTime = timestamp - (startTime || timestamp);
-            updateTimeDisplay();
-
-            const distance = (pixelsPerSecond * delta) / 1000;
-            if (!Number.isFinite(baseContentY)) baseContentY = 0;
-            baseContentY -= distance;
-            applyScroll();
-
-            const railRect = viewer.getBoundingClientRect();
-            const contentRect = viewerContent.getBoundingClientRect();
-
-            debugLog("trace", "AUTO_SCROLL_FRAME", {
-                delta,
-                distance,
-                baseContentY,
-                railRectTop: railRect.top,
-                contentBottom: contentRect.bottom
-            });
-
-            if (contentRect.bottom <= railRect.top + railRect.height * 0.4) {
-                pauseScroll();
-                setStatus("End of lyrics");
-
-                if (autoRestartEnabled) {
-                    debugLog("detail", "AUTO_SCROLL_END_RESTART", {
-                        baseContentY,
-                        elapsedTime
-                    });
-                    resetScroll();
-                    performStartScroll();
-                } else if (resetBtn) {
-                    resetBtn.classList.add("btn-attention");
-                    setTimeout(() => resetBtn.classList.remove("btn-attention"), 900);
-                }
-
-                debugLog("detail", "AUTO_SCROLL_END_REACHED", {});
-                return;
-            }
-
-            scrollAnimationId = requestAnimationFrame(autoScroll);
-            updateResetEnabled();
-        }
-
-        function startScroll() {
-            // wrapped by showCountInAndStart
-            showCountInAndStart();
-        }
-
-        function pauseScroll() {
-            if (!isScrolling) {
-                cancelCountIn();
-                return;
-            }
-            isScrolling = false;
-            setStatus("Paused");
-            if (startBtn) startBtn.disabled = false;
-            if (pauseBtn) pauseBtn.disabled = true;
-
-            if (scrollAnimationId) {
-                try {
-                    cancelAnimationFrame(scrollAnimationId);
-                } catch (_) { }
-                scrollAnimationId = null;
-            }
-
-            cancelCountIn();
-
-            debugLog("detail", "PAUSE_SCROLL", {
-                transform: viewerContent && viewerContent.style
-                    ? viewerContent.style.transform
-                    : null,
-                baseContentY,
-                elapsedTime
-            });
-
-            updateResetEnabled();
-        }
-
-        function resetScroll() {
-            if (!currentSong || !viewer || !viewerContent) {
-                debugLog("detail", "RESET_NO_SONG_OR_VIEWER", {});
-                return;
-            }
-
-            debugLog("detail", "RESET_ENTRY", {
-                baseContentY,
-                canonicalBaseContentY,
-                songStartBaseContentY,
-                songStartFontSize,
-                songStartLineHeight,
-                viewerFontSize,
-                viewerLineHeight,
-                isStageMode,
-                isScrolling
-            });
-
-            pauseScroll();
-            elapsedTime = 0;
-            updateTimeDisplay();
-
-            const layoutMatchesStart =
-                songStartBaseContentY != null &&
-                songStartFontSize === viewerFontSize &&
-                songStartLineHeight === viewerLineHeight;
-
-            if (layoutMatchesStart) {
-                baseContentY = songStartBaseContentY;
-                canonicalBaseContentY = songStartBaseContentY;
-                applyScroll();
-            } else {
-                baseContentY = 0;
-                canonicalBaseContentY = 0;
-                applyScroll();
-
-                if (isStageMode) {
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            snapFirstLineIntoGlow(true);
-                        });
-                    });
-                }
-            }
-
-            isDragging = false;
-            dragStartY = 0;
-            dragStartBaseY = 0;
-            if (viewer && viewer.parentElement) {
-                viewer.parentElement.scrollTop = 0;
-            }
-            viewer.scrollTop = 0;
-
-            updateResetEnabled();
-
-            debugLog("detail", "RESET_EXIT", {
-                baseContentY,
-                canonicalBaseContentY,
-                transform: viewerContent.style.transform,
-                layoutMatchesStart
-            });
-        }
-
-        /*-------------------------------------------------------
-          Stage state logging
-        -------------------------------------------------------*/
-        function logStageState(tag) {
-            if (!viewerContent) return;
-            const rect = viewerContent.getBoundingClientRect();
-            debugLog("detail", "STATE_" + tag, {
-                baseContentY,
-                canonicalBaseContentY,
-                elapsedTime,
-                isScrolling,
-                isDragging,
-                dragStartY,
-                dragStartBaseY,
-                transform: viewerContent.style.transform,
-                contentTop: rect.top,
-                contentBottom: rect.bottom
-            });
-        }
-
-        /*-------------------------------------------------------
-          Initial stage layout
-        -------------------------------------------------------*/
-        function goToInitialStageState(caller) {
-            caller = caller || "unknown";
-            debugLog("detail", "STAGE_RESET_BEGIN", {
-                caller,
-                isStageMode,
-                isScrolling,
-                baseContentY,
-                transform: viewerContent && viewerContent.style
-                    ? viewerContent.style.transform
-                    : "none",
-                viewerFontSize,
-                viewerLineHeight,
-                canonicalBaseContentY
-            });
-
-            logStageState("RESET_BEFORE_PAUSE");
-            pauseScroll();
-
-            const canUseLoadSnapshot =
-                caller === "loadSongIntoUI" &&
-                loadSnapshotBaseContentY != null &&
-                loadSnapshotFontSize === viewerFontSize &&
-                loadSnapshotLineHeight === viewerLineHeight;
-
-            const hasCanonical = canonicalBaseContentY != null;
-
-            if (canUseLoadSnapshot) {
-                baseContentY = loadSnapshotBaseContentY;
-                canonicalBaseContentY = loadSnapshotBaseContentY;
-            } else if (hasCanonical && caller !== "settingsChange") {
-                baseContentY = canonicalBaseContentY;
-            } else {
-                baseContentY = 0;
-            }
-
-            elapsedTime = 0;
-            applyScroll();
-
-            logStageState("RESET_AFTER_BASE");
-
-            debugLog("detail", "STAGE_RESET_AFTER_BASE_SET", {
-                caller,
-                canUseLoadSnapshot,
-                loadSnapshotBaseContentY,
-                baseContentY,
-                canonicalBaseContentY: canonicalBaseContentY == null
-                    ? "null"
-                    : canonicalBaseContentY
-            });
-
-            if (isStageMode) {
-                snapAfterLayout();
+        });
+
+        // Load song into viewer
+        function loadSongIntoUI(songId) {
+            const song = songs.find(s => s.id === songId);
+            if (song) {
+                currentSongId = songId;
+                viewerContent.innerHTML = song.lyrics.split('\n').map(line => 
+                    `<span class="viewer-content-line">${line || '&nbsp;'}</span>`
+                ).join('');
+                statusText.textContent = song.title || 'Song loaded';
+                updatePlaylistDisplay();
+                currentY = 0;
+                viewerContent.style.transform = 'translateY(0px)';
             }
         }
 
-        /*-------------------------------------------------------
-          Drag handling
-        -------------------------------------------------------*/
-        function handleDragStart(y) {
-            if (!viewer || !viewerContent) return;
-            debugLog("detail", "DRAG_START", {
-                y,
-                wasScrollingBeforeDrag: isScrolling,
-                baseContentY
-            });
-            logStageState("DRAG_START");
+        // Update playlist display
+        function updatePlaylistDisplay() {
+            const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+            if (currentSongId) {
+                currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
+            }
+            playlistPillText.textContent = currentPlaylist;
+            playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
+            playlistPill.classList.toggle('hidden', playlistSongs.length === 0);
+            prevSongBtn.classList.toggle('hidden', currentSongIndex <= 0 || playlistSongs.length === 0);
+            nextSongBtn.classList.toggle('hidden', currentSongIndex >= playlistSongs.length - 1 || playlistSongs.length === 0);
+        }
 
-            snapPending = false;
-            wasScrollingBeforeDrag = isScrolling;
-            if (isScrolling) pauseScroll();
+        // Navigation
+        prevSongBtn.onclick = () => {
+            const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+            if (currentSongIndex > 0 && playlistSongs.length > 0) {
+                currentSongIndex--;
+                currentSongId = playlistSongs[currentSongIndex].id;
+                localStorage.setItem('lyricflow_currentSongId', currentSongId);
+                loadSongIntoUI(currentSongId);
+            }
+        };
 
+        nextSongBtn.onclick = () => {
+            const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+            if (currentSongIndex < playlistSongs.length - 1 && playlistSongs.length > 0) {
+                currentSongIndex++;
+                currentSongId = playlistSongs[currentSongIndex].id;
+                localStorage.setItem('lyricflow_currentSongId', currentSongId);
+                loadSongIntoUI(currentSongId);
+            }
+        };
+
+        // Transport controls
+        startBtn.onclick = () => {
+            if (!isPlaying) {
+                isPlaying = true;
+                startTime = performance.now();
+                startBtn.classList.add('hidden');
+                pauseBtn.classList.remove('hidden');
+                animate();
+            }
+        };
+
+        pauseBtn.onclick = () => {
+            isPlaying = false;
+            cancelAnimationFrame(rafId);
+            pauseBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+        };
+
+        resetBtn.onclick = () => {
+            isPlaying = false;
+            currentY = 0;
+            velocityY = 0;
+            startTime = 0;
+            cancelAnimationFrame(rafId);
+            viewerContent.style.transform = 'translateY(0px)';
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+        };
+
+        // Animation loop
+        function animate(currentTime = performance.now()) {
+            if (isPlaying) {
+                const elapsed = (currentTime - startTime) / 1000;
+                const scrollY = (elapsed * scrollSpeed * 30) + currentY;
+                viewerContent.style.transform = `translateY(${-scrollY}px)`;
+                statusText.textContent = `${Math.floor(elapsed/60)}:${(Math.floor(elapsed%60)).toString().padStart(2,'0')}`;
+                timeDisplay.textContent = `${Math.floor(elapsed/60)}:${(Math.floor(elapsed%60)).toString().padStart(2,'0')}`;
+                rafId = requestAnimationFrame(animate);
+            }
+        }
+
+        // Drag handling
+        function handleStart(e) {
             isDragging = true;
-
-            viewerContent.style.transition = "none";
-            viewerContent.style.opacity = 0.8;
-            viewer.style.cursor = "grabbing";
-
-            dragStartY = y;
-            dragStartBaseY = baseContentY;
-
-            setStatus("Manual drag");
+            cancelAnimationFrame(rafId);
+            isPlaying = false;
+            startBtn.classList.remove('hidden');
+            pauseBtn.classList.add('hidden');
+            
+            const touch = e.touches ? e.touches[0] : e;
+            lastTouchY = touch.clientY;
         }
 
-        function clampDragY(rawY) {
-            if (!viewer || !viewerContent) return rawY;
-
-            const viewerRect = viewer.getBoundingClientRect();
-            const contentRect = viewerContent.getBoundingClientRect();
-            const viewerHeight = viewerRect.height;
-            const contentHeight = contentRect.height;
-
-            const padding = viewerHeight * 0.3;
-
-            let topLimit;
-            let bottomLimit;
-
-            if (contentHeight <= viewerHeight) {
-                const wiggle = viewerHeight * 0.5;
-                topLimit = wiggle;
-                bottomLimit = -wiggle;
-            } else {
-                topLimit = padding;
-                bottomLimit = viewerHeight - contentHeight - padding;
-            }
-
-            const clamped = Math.max(bottomLimit, Math.min(topLimit, rawY));
-
-            debugLog("trace", "DRAG_CLAMP", {
-                before: rawY,
-                after: clamped,
-                viewerHeight,
-                contentHeight,
-                topLimit,
-                bottomLimit
-            });
-
-            return clamped;
-        }
-
-        function handleDragMove(y) {
+        function handleMove(e) {
             if (!isDragging) return;
-            const deltaY = y - dragStartY;
-            const unclampedY = dragStartBaseY + deltaY;
-            const newY = clampDragY(unclampedY);
-            baseContentY = newY;
-            applyScroll();
-
-            debugLog("trace", "DRAG_MOVE", {
-                y,
-                deltaY,
-                unclampedY,
-                newY
-            });
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            const deltaY = lastTouchY - touch.clientY;
+            currentY += deltaY * 0.3;
+            lastTouchY = touch.clientY;
+            
+            viewerContent.style.transform = `translateY(${currentY}px)`;
         }
 
-        function handleDragEnd() {
-            if (!isDragging) return;
-
-            debugLog("detail", "DRAG_END_BEFORE", {});
-            logStageState("DRAG_END_BEFORE");
-
+        function handleEnd(e) {
             isDragging = false;
-            if (viewer) viewer.style.cursor = "grab";
-            if (viewerContent) {
-                viewerContent.style.opacity = 1;
-                viewerContent.style.transition = "transform 0.08s ease-out";
-            }
-
-            const shouldResume =
-                wasScrollingBeforeDrag && isStageMode && wasScrollingBeforeDrag !== false;
-
-            debugLog("detail", "DRAG_END_DECISION", {
-                shouldResume,
-                wasScrollingBeforeDrag,
-                isStageMode
-            });
-
-            if (shouldResume) {
-                startScroll();
-            } else {
-                const effective = Math.max(0, getPixelsPerSecond());
-                setStatus(effective === 0 ? "Ready • speed 0" : "Ready");
-                updateResetEnabled();
-            }
-
-            logStageState("DRAG_END_AFTER");
         }
 
-        if (viewer) {
-            safeAddListener(viewer, "pointerdown", (e) => {
-                if (!isStageMode) return;
+        viewerCard.addEventListener('mousedown', handleStart);
+        viewerCard.addEventListener('mousemove', handleMove);
+        viewerCard.addEventListener('mouseup', handleEnd);
+        viewerCard.addEventListener('mouseleave', handleEnd);
+
+        viewerCard.addEventListener('touchstart', handleStart, { passive: false });
+        viewerCard.addEventListener('touchmove', handleMove, { passive: false });
+        viewerCard.addEventListener('touchend', handleEnd);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
                 e.preventDefault();
-                try {
-                    viewer.setPointerCapture(e.pointerId);
-                } catch (_) { }
-                handleDragStart(e.clientY);
-            });
-
-            safeAddListener(viewer, "pointermove", (e) => {
-                if (!isStageMode || !isDragging) return;
-                handleDragMove(e.clientY);
-            });
-
-            safeAddListener(viewer, "pointerup", () => {
-                if (!isStageMode) return;
-                handleDragEnd();
-            });
-
-            safeAddListener(viewer, "pointercancel", () => {
-                if (!isStageMode) return;
-                handleDragEnd();
-            });
-
-            safeAddListener(viewer, "mousedown", (e) => {
-                if (!isStageMode) return;
-                e.preventDefault();
-                handleDragStart(e.clientY);
-            });
-
-            safeAddListener(
-                viewer,
-                "touchstart",
-                (e) => {
-                    if (!isStageMode) return;
-                    const touch = e.touches[0];
-                    if (!touch) return;
-                    e.preventDefault();
-                    handleDragStart(touch.clientY);
-                },
-                { passive: false }
-            );
-        }
-
-        safeAddListener(window, "mouseup", () => {
-            handleDragEnd();
-        });
-
-        safeAddListener(
-            window,
-            "touchmove",
-            (e) => {
-                if (!isDragging) return;
-                const touch = e.touches[0];
-                if (!touch) return;
-                e.preventDefault();
-                handleDragMove(touch.clientY);
-            },
-            { passive: false }
-        );
-
-        safeAddListener(window, "touchend", () => {
-            handleDragEnd();
-        });
-
-        /*-------------------------------------------------------
-          Viewer rebuild from editor
-        -------------------------------------------------------*/
-        function rebuildViewerFromEditor() {
-            if (!viewerContent || !editor) return;
-
-            const rawText = editor.value;
-            const text = rawText.trim()
-                ? rawText
-                : DEFAULT_WELCOME_TEXT;
-
-            viewerContent.innerHTML = "";
-
-            const lines = text.split("\n");
-            lines.forEach((rawLine) => {
-                const line = rawLine.replace(/\r/g, "");
-                const isBlank = !line.trim();
-                const span = document.createElement("span");
-                span.className = "viewer-content-line";
-                span.textContent = isBlank ? "\u00A0" : line;
-                viewerContent.appendChild(span);
-            });
-
-            baseContentY = 0;
-            canonicalBaseContentY = 0;
-            applyScroll();
-            setStatus("Viewer mirrored from editor");
-
-            debugLog("detail", "VIEWER_REBUILT", {
-                fromEditorEmpty: !rawText.trim(),
-                lineCount: lines.length
-            });
-
-            if (isStageMode) {
-                snapAfterLayout();
-            }
-        }
-
-        if (editor) {
-            safeAddListener(editor, "input", rebuildViewerFromEditor);
-        }
-
-        if (clearEditorBtn) {
-            safeAddListener(clearEditorBtn, "click", () => {
-                if (!editor) return;
-                editor.value = "";
-                rebuildViewerFromEditor();
-                debugLog("detail", "EDITOR_CLEARED", {});
-            });
-        }
-
-        /*-------------------------------------------------------
-          Mode toggle
-        -------------------------------------------------------*/
-        if (modeToggle) {
-            safeAddListener(modeToggle, "click", () => {
-                isStageMode = !isStageMode;
-                debugLog("detail", "MODE_TOGGLE", { isStageMode });
-
-                if (isStageMode) {
-                    viewerCard && viewerCard.classList.remove("hidden");
-                    editorCard && editorCard.classList.add("hidden");
-                    bottomBar && bottomBar.classList.remove("hidden");
-                    const span = modeToggle.querySelector("span");
-                    if (span) {
-                        span.innerHTML =
-                            "<strong>Stage mode</strong> <small>· tap for edit</small>";
-                    }
-                    setStatus("Ready");
-                    settingsBtnBottom && settingsBtnBottom.classList.remove("hidden");
-                    document
-                        .querySelectorAll(".stage-only")
-                        .forEach((el) => el.classList.remove("hidden"));
-                    goToInitialStageState("modeToggle");
+                if (isPlaying) {
+                    pauseBtn.click();
                 } else {
-                    pauseScroll();
-                    viewerCard && viewerCard.classList.add("hidden");
-                    editorCard && editorCard.classList.remove("hidden");
-                    bottomBar && bottomBar.classList.add("hidden");
-                    const span = modeToggle.querySelector("span");
-                    if (span) {
-                        span.innerHTML =
-                            "<strong>Edit mode</strong> <small>· tap for stage</small>";
-                    }
-                    setStatus("Edit lyrics – viewer mirrors automatically");
-                    settingsBtnBottom && settingsBtnBottom.classList.add("hidden");
-                    document
-                        .querySelectorAll(".stage-only")
-                        .forEach((el) => el.classList.add("hidden"));
+                    startBtn.click();
                 }
-            });
-        }
-
-        /*-------------------------------------------------------
-          Transport controls
-        -------------------------------------------------------*/
-        if (startBtn) {
-            safeAddListener(startBtn, "click", () => {
-                if (!isStageMode) return;
-                startScroll();
-            });
-        }
-
-        if (pauseBtn) {
-            safeAddListener(pauseBtn, "click", () => {
-                if (!isStageMode) return;
-                pauseScroll();
-            });
-        }
-
-        if (resetBtn) {
-            safeAddListener(resetBtn, "click", () => {
-                resetScroll();
-            });
-        }
-
-        safeAddListener(document, "keydown", (e) => {
-            if (!isStageMode) return;
-            if (e.target === editor) return;
-
-            if (e.code === "Space") {
-                const now = Date.now();
-                if (now - lastSpaceTime < 150) return;
-                lastSpaceTime = now;
-                e.preventDefault();
-                if (isScrolling) pauseScroll();
-                else startScroll();
             }
-
-            if (e.key === "r" || e.key === "R") {
-                resetScroll();
+            if (e.code === 'KeyR') {
+                resetBtn.click();
             }
         });
 
-        /*-------------------------------------------------------
-          Settings – scroll, font, spacing
-        -------------------------------------------------------*/
-        function updateSpeedModeUI() {
-            const isBPMMode = speedModeBPM && speedModeBPM.checked;
-            if (percentModeFields) percentModeFields.classList.toggle("hidden", isBPMMode);
-            if (bpmModeFields) bpmModeFields.classList.toggle("hidden", !isBPMMode);
-            if (bpmModeFields2) bpmModeFields2.classList.toggle("hidden", !isBPMMode);
+        // Settings handlers
+        scrollSpeedInput.oninput = (e) => {
+            scrollSpeed = parseFloat(e.target.value);
+            scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
+            saveSettings();
+        };
 
-            if (isBPMMode) {
-                songBPM = parseInt(bpmInput && bpmInput.value, 10) || 120;
-                linesPerMeasure =
-                    parseFloat(linesPerMeasureInput && linesPerMeasureInput.value) || 4;
-            } else {
-                songBPM = null;
-            }
+        fontSizeInput.oninput = (e) => {
+            fontSize = parseInt(e.target.value);
+            fontSizeValue.textContent = fontSize + 'px';
+            viewer.style.fontSize = fontSize + 'px';
+            saveSettings();
+        };
 
-            if (isStageMode && !isScrolling) {
-                const pps = getPixelsPerSecond();
-                setStatus(pps === 0 ? "Ready (speed 0)" : "Ready");
-            }
+        lineHeightInput.oninput = (e) => {
+            lineHeight = parseFloat(e.target.value);
+            lineHeightValue.textContent = lineHeight.toFixed(1);
+            viewer.style.lineHeight = lineHeight;
+            saveSettings();
+        };
 
-            debugLog("detail", "SPEED_MODE_UPDATE", {
-                isBPMMode,
-                songBPM,
-                linesPerMeasure,
-                speedPercent
+        function saveSettings() {
+            localStorage.setItem('lyricflow_settings', JSON.stringify({
+                scrollSpeed,
+                fontSize,
+                lineHeight
+            }));
+        }
+
+        function closeStageInfo() {
+            document.getElementById('stageInfoOverlay').classList.add('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsOverlay').classList.add('hidden');
+        }
+
+        // Event listeners
+        document.getElementById('infoMainTrigger').onclick = () => {
+            document.getElementById('stageInfoOverlay').classList.remove('hidden');
+        };
+
+        document.getElementById('stageInfoBtn').onclick = () => {
+            document.getElementById('stageInfoOverlay').classList.remove('hidden');
+        };
+
+        document.getElementById('settingsBtnBottom').onclick = () => {
+            document.getElementById('settingsOverlay').classList.remove('hidden');
+        };
+
+        // Init
+        updatePlaylistDisplay();
+        if (currentSongId) {
+            loadSongIntoUI(currentSongId);
+        }
+
+        // Update time display every second
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
             });
-        }
-
-        function openSettings() {
-            debugLog("detail", "SETTINGS_OPEN", {
-                songBPM,
-                linesPerMeasure,
-                speedPercent,
-                viewerFontSize,
-                viewerLineHeight
-            });
-
-            if (songBPM !== null && speedModeBPM) {
-                speedModeBPM.checked = true;
-                if (bpmInput) bpmInput.value = String(songBPM);
-                if (linesPerMeasureInput) {
-                    linesPerMeasureInput.value = String(linesPerMeasure || 4);
-                }
-            } else if (speedModePercent) {
-                speedModePercent.checked = true;
-                if (speedPercentSlider) {
-                    speedPercentSlider.value = String(speedPercent);
-                    if (speedPercentLabel) {
-                        speedPercentLabel.textContent = speedPercent + "%";
-                    }
-                }
-            }
-
-            updateSpeedModeUI();
-
-            if (fontSizeSlider) fontSizeSlider.value = String(viewerFontSize);
-            if (lineSpacingSlider) lineSpacingSlider.value = String(viewerLineHeight);
-
-            if (countInSelect) countInSelect.value = String(countInBars || 0);
-            if (autoRestartCheckbox) autoRestartCheckbox.checked = !!autoRestartEnabled;
-            if (highContrastCheckbox) highContrastCheckbox.checked = !!highContrastEnabled;
-
-            if (settingsOverlay) settingsOverlay.classList.remove("hidden");
-        }
-
-        if (settingsBtnBottom) {
-            safeAddListener(settingsBtnBottom, "click", () => {
-                if (!isStageMode) return;
-                openSettings();
-            });
-        }
-
-        if (settingsOverlay) {
-            safeAddListener(settingsOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeSettings !== undefined ||
-                    e.target === settingsOverlay
-                ) {
-                    settingsOverlay.classList.add("hidden");
-                    debugLog("detail", "SETTINGS_CLOSE", {});
-                }
-            });
-
-            settingsOverlay
-                .querySelectorAll("[data-close-settings]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        settingsOverlay.classList.add("hidden");
-                        debugLog("detail", "SETTINGS_CLOSE_BTN", {});
-                    })
-                );
-        }
-
-        if (speedModePercent) {
-            safeAddListener(speedModePercent, "change", updateSpeedModeUI);
-        }
-        if (speedModeBPM) {
-            safeAddListener(speedModeBPM, "change", updateSpeedModeUI);
-        }
-
-        if (bpmInput) {
-            safeAddListener(bpmInput, "input", () => {
-                songBPM = parseInt(bpmInput.value, 10) || 120;
-                debugLog("detail", "BPM_CHANGE", { songBPM });
-            });
-        }
-
-        if (linesPerMeasureInput) {
-            safeAddListener(linesPerMeasureInput, "change", () => {
-                linesPerMeasure =
-                    parseFloat(linesPerMeasureInput.value) || 4;
-                debugLog("detail", "LINES_PER_MEASURE_CHANGE", {
-                    linesPerMeasure
-                });
-            });
-        }
-
-        if (speedPercentSlider) {
-            safeAddListener(speedPercentSlider, "input", () => {
-                const raw = parseInt(speedPercentSlider.value, 10) || 0;
-                speedPercent = Math.max(0, Math.min(100, raw));
-                if (speedPercentLabel) {
-                    speedPercentLabel.textContent = speedPercent + "%";
-                }
-                setStatus(isScrolling ? "Scrolling" : "Ready");
-                debugLog("detail", "SPEED_PERCENT_CHANGE", {
-                    speedPercent
-                });
-            });
-        }
-        if (fontSizeSlider) {
-            safeAddListener(fontSizeSlider, "input", () => {
-                viewerFontSize = parseInt(fontSizeSlider.value, 10) || 20;
-                applyFontSize();
-
-                songStartBaseContentY = null;
-                songStartFontSize = null;
-                songStartLineHeight = null;
-                songStartLineIndex = null;
-                loadSnapshotBaseContentY = null;
-                loadSnapshotFontSize = null;
-                loadSnapshotLineHeight = null;
-                canonicalBaseContentY = null;
-
-                baseContentY = 0;
-                applyScroll();
-
-                debugLog("detail", "FONT_CHANGE_INVALIDATE", { viewerFontSize });
-
-                if (isStageMode && !pendingSnapFromSettings) {
-                    pendingSnapFromSettings = true;
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            pendingSnapFromSettings = false;
-                            snapFirstLineClean();
-                        });
-                    });
-                }
-            });
-        }
-
-        if (lineSpacingSlider) {
-            safeAddListener(lineSpacingSlider, "input", () => {
-                viewerLineHeight = parseFloat(lineSpacingSlider.value) || 1.9;
-                applyFontSize();
-
-                songStartBaseContentY = null;
-                songStartFontSize = null;
-                songStartLineHeight = null;
-                songStartLineIndex = null;
-                loadSnapshotBaseContentY = null;
-                loadSnapshotFontSize = null;
-                loadSnapshotLineHeight = null;
-                canonicalBaseContentY = null;
-
-                baseContentY = 0;
-                applyScroll();
-
-                debugLog("detail", "LINEHEIGHT_CHANGE_INVALIDATE", { viewerLineHeight });
-
-                if (isStageMode && !pendingSnapFromSettings) {
-                    pendingSnapFromSettings = true;
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            pendingSnapFromSettings = false;
-                            snapFirstLineClean();
-                        });
-                    });
-                }
-            });
-        }
-
-        /*-------------------------------------------------------
-          Storage – same schema plus existing extras
-        -------------------------------------------------------*/
-        const STORAGE_KEY = "lyricflow_v3_songs";
-
-        function storageAvailable() {
-            try {
-                const testKey = "__lf_test__";
-                localStorage.setItem(testKey, "1");
-                localStorage.removeItem(testKey);
-                return true;
-            } catch (e) {
-                debugError("STORAGE_UNAVAILABLE", { error: e.message });
-                return false;
-            }
-        }
-
-        function saveSongsToStorage() {
-            if (!storageAvailable()) return;
-            try {
-                const payload = JSON.stringify(savedSongs || []);
-                localStorage.setItem(STORAGE_KEY, payload);
-                debugLog("detail", "STORAGE_SAVE", { count: (savedSongs || []).length });
-            } catch (e) {
-                debugError("STORAGE_SAVE_ERR", { error: e.message });
-            }
-        }
-
-        function loadSongsFromStorage() {
-            if (!storageAvailable()) {
-                savedSongs = [];
-                return;
-            }
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) {
-                    savedSongs = [];
-                    debugLog("basic", "STORAGE_LOAD_EMPTY", {});
-                    return;
-                }
-                const parsed = JSON.parse(raw);
-                if (!Array.isArray(parsed)) {
-                    savedSongs = [];
-                    debugError("STORAGE_LOAD_BAD_FORMAT", {});
-                    return;
-                }
-                savedSongs = parsed.map((s) => ({
-                    id: s.id || ("song_" + Math.random().toString(36).slice(2)),
-                    name: s.name || "Untitled",
-                    playlist: s.playlist || "Set 1",
-                    content: s.content || "",
-                    speed: typeof s.speed === "number" ? s.speed : DEFAULT_SCROLL_SPEED,
-                    speedPercent:
-                        typeof s.speedPercent === "number" ? s.speedPercent : 50,
-                    fontSize:
-                        typeof s.fontSize === "number" ? s.fontSize : viewerFontSize,
-                    lineHeight:
-                        typeof s.lineHeight === "number" ? s.lineHeight : viewerLineHeight,
-                    bpm: typeof s.bpm === "number" ? s.bpm : null,
-                    linesPerMeasure:
-                        typeof s.linesPerMeasure === "number"
-                            ? s.linesPerMeasure
-                            : 4,
-                    createdAt: s.createdAt || new Date().toISOString()
-                }));
-                debugLog("basic", "STORAGE_LOAD_OK", { count: savedSongs.length });
-            } catch (e) {
-                savedSongs = [];
-                debugError("STORAGE_LOAD_ERR", { error: e.message });
-            }
-        }
-
-        /*-------------------------------------------------------
-          Songs + playlists
-        -------------------------------------------------------*/
-        function buildPlaylistSelect() {
-            if (!playlistSelect) return;
-            const playlists = Array.from(
-                new Set((savedSongs || []).map((s) => s.playlist || "Set 1"))
-            ).sort();
-            playlistSelect.innerHTML = "";
-            if (!playlists.length) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No playlists";
-                playlistSelect.appendChild(opt);
-            } else {
-                playlists.forEach((p) => {
-                    const opt = document.createElement("option");
-                    opt.value = p;
-                    opt.textContent = p;
-                    playlistSelect.appendChild(opt);
-                });
-            }
-            debugLog("detail", "PLAYLIST_SELECT_BUILT", { playlists });
-        }
-
-        function formatSongMeta(song) {
-            const bpm = typeof song.bpm === "number" ? song.bpm : null;
-            const lpm = typeof song.linesPerMeasure === "number" ? song.linesPerMeasure : null;
-            const fSize = typeof song.fontSize === "number" ? song.fontSize : null;
-            const lH = typeof song.lineHeight === "number" ? song.lineHeight : null;
-
-            const parts = [];
-            if (bpm) parts.push(bpm + " BPM");
-            if (lpm) parts.push(lpm + " l/m");
-            if (fSize && lH) parts.push(fSize + "px / " + lH);
-            if (!bpm && !lpm) {
-                const sp =
-                    typeof song.speedPercent === "number"
-                        ? song.speedPercent
-                        : 0;
-                parts.push(sp + "%");
-            }
-            return parts.join(" · ");
-        }
-
-        function buildLoadSongList() {
-            if (!playlistSelect || !loadSongList) return;
-            const playlistName = playlistSelect.value || "Set 1";
-            loadSongList.innerHTML = "";
-            const songs = (savedSongs || [])
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            songs.forEach((s, index) => {
-                const item = document.createElement("div");
-                item.className = "track-item";
-                const label = document.createElement("span");
-                label.textContent = (index + 1) + ". " + (s.name || "Untitled");
-                const metaSpan = document.createElement("span");
-                metaSpan.textContent = formatSongMeta(s);
-
-                item.appendChild(label);
-                item.appendChild(metaSpan);
-                safeAddListener(item, "click", () => {
-                    loadOverlay && loadOverlay.classList.add("hidden");
-                    loadSongIntoUI(s);
-                });
-                loadSongList.appendChild(item);
-            });
-
-            if (!songs.length) {
-                loadSongList.innerHTML =
-                    '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
-            }
-            debugLog("detail", "LOAD_SONG_LIST_BUILT", {
-                playlistName,
-                count: songs.length
-            });
-        }
-
-        if (loadSongBtn) {
-            safeAddListener(loadSongBtn, "click", () => {
-                if (isStageMode) return;
-                buildPlaylistSelect();
-                buildLoadSongList();
-                loadOverlay && loadOverlay.classList.remove("hidden");
-                debugLog("detail", "LOAD_OVERLAY_OPEN", {});
-            });
-        }
-
-        if (loadOverlay) {
-            safeAddListener(loadOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeLoad !== undefined ||
-                    e.target === loadOverlay
-                ) {
-                    loadOverlay.classList.add("hidden");
-                    debugLog("detail", "LOAD_OVERLAY_CLOSE", {});
-                }
-            });
-
-            loadOverlay
-                .querySelectorAll("[data-close-load]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        loadOverlay.classList.add("hidden");
-                        debugLog("detail", "LOAD_OVERLAY_CLOSE_BTN", {});
-                    })
-                );
-        }
-
-        if (playlistSelect) {
-            safeAddListener(playlistSelect, "change", buildLoadSongList);
-        }
-
-        function buildCurrentPlaylistOrder(playlistName, focusSongId) {
-            const songs = (savedSongs || [])
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            currentPlaylistName = playlistName;
-            currentPlaylistSongIds = songs.map((s) => s.id);
-            currentSongId = focusSongId || (songs[0] && songs[0].id) || null;
-
-            const index = currentPlaylistSongIds.indexOf(currentSongId);
-            const humanIndex = index >= 0 ? index + 1 : 1;
-            const total = currentPlaylistSongIds.length || 1;
-
-            if (playlistPillText) playlistPillText.textContent = playlistName;
-            if (playlistPillIndex) playlistPillIndex.textContent = humanIndex + "/" + total;
-
-            if (currentPlaylistSongIds.length > 1) {
-                playlistPill && playlistPill.classList.remove("hidden");
-                prevSongBtn && prevSongBtn.classList.remove("hidden");
-                nextSongBtn && nextSongBtn.classList.remove("hidden");
-            } else {
-                playlistPill && playlistPill.classList.add("hidden");
-                prevSongBtn && prevSongBtn.classList.add("hidden");
-                nextSongBtn && nextSongBtn.classList.add("hidden");
-            }
-
-            debugLog("detail", "PLAYLIST_ORDER_BUILT", {
-                playlistName,
-                currentSongId,
-                order: currentPlaylistSongIds
-            });
-        }
-
-        function findSongById(id) {
-            return (savedSongs || []).find((s) => s.id === id) || null;
-        }
-
-        function navigatePlaylist(offset) {
-            if (!currentPlaylistSongIds || !currentPlaylistSongIds.length) return;
-            const len = currentPlaylistSongIds.length;
-            if (!len) return;
-
-            const currentIndex = currentPlaylistSongIds.indexOf(currentSongId);
-            const safeIndex = currentIndex >= 0 ? currentIndex : 0;
-            let nextIndex = safeIndex + offset;
-
-            if (nextIndex < 0) nextIndex = len - 1;
-            if (nextIndex >= len) nextIndex = 0;
-
-            const nextId = currentPlaylistSongIds[nextIndex];
-            const song = findSongById(nextId);
-            if (!song) return;
-
-            debugLog("detail", "PLAYLIST_NAVIGATE", {
-                offset,
-                fromIndex: safeIndex,
-                toIndex: nextIndex,
-                nextId
-            });
-
-            loadSongIntoUI(song, { fromPlaylistNav: true });
-        }
-
-        if (prevSongBtn) {
-            safeAddListener(prevSongBtn, "click", () => navigatePlaylist(-1));
-        }
-        if (nextSongBtn) {
-            safeAddListener(nextSongBtn, "click", () => navigatePlaylist(1));
-        }
-
-        /*-------------------------------------------------------
-          Playlist pill -> quick track select
-        -------------------------------------------------------*/
-        function openPlaylistSelectOverlay() {
-            if (!currentPlaylistName || !playlistSelectOverlay || !trackList) return;
-
-            playlistSelectTitle.textContent = currentPlaylistName;
-            trackList.innerHTML = "";
-            const songs = (savedSongs || [])
-                .filter((s) => (s.playlist || "Set 1") === currentPlaylistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            songs.forEach((s, index) => {
-                const item = document.createElement("div");
-                item.className = "track-item";
-
-                const label = document.createElement("span");
-                label.textContent = (index + 1) + ". " + (s.name || "Untitled");
-
-                const meta = document.createElement("span");
-                meta.textContent = formatSongMeta(s);
-
-                item.appendChild(label);
-                item.appendChild(meta);
-                safeAddListener(item, "click", () => {
-                    playlistSelectOverlay.classList.add("hidden");
-                    loadSongIntoUI(s, { fromPlaylistNav: true });
-                });
-
-                trackList.appendChild(item);
-            });
-
-            if (!songs.length) {
-                trackList.innerHTML =
-                    '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
-            }
-
-            playlistSelectOverlay.classList.remove("hidden");
-            debugLog("detail", "PLAYLIST_SELECT_OVERLAY_OPEN", {
-                playlistName: currentPlaylistName,
-                count: songs.length
-            });
-        }
-
-        if (playlistPill) {
-            safeAddListener(playlistPill, "click", () => {
-                if (!isStageMode) return;
-                openPlaylistSelectOverlay();
-            });
-        }
-
-        if (playlistSelectOverlay) {
-            safeAddListener(playlistSelectOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closePlaylistSelect !== undefined ||
-                    e.target === playlistSelectOverlay
-                ) {
-                    playlistSelectOverlay.classList.add("hidden");
-                    debugLog("detail", "PLAYLIST_SELECT_OVERLAY_CLOSE", {});
-                }
-            });
-
-            playlistSelectOverlay
-                .querySelectorAll("[data-close-playlist-select]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        playlistSelectOverlay.classList.add("hidden");
-                        debugLog("detail", "PLAYLIST_SELECT_OVERLAY_CLOSE_BTN", {});
-                    })
-                );
-        }
-
-        /*-------------------------------------------------------
-          Save song flow
-        -------------------------------------------------------*/
-        if (saveSongBtn) {
-            safeAddListener(saveSongBtn, "click", () => {
-                if (!editor) return;
-                const existingTitle = currentSong && currentSong.name
-                    ? currentSong.name
-                    : "";
-                const existingPlaylist = currentSong && currentSong.playlist
-                    ? currentSong.playlist
-                    : "Set 1";
-
-                songTitleInput.value = existingTitle;
-                playlistInput.value = existingPlaylist;
-                saveOverlay && saveOverlay.classList.remove("hidden");
-
-                debugLog("detail", "SAVE_OVERLAY_OPEN", {
-                    existingTitle,
-                    existingPlaylist
-                });
-            });
-        }
-
-        if (saveOverlay) {
-            safeAddListener(saveOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeSave !== undefined ||
-                    e.target === saveOverlay
-                ) {
-                    saveOverlay.classList.add("hidden");
-                    debugLog("detail", "SAVE_OVERLAY_CLOSE", {});
-                }
-            });
-
-            saveOverlay
-                .querySelectorAll("[data-close-save]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        saveOverlay.classList.add("hidden");
-                        debugLog("detail", "SAVE_OVERLAY_CLOSE_BTN", {});
-                    })
-                );
-        }
-
-        if (saveConfirmBtn) {
-            safeAddListener(saveConfirmBtn, "click", () => {
-                if (!editor) return;
-
-                const title = (songTitleInput.value || "").trim() || "Untitled";
-                const playlistName = (playlistInput.value || "").trim() || "Set 1";
-                const content = editor.value || "";
-
-                let song = currentSong;
-                if (!song) {
-                    song = {
-                        id: "song_" + Math.random().toString(36).slice(2),
-                        createdAt: new Date().toISOString()
-                    };
-                    savedSongs.push(song);
-                }
-
-                song.name = title;
-                song.playlist = playlistName;
-                song.content = content;
-
-                song.speedPercent =
-                    typeof speedPercent === "number" ? speedPercent : 50;
-                song.speed =
-                    typeof scrollSpeed === "number" ? scrollSpeed : DEFAULT_SCROLL_SPEED;
-                song.fontSize = viewerFontSize;
-                song.lineHeight = viewerLineHeight;
-                song.bpm = songBPM;
-                song.linesPerMeasure = linesPerMeasure;
-
-                currentSong = song;
-                currentSongId = song.id;
-
-                saveSongsToStorage();
-                saveOverlay && saveOverlay.classList.add("hidden");
-
-                buildCurrentPlaylistOrder(playlistName, song.id);
-                setStatus("Song saved");
-
-                debugLog("detail", "SONG_SAVED", {
-                    id: song.id,
-                    name: song.name,
-                    playlist: song.playlist
-                });
-            });
-        }
-
-        /*-------------------------------------------------------
-          Edit playlist UI
-        -------------------------------------------------------*/
-        function buildEditPlaylistSelect() {
-            if (!editPlaylistSelect) return;
-            const playlists = Array.from(
-                new Set((savedSongs || []).map((s) => s.playlist || "Set 1"))
-            ).sort();
-
-            editPlaylistSelect.innerHTML = "";
-            if (!playlists.length) {
-                const opt = document.createElement("option");
-                opt.value = "";
-                opt.textContent = "No playlists";
-                editPlaylistSelect.appendChild(opt);
-            } else {
-                playlists.forEach((p) => {
-                    const opt = document.createElement("option");
-                    opt.value = p;
-                    opt.textContent = p;
-                    editPlaylistSelect.appendChild(opt);
-                });
-            }
-
-            debugLog("detail", "EDIT_PLAYLIST_SELECT_BUILT", { playlists });
-        }
-
-        function buildPlaylistEditList() {
-            if (!editPlaylistSelect || !playlistEditList) return;
-            const playlistName = editPlaylistSelect.value || "Set 1";
-            playlistEditList.innerHTML = "";
-
-            const songs = (savedSongs || [])
-                .filter((s) => (s.playlist || "Set 1") === playlistName)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-            songs.forEach((s, index) => {
-                const row = document.createElement("div");
-                row.className = "playlist-edit-item";
-
-                const nameSpan = document.createElement("span");
-                nameSpan.className = "playlist-edit-name";
-                nameSpan.textContent = (index + 1) + ". " + (s.name || "Untitled");
-
-                const controls = document.createElement("div");
-                controls.className = "playlist-edit-controls";
-
-                const upBtn = document.createElement("button");
-                upBtn.textContent = "↑";
-
-                const downBtn = document.createElement("button");
-                downBtn.textContent = "↓";
-
-                const deleteBtn = document.createElement("button");
-                deleteBtn.textContent = "✕";
-
-                safeAddListener(upBtn, "click", () => {
-                    const idx = savedSongs.findIndex((x) => x.id === s.id);
-                    if (idx > 0) {
-                        const prev = savedSongs[idx - 1];
-                        if ((prev.playlist || "Set 1") === playlistName) {
-                            const tmp = savedSongs[idx].createdAt;
-                            savedSongs[idx].createdAt = prev.createdAt;
-                            prev.createdAt = tmp;
-                            saveSongsToStorage();
-                            buildPlaylistEditList();
-                        }
-                    }
-                });
-
-                safeAddListener(downBtn, "click", () => {
-                    const idx = savedSongs.findIndex((x) => x.id === s.id);
-                    if (idx >= 0 && idx < savedSongs.length - 1) {
-                        const next = savedSongs[idx + 1];
-                        if ((next.playlist || "Set 1") === playlistName) {
-                            const tmp = savedSongs[idx].createdAt;
-                            savedSongs[idx].createdAt = next.createdAt;
-                            next.createdAt = tmp;
-                            saveSongsToStorage();
-                            buildPlaylistEditList();
-                        }
-                    }
-                });
-
-                safeAddListener(deleteBtn, "click", () => {
-                    const confirmed = window.confirm("Delete this song?");
-                    if (!confirmed) return;
-                    savedSongs = savedSongs.filter((x) => x.id !== s.id);
-                    if (currentSongId === s.id) {
-                        currentSongId = null;
-                        currentSong = null;
-                    }
-                    saveSongsToStorage();
-                    buildPlaylistEditList();
-                    buildPlaylistSelect();
-                });
-
-                controls.appendChild(upBtn);
-                controls.appendChild(downBtn);
-                controls.appendChild(deleteBtn);
-
-                row.appendChild(nameSpan);
-                row.appendChild(controls);
-                playlistEditList.appendChild(row);
-            });
-
-            if (!songs.length) {
-                playlistEditList.innerHTML =
-                    '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No songs in this playlist</p>';
-            }
-
-            debugLog("detail", "PLAYLIST_EDIT_LIST_BUILT", {
-                playlistName,
-                count: songs.length
-            });
-        }
-
-        if (editPlaylistBtn) {
-            safeAddListener(editPlaylistBtn, "click", () => {
-                buildEditPlaylistSelect();
-                buildPlaylistEditList();
-                editPlaylistOverlay && editPlaylistOverlay.classList.remove("hidden");
-            });
-        }
-
-        if (editPlaylistOverlay) {
-            safeAddListener(editPlaylistOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeEditPlaylist !== undefined ||
-                    e.target === editPlaylistOverlay
-                ) {
-                    editPlaylistOverlay.classList.add("hidden");
-                }
-            });
-
-            editPlaylistOverlay
-                .querySelectorAll("[data-close-edit-playlist]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        editPlaylistOverlay.classList.add("hidden");
-                    })
-                );
-        }
-
-        if (editPlaylistSelect) {
-            safeAddListener(editPlaylistSelect, "change", buildPlaylistEditList);
-        }
-
-        /*-------------------------------------------------------
-          Info modals
-        -------------------------------------------------------*/
-        if (stageInfoBtn && stageInfoOverlay) {
-            safeAddListener(stageInfoBtn, "click", () => {
-                if (!isStageMode) return;
-                stageInfoOverlay.classList.remove("hidden");
-            });
-
-            safeAddListener(stageInfoOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeStageInfo !== undefined ||
-                    e.target === stageInfoOverlay
-                ) {
-                    stageInfoOverlay.classList.add("hidden");
-                }
-            });
-
-            stageInfoOverlay
-                .querySelectorAll("[data-close-stage-info]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        stageInfoOverlay.classList.add("hidden");
-                    })
-                );
-        }
-
-        if (editorInfoBtn && editInfoOverlay) {
-            safeAddListener(editorInfoBtn, "click", () => {
-                if (isStageMode) return;
-                editInfoOverlay.classList.remove("hidden");
-            });
-
-            safeAddListener(editInfoOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeEditInfo !== undefined ||
-                    e.target === editInfoOverlay
-                ) {
-                    editInfoOverlay.classList.add("hidden");
-                }
-            });
-
-            editInfoOverlay
-                .querySelectorAll("[data-close-edit-info]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        editInfoOverlay.classList.add("hidden");
-                    })
-                );
-        }
-
-        /*-------------------------------------------------------
-          About / Donate / Contact modal
-        -------------------------------------------------------*/
-        function openAboutModal(initialTab) {
-            if (!aboutOverlay) return;
-
-            const tabName = initialTab || "about";
-            aboutTabs.forEach(tab => {
-                tab.classList.toggle("active", tab.dataset.aboutTab === tabName);
-            });
-            aboutPanels.forEach(panel => {
-                panel.classList.toggle("hidden", panel.dataset.aboutPanel !== tabName);
-            });
-
-            aboutOverlay.classList.remove("hidden");
-        }
-
-        if (infoMainTrigger) {
-            safeAddListener(infoMainTrigger, "click", () => openAboutModal("about"));
-        }
-        if (infoTopPill) {
-            safeAddListener(infoTopPill, "click", () => openAboutModal("about"));
-        }
-        if (donatePill) {
-            safeAddListener(donatePill, "click", () => openAboutModal("donate"));
-        }
-
-        aboutTabs.forEach(tab => {
-            safeAddListener(tab, "click", () => {
-                const tabName = tab.dataset.aboutTab;
-                openAboutModal(tabName);
-            });
-        });
-
-        if (aboutOverlay) {
-            safeAddListener(aboutOverlay, "click", (e) => {
-                if (
-                    e.target.dataset.closeAbout !== undefined ||
-                    e.target === aboutOverlay
-                ) {
-                    aboutOverlay.classList.add("hidden");
-                }
-            });
-
-            aboutOverlay
-                .querySelectorAll("[data-close-about]")
-                .forEach((el) =>
-                    safeAddListener(el, "click", () => {
-                        aboutOverlay.classList.add("hidden");
-                    })
-                );
-        }
-
-        /*-------------------------------------------------------
-          Song load into UI (uses existing v3 logic, abbreviated)
-        -------------------------------------------------------*/
-        function loadSongIntoUI(song, opts) {
-            opts = opts || {};
-            if (!song || !editor || !viewerContent) return;
-
-            currentSong = song;
-            currentSongId = song.id;
-
-            editor.value = song.content || "";
-            rebuildViewerFromEditor();
-
-            viewerFontSize = typeof song.fontSize === "number" ? song.fontSize : viewerFontSize;
-            viewerLineHeight = typeof song.lineHeight === "number" ? song.lineHeight : viewerLineHeight;
-            applyFontSize();
-
-            songBPM = typeof song.bpm === "number" ? song.bpm : null;
-            linesPerMeasure = typeof song.linesPerMeasure === "number" ? song.linesPerMeasure : 4;
-            speedPercent = typeof song.speedPercent === "number" ? song.speedPercent : 50;
-
-            canonicalBaseContentY = 0;
-            baseContentY = 0;
-            applyScroll();
-
-            loadSnapshotBaseContentY = baseContentY;
-            loadSnapshotFontSize = viewerFontSize;
-            loadSnapshotLineHeight = viewerLineHeight;
-
-            buildCurrentPlaylistOrder(song.playlist || "Set 1", song.id);
-
-            setStatus("Loaded: " + (song.name || "Untitled"));
-
-            debugLog("detail", "LOAD_SONG_INTO_UI", {
-                id: song.id,
-                name: song.name,
-                playlist: song.playlist
-            });
-
-            goToInitialStageState("loadSongIntoUI");
-        }
-
-        /*-------------------------------------------------------
-          Initial boot
-        -------------------------------------------------------*/
-        loadSongsFromStorage();
-        rebuildViewerFromEditor();
-        applyFontSize();
-        updateResetEnabled();
-        setStatus("Ready");
-
+            // timeDisplay already shows song time, statusText shows song time too
+        }, 1000);
     </script>
 </body>
 </html>
