@@ -927,7 +927,7 @@
             localStorage.setItem('lyricflow_currentSongId', song.id);
             
             loadOverlay.classList.add('hidden');
-            statusText.textContent = `Loaded: ${song.name}`;
+            statusText.textContent = `Loaded: ${song.title}`;
         };
 
         window.moveSong = function(idx, direction) {
@@ -959,7 +959,7 @@
             const playlistSongs = savedSongs.filter(s => s.playlist === currentSong.playlist);
             const globalIdx = savedSongs.findIndex(s => s.id === currentSong.id);
             playlistEditDetails.style.display = 'grid';
-            qs('currentSongTitle').textContent = currentSong.name;
+            qs('currentSongTitle').textContent = currentSong.title;
             qs('currentPlaylist').textContent = currentSong.playlist;
             qs('currentSongIndex').textContent = `${globalIdx + 1}/${savedSongs.length}`;
         }
