@@ -806,9 +806,9 @@
                 }
                 savedSongs = JSON.parse(raw).map(s => ({
                     id: s.id || 'song_' + Math.random().toString(36).slice(2),
-                    name: s.name || 'Untitled',
+                    name: s.title || 'Untitled',
                     playlist: s.playlist || 'Set 1',
-                    content: s.content || '',
+                    content: s.lyrics || '',
                     createdAt: s.createdAt || new Date().toISOString()
                 }));
             } catch (e) {
@@ -845,7 +845,7 @@
             const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
             if (playlistSelect) {
                 playlistSelect.innerHTML = playlists.length 
-                    ? playlists.map(p => `<option value="${p}">${p} (${savedSongs.filter(s => s.playlist === p).length})</option>`).join('')
+                    ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
                     : '<option value="Set 1">Set 1</option>';
             }
             if (editPlaylistSelect) {
