@@ -865,7 +865,7 @@
             loadSongList.innerHTML = pageSongs.length 
                 ? pageSongs.map((s, i) => 
                     `<div class="track-item" onclick="loadSongIntoEditor('${s.id}')">
-                        <span>${startIdx + i + 1}. ${s.name}</span>
+                        <span>${startIdx + i + 1}. ${s.title}</span>
                     </div>`
                 ).join('')
                 : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
@@ -896,7 +896,7 @@
                 const globalIdx = savedSongs.findIndex(x => x.id === s.id);
                 return `
                     <div class="playlist-edit-item">
-                        <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
+                        <span class="playlist-edit-name">${startIdx + i + 1}. ${s.title}</span>
                         <div class="playlist-edit-controls">
                             ${globalIdx > 0 ? `<button onclick="moveSong(${globalIdx}, -1)" title="Move up">↑</button>` : '<span style="width:24px;"></span>'}
                             ${globalIdx < savedSongs.length - 1 ? `<button onclick="moveSong(${globalIdx}, 1)" title="Move down">↓</button>` : '<span style="width:24px;"></span>'}
@@ -920,14 +920,14 @@
             if (!song) return;
             
             currentSong = song;
-            editor.value = song.lyrics;
+            editor.value = song.lyrics || '';
             updatePlaylistDetails();
             
             // MARK AS CURRENT SONG FOR STAGE SYNC (like original behavior)
             localStorage.setItem('lyricflow_currentSongId', song.id);
             
             loadOverlay.classList.add('hidden');
-            statusText.textContent = `Loaded: ${song.title}`;
+            statusText.textContent = `Loaded: ${song.title || song.name || 'song'}`;
         };
 
         window.moveSong = function(idx, direction) {
@@ -1000,7 +1000,7 @@
         // Event listeners
         if (editorInfoBtn) editorInfoBtn.onclick = () => editInfoOverlay.classList.remove('hidden');
         if (saveSongBtn) saveSongBtn.onclick = () => {
-            songTitleInput.value = currentSong?.name || '';
+            songTitleInput.value = currentSong?.title || '';
             playlistInput.value = currentSong?.playlist || 'Set 1';
             saveOverlay.classList.remove('hidden');
         };
