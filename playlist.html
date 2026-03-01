@@ -776,7 +776,7 @@
         let currentEditPage = 0;
 
         // Storage
-        const STORAGE_KEY = 'lyricflow_v3_songs';
+        const STORAGE_KEY = 'lyricflow_songs';
 
         function storageAvailable() {
             try {
@@ -978,9 +978,9 @@
             // Always create NEW song - never overwrite
             const newSong = {
                 id: 'song_' + Math.random().toString(36).slice(2),
-                name: title,
+                title: title,
                 playlist: playlistName,
-                content: content,
+                lyrics: content,
                 createdAt: new Date().toISOString()
             };
             
