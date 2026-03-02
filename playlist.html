@@ -80,7 +80,6 @@
             height: 100%;
         }
 
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -161,7 +160,6 @@
             color: var(--text-soft);
         }
 
-        /* Mode toggle for playlist page */
         .mode-toggle {
             display: inline-flex;
             align-items: center;
@@ -196,7 +194,6 @@
             color: var(--text-muted);
         }
 
-        /* Status row */
         .top-row {
             display: flex;
             align-items: center;
@@ -231,7 +228,6 @@
             box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
         }
 
-        /* Editor */
         .main-stack {
             flex: 1;
             min-height: 0;
@@ -356,7 +352,6 @@
             color: rgba(75, 85, 99, 0.95);
         }
 
-        /* Modals */
         .overlay {
             position: fixed;
             inset: 0;
@@ -459,7 +454,6 @@
             color: #020617;
         }
 
-        /* Pagination for playlists */
         .playlist-pagination {
             display: flex;
             justify-content: center;
@@ -552,24 +546,10 @@
             border-color: rgba(59, 130, 246, 0.6);
         }
 
-        .track-item span:first-child {
-            opacity: 0.9;
-        }
+        #editor::-webkit-scrollbar { width: 8px; }
+        #editor::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.9); border-radius: 999px; }
+        #editor::-webkit-scrollbar-track { background: transparent; }
 
-        #editor::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #editor::-webkit-scrollbar-thumb {
-            background: rgba(75, 85, 99, 0.9);
-            border-radius: 999px;
-        }
-
-        #editor::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        /* Footer */
         .app-footer {
             margin-top: 4px;
             font-size: 10px;
@@ -579,17 +559,9 @@
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            .app-shell {
-                padding: 12px 10px 8px;
-                border-radius: 26px;
-            }
-            .playlist-edit-list,
-            .track-list {
-                max-height: 250px;
-            }
+            body { padding: 10px; }
+            .app-shell { padding: 12px 10px 8px; border-radius: 26px; }
+            .playlist-edit-list, .track-list { max-height: 250px; }
         }
     </style>
 </head>
@@ -607,8 +579,7 @@
                         <div class="app-subtitle">Playlist Editor</div>
                     </div>
                 </div>
-                <!-- Mode toggle - Back to Stage -->
-                <div class="mode-toggle" id="modeToggle" onclick="window.location.href='index.html'">
+                <div class="mode-toggle" id="modeToggle" onclick="window.location.href='stage.html'">
                     <div class="mode-dot"></div>
                     <span>
                         <strong>Playlist mode</strong>
@@ -635,6 +606,7 @@
                                 <button class="tiny-btn" id="editorInfoBtn">i</button>
                                 <button class="tiny-btn primary" id="saveSongBtn">Save As</button>
                                 <button class="tiny-btn" id="loadSongBtn">Load</button>
+                                <button class="tiny-btn" id="editPlaylistBtn">Edit Playlist</button>
                                 <button class="tiny-btn tiny-btn-danger" id="clearEditorBtn">Clear</button>
                             </div>
                         </div>
@@ -675,7 +647,7 @@
         </div>
     </div>
 
-    <!-- Save song (Save As - always new) -->
+    <!-- Save As New -->
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -746,14 +718,14 @@
 
     <script>
         const qs = id => document.getElementById(id);
-        
-        // Elements
+
         const editor = qs('editor');
         const statusText = qs('statusText');
         const editorInfoBtn = qs('editorInfoBtn');
         const editInfoOverlay = qs('editInfoOverlay');
         const saveSongBtn = qs('saveSongBtn');
         const loadSongBtn = qs('loadSongBtn');
+        const editPlaylistBtn = qs('editPlaylistBtn');
         const clearEditorBtn = qs('clearEditorBtn');
         const saveOverlay = qs('saveOverlay');
         const songTitleInput = qs('songTitleInput');
@@ -775,17 +747,19 @@
         let currentLoadPage = 0;
         let currentEditPage = 0;
 
-        // Storage
-        const STORAGE_KEY = 'lyricflow_songs';
+        // ─── STORAGE KEY matches stage.html ───────────────────────────────
+        const STORAGE_KEY = 'lyricflow_v3_songs';
+
+        // BroadcastChannel for same-origin cross-tab song loading
+        let bc = null;
+        try { bc = new BroadcastChannel('lyricflow_stage'); } catch(e) {}
 
         function storageAvailable() {
             try {
                 localStorage.setItem('__test__', '1');
                 localStorage.removeItem('__test__');
                 return true;
-            } catch (e) {
-                return false;
-            }
+            } catch (e) { return false; }
         }
 
         function saveSongsToStorage() {
@@ -794,156 +768,156 @@
         }
 
         function loadSongsFromStorage() {
-            if (!storageAvailable()) {
-                savedSongs = [];
-                return;
-            }
+            if (!storageAvailable()) { savedSongs = []; return; }
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) {
-                    savedSongs = [];
-                    return;
-                }
-                savedSongs = JSON.parse(raw).map(s => ({
-                    id: s.id || 'song_' + Math.random().toString(36).slice(2),
-                    name: s.title || 'Untitled',
-                    playlist: s.playlist || 'Set 1',
-                    content: s.lyrics || '',
-                    createdAt: s.createdAt || new Date().toISOString()
+                if (!raw) { savedSongs = []; return; }
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) { savedSongs = []; return; }
+                // ─── Field names match stage.html schema: name / content ───
+                savedSongs = parsed.map(s => ({
+                    id:          s.id || ('song_' + Math.random().toString(36).slice(2)),
+                    name:        s.name || s.title || 'Untitled',
+                    playlist:    s.playlist || 'Set 1',
+                    content:     s.content || s.lyrics || '',
+                    speedPercent: typeof s.speedPercent === 'number' ? s.speedPercent : 50,
+                    fontSize:    typeof s.fontSize    === 'number' ? s.fontSize    : 18,
+                    lineHeight:  typeof s.lineHeight  === 'number' ? s.lineHeight  : 1.9,
+                    bpm:         typeof s.bpm         === 'number' ? s.bpm         : null,
+                    linesPerMeasure: typeof s.linesPerMeasure === 'number' ? s.linesPerMeasure : 4,
+                    createdAt:   s.createdAt || new Date().toISOString()
                 }));
-            } catch (e) {
-                savedSongs = [];
-            }
+            } catch (e) { savedSongs = []; }
         }
 
         // Pagination helpers
-        function getPagesForPlaylist(playlistName, listType = 'load') {
+        function getPagesForPlaylist(playlistName) {
             const songs = savedSongs.filter(s => s.playlist === playlistName);
-            return Math.ceil(songs.length / SONGS_PER_PAGE);
+            return Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
         }
 
-        function buildPagination(pageContainer, currentPage, totalPages, callback) {
-            if (totalPages <= 1) {
-                pageContainer.style.display = 'none';
-                return;
+        function buildPagination(container, currentPage, totalPages, onPageClick) {
+            if (!container) return;
+            if (totalPages <= 1) { container.style.display = 'none'; return; }
+            container.style.display = 'flex';
+            container.innerHTML = '';
+            for (let i = 0; i < totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'playlist-page-btn' + (i === currentPage ? ' active' : '');
+                btn.textContent = i + 1;
+                btn.onclick = () => onPageClick(i);
+                container.appendChild(btn);
             }
-            pageContainer.style.display = 'flex';
-            pageContainer.innerHTML = `
-                <button class="playlist-page-btn ${currentPage === 0 ? 'active' : ''}" onclick="${callback}(0)">1</button>
-                ${totalPages > 2 ? `
-                    ${currentPage > 1 ? `<span>...</span>` : ''}
-                    <button class="playlist-page-btn ${currentPage === 1 ? 'active' : ''}" onclick="${callback}(1)">${2}</button>
-                    ${currentPage === totalPages - 2 ? `<button class="playlist-page-btn ${currentPage === totalPages - 2 ? 'active' : ''}" onclick="${callback}(totalPages-2)">${totalPages-1}</button>` : ''}
-                    ${currentPage < totalPages - 2 ? `<span>...</span>` : ''}
-                ` : ''}
-                <button class="playlist-page-btn ${currentPage === totalPages - 1 ? 'active' : ''}" onclick="${callback}(totalPages-1)">${totalPages}</button>
-            `;
         }
 
-        // Playlist functions
         function buildPlaylistSelect() {
             const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
-            if (playlistSelect) {
-                playlistSelect.innerHTML = playlists.length 
+            [playlistSelect, editPlaylistSelect].forEach(sel => {
+                if (!sel) return;
+                sel.innerHTML = playlists.length
                     ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
                     : '<option value="Set 1">Set 1</option>';
-            }
-            if (editPlaylistSelect) {
-                editPlaylistSelect.innerHTML = playlists.length 
-                    ? playlists.map(p => `<option value="${p}">${p} (${savedSongs.filter(s => s.playlist === p).length})</option>`).join('')
-                    : '<option value="Set 1">Set 1</option>';
-            }
+            });
         }
 
         function buildLoadSongList() {
-            const playlistName = playlistSelect.value || 'Set 1';
+            const playlistName = playlistSelect ? playlistSelect.value : 'Set 1';
             const songs = savedSongs.filter(s => s.playlist === playlistName);
-            const totalPages = Math.ceil(songs.length / SONGS_PER_PAGE);
+            const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+            currentLoadPage = Math.min(currentLoadPage, totalPages - 1);
             const startIdx = currentLoadPage * SONGS_PER_PAGE;
             const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
 
-            loadSongList.innerHTML = pageSongs.length 
-                ? pageSongs.map((s, i) => 
-                    `<div class="track-item" onclick="loadSongIntoEditor('${s.id}')">
-                        <span>${startIdx + i + 1}. ${s.title}</span>
+            loadSongList.innerHTML = pageSongs.length
+                ? pageSongs.map((s, i) =>
+                    `<div class="track-item" data-id="${s.id}">
+                        <span>${startIdx + i + 1}. ${s.name}</span>
                     </div>`
                 ).join('')
                 : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
 
-            buildPagination(loadPagination, currentLoadPage, totalPages, 'setLoadPage');
-        }
+            loadSongList.querySelectorAll('.track-item').forEach(item => {
+                item.onclick = () => loadSongIntoEditor(item.dataset.id);
+            });
 
-        function setLoadPage(page) {
-            currentLoadPage = Math.max(0, Math.min(page, getPagesForPlaylist(playlistSelect.value) - 1));
-            buildLoadSongList();
-        }
-
-        function buildEditPlaylistSelect() {
-            const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
-            editPlaylistSelect.innerHTML = playlists.length 
-                ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
-                : '<option value="Set 1">Set 1</option>';
+            buildPagination(loadPagination, currentLoadPage, totalPages, page => {
+                currentLoadPage = page;
+                buildLoadSongList();
+            });
         }
 
         function buildPlaylistEditList() {
-            const playlistName = editPlaylistSelect.value || 'Set 1';
+            const playlistName = editPlaylistSelect ? editPlaylistSelect.value : 'Set 1';
             const songs = savedSongs.filter(s => s.playlist === playlistName);
-            const totalPages = Math.ceil(songs.length / SONGS_PER_PAGE);
+            const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+            currentEditPage = Math.min(currentEditPage, totalPages - 1);
             const startIdx = currentEditPage * SONGS_PER_PAGE;
             const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
 
-            playlistEditList.innerHTML = pageSongs.map((s, i) => {
-                const globalIdx = savedSongs.findIndex(x => x.id === s.id);
-                return `
-                    <div class="playlist-edit-item">
-                        <span class="playlist-edit-name">${startIdx + i + 1}. ${s.title}</span>
-                        <div class="playlist-edit-controls">
-                            ${globalIdx > 0 ? `<button onclick="moveSong(${globalIdx}, -1)" title="Move up">↑</button>` : '<span style="width:24px;"></span>'}
-                            ${globalIdx < savedSongs.length - 1 ? `<button onclick="moveSong(${globalIdx}, 1)" title="Move down">↓</button>` : '<span style="width:24px;"></span>'}
-                            <button onclick="deleteSong('${s.id}')" title="Delete">✕</button>
-                        </div>
-                    </div>
-                `;
-            }).join('') || '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+            playlistEditList.innerHTML = pageSongs.length
+                ? pageSongs.map((s, i) => {
+                    const globalIdx = savedSongs.findIndex(x => x.id === s.id);
+                    return `
+                        <div class="playlist-edit-item">
+                            <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
+                            <div class="playlist-edit-controls">
+                                <button data-move="${globalIdx}" data-dir="-1" title="Move up">↑</button>
+                                <button data-move="${globalIdx}" data-dir="1"  title="Move down">↓</button>
+                                <button data-delete="${s.id}" title="Delete">✕</button>
+                            </div>
+                        </div>`;
+                }).join('')
+                : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
 
-            buildPagination(editPagination, currentEditPage, totalPages, 'setEditPage');
-        }
+            // Attach move / delete listeners safely (no inline onclick globals)
+            playlistEditList.querySelectorAll('[data-move]').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.move, 10);
+                    const dir = parseInt(btn.dataset.dir, 10);
+                    moveSong(idx, dir);
+                };
+            });
+            playlistEditList.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.onclick = () => deleteSong(btn.dataset.delete);
+            });
 
-        function setEditPage(page) {
-            currentEditPage = Math.max(0, Math.min(page, getPagesForPlaylist(editPlaylistSelect.value, 'edit') - 1));
-            buildPlaylistEditList();
+            buildPagination(editPagination, currentEditPage, totalPages, page => {
+                currentEditPage = page;
+                buildPlaylistEditList();
+            });
         }
 
         // Song operations
-        window.loadSongIntoEditor = function(songId) {
+        function loadSongIntoEditor(songId) {
             const song = savedSongs.find(s => s.id === songId);
             if (!song) return;
-            
-            currentSong = song;
-            editor.value = song.lyrics || '';
-            updatePlaylistDetails();
-            
-            // MARK AS CURRENT SONG FOR STAGE SYNC (like original behavior)
-            localStorage.setItem('lyricflow_currentSongId', song.id);
-            
-            loadOverlay.classList.add('hidden');
-            statusText.textContent = `Loaded: ${song.title || song.name || 'song'}`;
-        };
 
-        window.moveSong = function(idx, direction) {
+            currentSong = song;
+            // ─── Use correct field name ───────────────────────────────────
+            editor.value = song.content || '';
+            updatePlaylistDetails();
+
+            // Signal stage.html via localStorage + BroadcastChannel
+            localStorage.setItem('lyricflow_currentSongId', song.id);
+            if (bc) bc.postMessage({ type: 'loadSong', songId: song.id });
+
+            loadOverlay.classList.add('hidden');
+            statusText.textContent = `Loaded: ${song.name}`;
+        }
+
+        function moveSong(idx, direction) {
             if (idx < 0 || idx >= savedSongs.length) return;
             const targetIdx = idx + direction;
             if (targetIdx < 0 || targetIdx >= savedSongs.length) return;
-            
             [savedSongs[idx], savedSongs[targetIdx]] = [savedSongs[targetIdx], savedSongs[idx]];
             saveSongsToStorage();
             buildPlaylistEditList();
-        };
+        }
 
-        window.deleteSong = function(songId) {
+        function deleteSong(songId) {
             if (!confirm('Delete this song permanently?')) return;
             savedSongs = savedSongs.filter(s => s.id !== songId);
-            if (currentSong?.id === songId) {
+            if (currentSong && currentSong.id === songId) {
                 currentSong = null;
                 editor.value = '';
                 playlistEditDetails.style.display = 'none';
@@ -952,95 +926,96 @@
             buildPlaylistEditList();
             buildPlaylistSelect();
             buildLoadSongList();
-        };
+        }
 
         function updatePlaylistDetails() {
             if (!currentSong || !playlistEditDetails) return;
-            const playlistSongs = savedSongs.filter(s => s.playlist === currentSong.playlist);
             const globalIdx = savedSongs.findIndex(s => s.id === currentSong.id);
             playlistEditDetails.style.display = 'grid';
-            qs('currentSongTitle').textContent = currentSong.title;
-            qs('currentPlaylist').textContent = currentSong.playlist;
-            qs('currentSongIndex').textContent = `${globalIdx + 1}/${savedSongs.length}`;
+            qs('currentSongTitle').textContent  = currentSong.name;
+            qs('currentPlaylist').textContent   = currentSong.playlist;
+            qs('currentSongIndex').textContent  = `${globalIdx + 1}/${savedSongs.length}`;
         }
 
-        // SAVE AS NEW (never overwrites)
+        // Save As New
         if (saveConfirmBtn) saveConfirmBtn.onclick = () => {
-            const title = songTitleInput.value.trim() || 'Untitled';
-            const playlistName = playlistInput.value.trim() || 'Set 1';
+            const name = (songTitleInput.value || '').trim() || 'Untitled';
+            const playlistName = (playlistInput.value || '').trim() || 'Set 1';
             const content = editor.value.trim();
 
-            if (!content) {
-                alert('Please add some lyrics first');
-                return;
-            }
+            if (!content) { alert('Please add some lyrics first'); return; }
 
-            // Always create NEW song - never overwrite
+            // ─── Always use name / content (stage schema) ─────────────────
             const newSong = {
-                id: 'song_' + Math.random().toString(36).slice(2),
-                title: title,
-                playlist: playlistName,
-                lyrics: content,
-                createdAt: new Date().toISOString()
+                id:          'song_' + Math.random().toString(36).slice(2),
+                name:        name,
+                playlist:    playlistName,
+                content:     content,
+                speedPercent: 50,
+                fontSize:    18,
+                lineHeight:  1.9,
+                bpm:         null,
+                linesPerMeasure: 4,
+                createdAt:   new Date().toISOString()
             };
-            
+
             savedSongs.push(newSong);
             saveSongsToStorage();
-            
-            // Update current song reference
+
             currentSong = newSong;
             updatePlaylistDetails();
-            
+
             saveOverlay.classList.add('hidden');
             songTitleInput.value = '';
             playlistInput.value = playlistName;
-            statusText.textContent = `Saved: ${title}`;
+            statusText.textContent = `Saved: ${name}`;
         };
 
-        // Event listeners
-        if (editorInfoBtn) editorInfoBtn.onclick = () => editInfoOverlay.classList.remove('hidden');
-        if (saveSongBtn) saveSongBtn.onclick = () => {
-            songTitleInput.value = currentSong?.title || '';
-            playlistInput.value = currentSong?.playlist || 'Set 1';
+        // Button wiring
+        if (editorInfoBtn)    editorInfoBtn.onclick    = () => editInfoOverlay.classList.remove('hidden');
+        if (saveSongBtn)      saveSongBtn.onclick      = () => {
+            songTitleInput.value = currentSong ? currentSong.name : '';
+            playlistInput.value  = currentSong ? currentSong.playlist : 'Set 1';
             saveOverlay.classList.remove('hidden');
         };
-        if (loadSongBtn) loadSongBtn.onclick = () => { 
-            buildPlaylistSelect(); 
+        if (loadSongBtn)      loadSongBtn.onclick      = () => {
+            buildPlaylistSelect();
             currentLoadPage = 0;
-            buildLoadSongList(); 
-            loadOverlay.classList.remove('hidden'); 
+            buildLoadSongList();
+            loadOverlay.classList.remove('hidden');
         };
-        if (clearEditorBtn) clearEditorBtn.onclick = () => { 
+        if (editPlaylistBtn)  editPlaylistBtn.onclick  = () => {
+            buildPlaylistSelect();
+            currentEditPage = 0;
+            buildPlaylistEditList();
+            editPlaylistOverlay.classList.remove('hidden');
+        };
+        if (clearEditorBtn)   clearEditorBtn.onclick   = () => {
             if (confirm('Clear all lyrics?')) {
-                editor.value = ''; 
-                currentSong = null; 
-                playlistEditDetails.style.display = 'none'; 
+                editor.value = '';
+                currentSong = null;
+                playlistEditDetails.style.display = 'none';
                 statusText.textContent = 'Cleared';
             }
         };
 
         // Modal close handlers
-        [editInfoOverlay, saveOverlay, loadOverlay, editPlaylistOverlay].forEach(overlay => {
-            if (overlay) {
-                overlay.onclick = e => {
-                    if (e.target.dataset.closeEditInfo || e.target.dataset.closeSave || 
-                        e.target.dataset.closeLoad || e.target.dataset.closeEditPlaylist || 
-                        e.target === overlay) {
-                        overlay.classList.add('hidden');
-                    }
-                };
-                overlay.querySelectorAll('.modal-close, [data-close-edit-info], [data-close-save], [data-close-load], [data-close-edit-playlist]')
-                    .forEach(btn => btn.onclick = () => overlay.classList.add('hidden'));
-            }
+        document.querySelectorAll(
+            '[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist]'
+        ).forEach(btn => {
+            btn.onclick = () => btn.closest('.overlay').classList.add('hidden');
+        });
+        [editInfoOverlay, saveOverlay, loadOverlay, editPlaylistOverlay].forEach(ov => {
+            if (ov) ov.onclick = e => { if (e.target === ov) ov.classList.add('hidden'); };
         });
 
-        if (playlistSelect) playlistSelect.onchange = () => { currentLoadPage = 0; buildLoadSongList(); };
+        if (playlistSelect)     playlistSelect.onchange     = () => { currentLoadPage = 0; buildLoadSongList(); };
         if (editPlaylistSelect) editPlaylistSelect.onchange = () => { currentEditPage = 0; buildPlaylistEditList(); };
 
-        // Init
+        // Boot
         loadSongsFromStorage();
         buildPlaylistSelect();
-        statusText.textContent = 'Playlist Editor - Ready';
+        statusText.textContent = 'Playlist Editor – Ready';
     </script>
 </body>
 </html>
