@@ -579,7 +579,7 @@
                         <div class="app-subtitle">Playlist Editor</div>
                     </div>
                 </div>
-                <div class="mode-toggle" id="modeToggle" onclick="window.location.href='stage.html'">
+                <div class="mode-toggle" id="modeToggle" onclick="window.location.href='index.html'">
                     <div class="mode-dot"></div>
                     <span>
                         <strong>Playlist mode</strong>
@@ -747,7 +747,7 @@
         let currentLoadPage = 0;
         let currentEditPage = 0;
 
-        // ─── STORAGE KEY matches stage.html ───────────────────────────────
+        // ─── STORAGE KEY matches index.html ───────────────────────────────
         const STORAGE_KEY = 'lyricflow_v3_songs';
 
         // BroadcastChannel for same-origin cross-tab song loading
@@ -774,7 +774,7 @@
                 if (!raw) { savedSongs = []; return; }
                 const parsed = JSON.parse(raw);
                 if (!Array.isArray(parsed)) { savedSongs = []; return; }
-                // ─── Field names match stage.html schema: name / content ───
+                // ─── Field names match index.html schema: name / content ───
                 savedSongs = parsed.map(s => ({
                     id:          s.id || ('song_' + Math.random().toString(36).slice(2)),
                     name:        s.name || s.title || 'Untitled',
@@ -897,7 +897,7 @@
             editor.value = song.content || '';
             updatePlaylistDetails();
 
-            // Signal stage.html via localStorage + BroadcastChannel
+            // Signal index.html via localStorage + BroadcastChannel
             localStorage.setItem('lyricflow_currentSongId', song.id);
             if (bc) bc.postMessage({ type: 'loadSong', songId: song.id });
 
