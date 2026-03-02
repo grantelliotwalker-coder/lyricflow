@@ -848,281 +848,336 @@
     </div>
 
     <script>
-        // Core state
-        let scrollSpeed = 0.8;
-        let fontSize = 20;
-        let lineHeight = 1.9;
-        let isPlaying = false;
-        let startTime = 0;
-        let currentY = 0;
-        let velocityY = 0;
-        let rafId = null;
-        let songs = JSON.parse(localStorage.getItem('lyricflow_songs') || '[]');
-        let currentPlaylist = localStorage.getItem('lyricflow_currentPlaylist') || 'Set 1';
-        let currentSongIndex = 0;
-        let currentSongId = localStorage.getItem('lyricflow_currentSongId') || null;
-        let isDragging = false;
-        let lastTouchY = 0;
+    // === BULLETPROOF AUTOSCROLL/DRAG/RESET FROM YOUR OLD CODE ===
+    
+    // Core state (ENHANCED)
+    let scrollSpeed = 0.8;
+    let fontSize = 20;
+    let lineHeight = 1.9;
+    let isPlaying = false;
+    let startTime = 0;
+    let currentY = 0;
+    let velocityY = 0;
+    let rafId = null;
+    let songs = JSON.parse(localStorage.getItem('lyricflow_songs') || '[]');
+    let currentPlaylist = localStorage.getItem('lyricflow_currentPlaylist') || 'Set 1';
+    let currentSongIndex = 0;
+    let currentSongId = localStorage.getItem('lyricflow_currentSongId') || null;
+    let isDragging = false;
+    let lastTouchY = 0;
+    let wasScrollingBeforeDrag = false;  // NEW: Track scroll state
+    let canonicalBaseContentY = 0;       // NEW: Reset reference point
+    let songStartBaseContentY = 0;       // NEW: Song start position
 
-        // DOM elements
-        const viewer = document.getElementById('viewer');
-        const viewerContent = document.getElementById('viewerContent');
-        const statusText = document.getElementById('statusText');
-        const timeDisplay = document.getElementById('timeDisplay');
-        const startBtn = document.getElementById('start');
-        const pauseBtn = document.getElementById('pause');
-        const resetBtn = document.getElementById('resetBtn');
-        const prevSongBtn = document.getElementById('prevSongBtn');
-        const nextSongBtn = document.getElementById('nextSongBtn');
-        const playlistPill = document.getElementById('playlistPill');
-        const playlistPillText = document.getElementById('playlistPillText');
-        const playlistPillIndex = document.getElementById('playlistPillIndex');
+    // DOM elements
+    const viewerCard = document.getElementById('viewerCard');  // FIXED: Use viewerCard
+    const viewer = document.getElementById('viewer');
+    const viewerContent = document.getElementById('viewerContent');
+    const statusText = document.getElementById('statusText');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const startBtn = document.getElementById('start');
+    const pauseBtn = document.getElementById('pause');
+    const resetBtn = document.getElementById('resetBtn');
+    const prevSongBtn = document.getElementById('prevSongBtn');
+    const nextSongBtn = document.getElementById('nextSongBtn');
+    const playlistPill = document.getElementById('playlistPill');
+    const playlistPillText = document.getElementById('playlistPillText');
+    const playlistPillIndex = document.getElementById('playlistPillIndex');
 
-        // Settings elements
-        const scrollSpeedInput = document.getElementById('scrollSpeedInput');
-        const scrollSpeedValue = document.getElementById('scrollSpeedValue');
-        const fontSizeInput = document.getElementById('fontSizeInput');
-        const fontSizeValue = document.getElementById('fontSizeValue');
-        const lineHeightInput = document.getElementById('lineHeightInput');
-        const lineHeightValue = document.getElementById('lineHeightValue');
+    // Settings elements
+    const scrollSpeedInput = document.getElementById('scrollSpeedInput');
+    const scrollSpeedValue = document.getElementById('scrollSpeedValue');
+    const fontSizeInput = document.getElementById('fontSizeInput');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    const lineHeightInput = document.getElementById('lineHeightInput');
+    const lineHeightValue = document.getElementById('lineHeightValue');
 
-        // Load settings
-        const savedSettings = JSON.parse(localStorage.getItem('lyricflow_settings') || '{}');
-        scrollSpeed = savedSettings.scrollSpeed || 0.8;
-        fontSize = savedSettings.fontSize || 20;
-        lineHeight = savedSettings.lineHeight || 1.9;
+    // Load settings
+    const savedSettings = JSON.parse(localStorage.getItem('lyricflow_settings') || '{}');
+    scrollSpeed = savedSettings.scrollSpeed || 0.8;
+    fontSize = savedSettings.fontSize || 20;
+    lineHeight = savedSettings.lineHeight || 1.9;
 
-        // Apply settings
-        scrollSpeedInput.value = scrollSpeed;
-        scrollSpeedValue.textContent = scrollSpeed;
-        fontSizeInput.value = fontSize;
-        fontSizeValue.textContent = fontSize + 'px';
-        lineHeightInput.value = lineHeight;
-        lineHeightValue.textContent = lineHeight;
-        viewer.style.fontSize = fontSize + 'px';
-        viewer.style.lineHeight = lineHeight;
+    // Apply settings
+    scrollSpeedInput.value = scrollSpeed;
+    scrollSpeedValue.textContent = scrollSpeed;
+    fontSizeInput.value = fontSize;
+    fontSizeValue.textContent = fontSize + 'px';
+    lineHeightInput.value = lineHeight;
+    lineHeightValue.textContent = lineHeight;
+    viewer.style.fontSize = fontSize + 'px';
+    viewer.style.lineHeight = lineHeight;
 
-        // Storage sync with playlist.html
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'lyricflow_currentSongId') {
-                currentSongId = e.newValue;
-                localStorage.setItem('lyricflow_currentSongId', currentSongId);
-                loadSongIntoUI(currentSongId);
-            }
-            if (e.key === 'lyricflow_songs') {
-                songs = JSON.parse(e.newValue || '[]');
-                updatePlaylistDisplay();
-            }
-        });
-
-        // Load song into viewer
-        function loadSongIntoUI(songId) {
-            const song = songs.find(s => s.id === songId);
-            if (song) {
-                currentSongId = songId;
-                viewerContent.innerHTML = song.lyrics.split('\n').map(line => 
-                    `<span class="viewer-content-line">${line || '&nbsp;'}</span>`
-                ).join('');
-                statusText.textContent = song.title || 'Song loaded';
-                updatePlaylistDisplay();
-                currentY = 0;
-                viewerContent.style.transform = 'translateY(0px)';
-            }
+    // Storage sync with playlist.html
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'lyricflow_currentSongId') {
+            currentSongId = e.newValue;
+            localStorage.setItem('lyricflow_currentSongId', currentSongId);
+            loadSongIntoUI(currentSongId);
         }
-
-        // Update playlist display
-        function updatePlaylistDisplay() {
-            const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-            if (currentSongId) {
-                currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
-            }
-            playlistPillText.textContent = currentPlaylist;
-            playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
-            playlistPill.classList.toggle('hidden', playlistSongs.length === 0);
-            prevSongBtn.classList.toggle('hidden', currentSongIndex <= 0 || playlistSongs.length === 0);
-            nextSongBtn.classList.toggle('hidden', currentSongIndex >= playlistSongs.length - 1 || playlistSongs.length === 0);
+        if (e.key === 'lyricflow_songs') {
+            songs = JSON.parse(e.newValue || '[]');
+            updatePlaylistDisplay();
         }
+    });
 
-        // Navigation
-        prevSongBtn.onclick = () => {
-            const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-            if (currentSongIndex > 0 && playlistSongs.length > 0) {
-                currentSongIndex--;
-                currentSongId = playlistSongs[currentSongIndex].id;
-                localStorage.setItem('lyricflow_currentSongId', currentSongId);
-                loadSongIntoUI(currentSongId);
-            }
-        };
-
-        nextSongBtn.onclick = () => {
-            const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-            if (currentSongIndex < playlistSongs.length - 1 && playlistSongs.length > 0) {
-                currentSongIndex++;
-                currentSongId = playlistSongs[currentSongIndex].id;
-                localStorage.setItem('lyricflow_currentSongId', currentSongId);
-                loadSongIntoUI(currentSongId);
-            }
-        };
-
-        // Transport controls
-        startBtn.onclick = () => {
-            if (!isPlaying) {
-                isPlaying = true;
-                startTime = performance.now();
-                startBtn.classList.add('hidden');
-                pauseBtn.classList.remove('hidden');
-                animate();
-            }
-        };
-
-        pauseBtn.onclick = () => {
-            isPlaying = false;
-            cancelAnimationFrame(rafId);
-            pauseBtn.classList.add('hidden');
-            startBtn.classList.remove('hidden');
-        };
-
-        resetBtn.onclick = () => {
-            isPlaying = false;
+    // Load song into viewer (ENHANCED with snap)
+    function loadSongIntoUI(songId) {
+        const song = songs.find(s => s.id === songId);
+        if (song) {
+            currentSongId = songId;
+            viewerContent.innerHTML = song.lyrics.split('\\n').map(line => 
+                `<span class="viewer-content-line">${line || '&nbsp;'}</span>`
+            ).join('');
+            statusText.textContent = song.title || 'Song loaded';
+            updatePlaylistDisplay();
             currentY = 0;
-            velocityY = 0;
-            startTime = 0;
-            cancelAnimationFrame(rafId);
+            canonicalBaseContentY = 0;
+            snapFirstLineIntoGlow();  // NEW: Auto-snap first line
             viewerContent.style.transform = 'translateY(0px)';
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-        };
+        }
+    }
 
-        // Animation loop
-        function animate(currentTime = performance.now()) {
-            if (isPlaying) {
-                const elapsed = (currentTime - startTime) / 1000;
-                const scrollY = (elapsed * scrollSpeed * 30) + currentY;
+    // NEW: Snap first line into glow band (bulletproof positioning)
+    function snapFirstLineIntoGlow() {
+        requestAnimationFrame(() => {
+            const lines = viewerContent.querySelectorAll('.viewer-content-line');
+            const glowBand = viewer.querySelector('.viewer-highlight');
+            if (!lines.length || !glowBand) return;
+
+            const firstLine = lines[0];
+            const viewerRect = viewer.getBoundingClientRect();
+            const glowRect = glowBand.getBoundingClientRect();
+            const lineRect = firstLine.getBoundingClientRect();
+
+            const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
+            const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
+            const delta = glowCenter - lineCenter;
+
+            canonicalBaseContentY = delta;
+            songStartBaseContentY = delta;
+            currentY = delta;
+            viewerContent.style.transform = `translateY(${currentY}px)`;
+        });
+    }
+
+    // Update playlist display
+    function updatePlaylistDisplay() {
+        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongId) {
+            currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
+        }
+        playlistPillText.textContent = currentPlaylist;
+        playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
+        playlistPill.classList.toggle('hidden', playlistSongs.length === 0);
+        prevSongBtn.classList.toggle('hidden', currentSongIndex <= 0 || playlistSongs.length === 0);
+        nextSongBtn.classList.toggle('hidden', currentSongIndex >= playlistSongs.length - 1 || playlistSongs.length === 0);
+    }
+
+    // Navigation
+    prevSongBtn.onclick = () => {
+        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongIndex > 0 && playlistSongs.length > 0) {
+            currentSongIndex--;
+            currentSongId = playlistSongs[currentSongIndex].id;
+            localStorage.setItem('lyricflow_currentSongId', currentSongId);
+            loadSongIntoUI(currentSongId);
+        }
+    };
+
+    nextSongBtn.onclick = () => {
+        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongIndex < playlistSongs.length - 1 && playlistSongs.length > 0) {
+            currentSongIndex++;
+            currentSongId = playlistSongs[currentSongIndex].id;
+            localStorage.setItem('lyricflow_currentSongId', currentSongId);
+            loadSongIntoUI(currentSongId);
+        }
+    };
+
+    // Transport controls (ENHANCED)
+    startBtn.onclick = () => {
+        if (!isPlaying) {
+            isPlaying = true;
+            wasScrollingBeforeDrag = false;
+            startTime = performance.now();
+            startBtn.classList.add('hidden');
+            pauseBtn.classList.remove('hidden');
+            animate();
+        }
+    };
+
+    pauseBtn.onclick = () => {
+        isPlaying = false;
+        cancelAnimationFrame(rafId);
+        pauseBtn.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+    };
+
+    // BULLETPROOF RESET (NEW)
+    resetBtn.onclick = () => {
+        isPlaying = false;
+        cancelAnimationFrame(rafId);
+        currentY = songStartBaseContentY || canonicalBaseContentY || 0;
+        velocityY = 0;
+        startTime = 0;
+        viewerContent.style.transform = `translateY(${currentY}px)`;
+        startBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+        snapFirstLineIntoGlow();  // PERFECT RESET POSITION
+    };
+
+    // ENHANCED Animation loop with end detection
+    function animate(currentTime = performance.now()) {
+        if (isPlaying) {
+            const elapsed = (currentTime - startTime) / 1000;
+            const scrollY = (elapsed * scrollSpeed * 30) + currentY;
+            
+            // End of song detection
+            const contentRect = viewerContent.getBoundingClientRect();
+            const viewerRect = viewer.getBoundingClientRect();
+            if (contentRect.bottom < viewerRect.top + viewerRect.height * 0.3) {
+                isPlaying = false;
+                pauseBtn.classList.add('hidden');
+                startBtn.classList.remove('hidden');
+            } else {
                 viewerContent.style.transform = `translateY(${-scrollY}px)`;
                 statusText.textContent = `${Math.floor(elapsed/60)}:${(Math.floor(elapsed%60)).toString().padStart(2,'0')}`;
                 timeDisplay.textContent = `${Math.floor(elapsed/60)}:${(Math.floor(elapsed%60)).toString().padStart(2,'0')}`;
                 rafId = requestAnimationFrame(animate);
             }
         }
+    }
 
-        // Drag handling
-        function handleStart(e) {
-            isDragging = true;
-            cancelAnimationFrame(rafId);
-            isPlaying = false;
-            startBtn.classList.remove('hidden');
-            pauseBtn.classList.add('hidden');
-            
-            const touch = e.touches ? e.touches[0] : e;
-            lastTouchY = touch.clientY;
+    // BULLETPROOF DRAG HANDLING (NEW & IMPROVED)
+    function handleStart(e) {
+        isDragging = true;
+        wasScrollingBeforeDrag = isPlaying;  // REMEMBER STATE
+        cancelAnimationFrame(rafId);
+        isPlaying = false;
+        startBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+        
+        const touch = e.touches ? e.touches[0] : e;
+        lastTouchY = touch.clientY;
+        
+        if (e.pointerId) {
+            viewerCard.setPointerCapture(e.pointerId);  // BETTER TRACKING
         }
+    }
 
-        function handleMove(e) {
-            if (!isDragging) return;
+    function handleMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const touch = e.touches ? e.touches[0] : e;
+        const deltaY = lastTouchY - touch.clientY;
+        
+        // CLAMPING: Prevent overscroll
+        const viewerRect = viewer.getBoundingClientRect();
+        const contentRect = viewerContent.getBoundingClientRect();
+        const maxY = 0;
+        const minY = viewerRect.height - contentRect.height;
+        currentY = Math.max(minY, Math.min(maxY, currentY + deltaY * 0.4));  // SMOOTHER
+        
+        lastTouchY = touch.clientY;
+        viewerContent.style.transform = `translateY(${currentY}px)`;
+    }
+
+    function handleEnd(e) {
+        isDragging = false;
+        
+        // OPTIONAL: Resume scrolling after drag (uncomment if desired)
+        // setTimeout(() => {
+        //     if (wasScrollingBeforeDrag) {
+        //         startBtn.click();
+        //     }
+        // }, 500);
+    }
+
+    // FIXED: Proper event listeners on viewerCard with pointer capture
+    ['mousedown', 'touchstart'].forEach(type => {
+        viewerCard.addEventListener(type, handleStart, { passive: false });
+    });
+    ['mousemove', 'touchmove'].forEach(type => {
+        viewerCard.addEventListener(type, handleMove, { passive: false });
+    });
+    ['mouseup', 'touchend'].forEach(type => {
+        viewerCard.addEventListener(type, handleEnd, { passive: false });
+    });
+    viewerCard.addEventListener('mouseleave', handleEnd);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
             e.preventDefault();
-            
-            const touch = e.touches ? e.touches[0] : e;
-            const deltaY = lastTouchY - touch.clientY;
-            currentY += deltaY * 0.3;
-            lastTouchY = touch.clientY;
-            
-            viewerContent.style.transform = `translateY(${currentY}px)`;
-        }
-
-        function handleEnd(e) {
-            isDragging = false;
-        }
-
-        viewerCard.addEventListener('mousedown', handleStart);
-        viewerCard.addEventListener('mousemove', handleMove);
-        viewerCard.addEventListener('mouseup', handleEnd);
-        viewerCard.addEventListener('mouseleave', handleEnd);
-
-        viewerCard.addEventListener('touchstart', handleStart, { passive: false });
-        viewerCard.addEventListener('touchmove', handleMove, { passive: false });
-        viewerCard.addEventListener('touchend', handleEnd);
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (isPlaying) {
-                    pauseBtn.click();
-                } else {
-                    startBtn.click();
-                }
+            if (isPlaying) {
+                pauseBtn.click();
+            } else {
+                startBtn.click();
             }
-            if (e.code === 'KeyR') {
-                resetBtn.click();
-            }
-        });
-
-        // Settings handlers
-        scrollSpeedInput.oninput = (e) => {
-            scrollSpeed = parseFloat(e.target.value);
-            scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
-            saveSettings();
-        };
-
-        fontSizeInput.oninput = (e) => {
-            fontSize = parseInt(e.target.value);
-            fontSizeValue.textContent = fontSize + 'px';
-            viewer.style.fontSize = fontSize + 'px';
-            saveSettings();
-        };
-
-        lineHeightInput.oninput = (e) => {
-            lineHeight = parseFloat(e.target.value);
-            lineHeightValue.textContent = lineHeight.toFixed(1);
-            viewer.style.lineHeight = lineHeight;
-            saveSettings();
-        };
-
-        function saveSettings() {
-            localStorage.setItem('lyricflow_settings', JSON.stringify({
-                scrollSpeed,
-                fontSize,
-                lineHeight
-            }));
         }
-
-        function closeStageInfo() {
-            document.getElementById('stageInfoOverlay').classList.add('hidden');
+        if (e.code === 'KeyR') {
+            resetBtn.click();
         }
+    });
 
-        function closeSettings() {
-            document.getElementById('settingsOverlay').classList.add('hidden');
-        }
+    // Settings handlers (UNCHANGED)
+    scrollSpeedInput.oninput = (e) => {
+        scrollSpeed = parseFloat(e.target.value);
+        scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
+        saveSettings();
+    };
 
-        // Event listeners
-        document.getElementById('infoMainTrigger').onclick = () => {
-            document.getElementById('stageInfoOverlay').classList.remove('hidden');
-        };
+    fontSizeInput.oninput = (e) => {
+        fontSize = parseInt(e.target.value);
+        fontSizeValue.textContent = fontSize + 'px';
+        viewer.style.fontSize = fontSize + 'px';
+        snapFirstLineIntoGlow();  // NEW: Re-snap after font change
+        saveSettings();
+    };
 
-        document.getElementById('stageInfoBtn').onclick = () => {
-            document.getElementById('stageInfoOverlay').classList.remove('hidden');
-        };
+    lineHeightInput.oninput = (e) => {
+        lineHeight = parseFloat(e.target.value);
+        lineHeightValue.textContent = lineHeight.toFixed(1);
+        viewer.style.lineHeight = lineHeight;
+        snapFirstLineIntoGlow();  // NEW: Re-snap after line height change
+        saveSettings();
+    };
 
-        document.getElementById('settingsBtnBottom').onclick = () => {
-            document.getElementById('settingsOverlay').classList.remove('hidden');
-        };
+    function saveSettings() {
+        localStorage.setItem('lyricflow_settings', JSON.stringify({
+            scrollSpeed, fontSize, lineHeight
+        }));
+    }
 
-        // Init
-        updatePlaylistDisplay();
-        if (currentSongId) {
-            loadSongIntoUI(currentSongId);
-        }
+    function closeStageInfo() {
+        document.getElementById('stageInfoOverlay').classList.add('hidden');
+    }
 
-        // Update time display every second
-        setInterval(() => {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour12: false, 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            // timeDisplay already shows song time, statusText shows song time too
-        }, 1000);
-    </script>
+    function closeSettings() {
+        document.getElementById('settingsOverlay').classList.add('hidden');
+    }
+
+    // Event listeners (UNCHANGED)
+    document.getElementById('infoMainTrigger').onclick = () => {
+        document.getElementById('stageInfoOverlay').classList.remove('hidden');
+    };
+
+    document.getElementById('stageInfoBtn').onclick = () => {
+        document.getElementById('stageInfoOverlay').classList.remove('hidden');
+    };
+
+    document.getElementById('settingsBtnBottom').onclick = () => {
+        document.getElementById('settingsOverlay').classList.remove('hidden');
+    };
+
+    // Init
+    updatePlaylistDisplay();
+    if (currentSongId) {
+        loadSongIntoUI(currentSongId);
+    }
+</script>
+
 </body>
 </html>
