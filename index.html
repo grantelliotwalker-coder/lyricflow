@@ -120,6 +120,9 @@
 
         .viewer-card { flex:1; min-height:0; border-radius:22px; background:radial-gradient(circle at 0 0,rgba(15,23,42,1),rgba(15,23,42,.99)),radial-gradient(circle at 100% 100%,rgba(15,23,42,.99),rgba(15,23,42,1)); border:1px solid rgba(55,65,81,.95); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.95); padding:10px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
 
+    .viewer-notes-btn         { position:absolute; top:10px; right:10px; z-index:10; border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+    .viewer-notes-btn.no-notes { opacity:0.35; cursor:default; pointer-events:none; }
+
         .viewer-viewport { flex:1; min-height:0; position:relative; overflow:hidden; border-radius:18px; background:radial-gradient(circle at 0 -25%,rgba(34,197,94,.28),transparent 60%),radial-gradient(circle at 100% 120%,rgba(59,130,246,.28),transparent 60%),linear-gradient(#020617,#020617); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.85); }
 
         .viewer-halo-top,.viewer-halo-bottom,.viewer-highlight,.viewer-subtle-layer { pointer-events:none; }
@@ -181,7 +184,24 @@
         .viewer::-webkit-scrollbar-thumb { background:rgba(75,85,99,.9); border-radius:999px; }
         .viewer::-webkit-scrollbar-track { background:transparent; }
 
-        .app-footer { margin-top:4px; font-size:10px; color:var(--text-muted); text-align:center; opacity:.85; }
+        .viewer-notes-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid rgba(75,85,99,.95);
+        background: rgba(15,23,42,.92);
+        color: var(--text-soft);
+        font-size: 10px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,.8);
+        backdrop-filter: blur(4px);
+    }
+    .viewer-notes-btn:hover { opacity: .85; }
+
+    .viewer-card { position: relative; }
 
         @media (max-width:768px) { body{padding:10px;} .app-shell{padding:12px 10px 8px;border-radius:26px;} .viewer{font-size:18px;} .bottom-bar{padding:6px 8px;} .btn{padding:7px 14px;} }
         @media (max-width:480px) { body{padding:8px 6px;} .app-shell{border-radius:22px;} .viewer{font-size:17px;} .branding{max-width:62%;} .btn{padding:6px 12px;} }
@@ -233,13 +253,13 @@
                         <span id="playlistPillText">Set 1</span>
                         <span id="playlistPillIndex">1/1</span>
                     </span>
-                    <button class="pill-btn hidden" id="notesStagBtn">Notes</button>
                     <button class="pill-btn" id="stageInfoBtn">Stage tips</button>
                 </div>
             </div>
 
             <div class="main-stack">
                 <div class="viewer-card" id="viewerCard">
+                    <button class="viewer-notes-btn hidden" id="notesStagBtn">Notes</button>
                     <div class="viewer-viewport">
                         <div class="viewer-halo-top"></div>
                         <div class="viewer-halo-bottom"></div>
@@ -336,6 +356,7 @@
             </div>
             <div class="modal-footer">
                 <button onclick="closeModal('settingsOverlay')">Close</button>
+                <button class="btn-primary-small" id="saveSettingsToSongBtn">Save to song</button>
             </div>
         </div>
     </div>
@@ -499,7 +520,8 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     function showWelcome() {
         statusText.textContent = 'Ready';
-        notesStagBtn.classList.add('hidden');
+        notesStagBtn.classList.remove('hidden');
+        notesStagBtn.classList.add('no-notes');
         viewerContent.innerHTML = WELCOME_TEXT.split('\n')
             .map(line => `<span class="viewer-content-line" style="opacity:0.45;">${line || '\u00A0'}</span>`)
             .join('');
@@ -508,28 +530,52 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     // ─── LOAD SONG INTO UI ───────────────────────────────────────────────
     function loadSongIntoUI(songId) {
-        // ── Use correct field names (name / content) ──
         const song = songs.find(s => s.id === songId);
         if (!song) return;
 
         currentSongId = songId;
         statusText.textContent = song.name || 'Song loaded';
 
+        // ── Apply per-song settings ───────────────────────────────────────
+        if (typeof song.speedPercent === 'number') {
+            // speedPercent was legacy; new schema stores scrollSpeed directly
+            // support both
+        }
+        if (typeof song.scrollSpeed === 'number') {
+            scrollSpeed = song.scrollSpeed;
+            scrollSpeedInput.value = scrollSpeed;
+            scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
+        }
+        if (typeof song.fontSize === 'number') {
+            fontSize = song.fontSize;
+            fontSizeInput.value = fontSize;
+            fontSizeValue.textContent = fontSize + 'px';
+            viewer.style.fontSize = fontSize + 'px';
+        }
+        if (typeof song.lineHeight === 'number') {
+            lineHeight = song.lineHeight;
+            lineHeightInput.value = lineHeight;
+            lineHeightValue.textContent = lineHeight.toFixed(1);
+            viewer.style.lineHeight = lineHeight;
+        }
+
         viewerContent.innerHTML = (song.content || '')
             .split('\n')
             .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
             .join('');
 
-        // Notes — show button only if notes exist for this song
+        // Notes — full opacity if notes exist, dimmed if not
         const hasNotes = !!(song.notes && song.notes.trim());
-        notesStagBtn.classList.toggle('hidden', !hasNotes);
+        notesStagBtn.classList.remove('hidden', 'no-notes');
         if (hasNotes) {
             notesStageSongTitle.textContent = song.name || 'Notes';
             notesStageContent.textContent   = song.notes;
+        } else {
+            notesStagBtn.classList.add('no-notes');
         }
 
         stopScroll();
-        elapsedMs   = 0;
+        elapsedMs = 0;
         updateTimeDisplay();
         updatePlaylistDisplay();
         snapFirstLineIntoGlow();
@@ -690,10 +736,30 @@ Use Settings to adjust speed, font size and line spacing.`;
     viewerCard.addEventListener('touchend', endDrag);
 
     // ─── SETTINGS ────────────────────────────────────────────────────────
+    function markSongDirty() {
+        if (!currentSongId) return;
+        const song = songs.find(s => s.id === currentSongId);
+        if (!song) return;
+        statusText.textContent = `${song.name} · unsaved changes`;
+    }
+
+    function saveSettingsToSong() {
+        if (!currentSongId) return;
+        const idx = songs.findIndex(s => s.id === currentSongId);
+        if (idx === -1) return;
+        songs[idx].scrollSpeed = scrollSpeed;
+        songs[idx].fontSize    = fontSize;
+        songs[idx].lineHeight  = lineHeight;
+        try { localStorage.setItem('lyricflow_v3_songs', JSON.stringify(songs)); } catch(e) {}
+        const song = songs[idx];
+        statusText.textContent = `${song.name} · settings saved`;
+    }
+
     scrollSpeedInput.oninput = e => {
         scrollSpeed = parseFloat(e.target.value);
         scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
         saveSettings();
+        markSongDirty();
     };
     fontSizeInput.oninput = e => {
         fontSize = parseInt(e.target.value);
@@ -701,6 +767,7 @@ Use Settings to adjust speed, font size and line spacing.`;
         viewer.style.fontSize = fontSize + 'px';
         snapFirstLineIntoGlow();
         saveSettings();
+        markSongDirty();
     };
     lineHeightInput.oninput = e => {
         lineHeight = parseFloat(e.target.value);
@@ -708,11 +775,13 @@ Use Settings to adjust speed, font size and line spacing.`;
         viewer.style.lineHeight = lineHeight;
         snapFirstLineIntoGlow();
         saveSettings();
+        markSongDirty();
     };
 
     document.getElementById('stageInfoBtn').onclick      = () => openModal('stageInfoOverlay');
     document.getElementById('infoMainTrigger').onclick   = () => openModal('stageInfoOverlay');
     document.getElementById('settingsBtnBottom').onclick = () => openModal('settingsOverlay');
+    document.getElementById('saveSettingsToSongBtn').onclick = () => { saveSettingsToSong(); closeModal('settingsOverlay'); };
     notesStagBtn.onclick = () => openModal('notesStageOverlay');
 
     function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
@@ -727,7 +796,8 @@ Use Settings to adjust speed, font size and line spacing.`;
     function loadDraft(text) {
         currentSongId = null;
         statusText.textContent = 'Unsaved song';
-        notesStagBtn.classList.add('hidden');
+        notesStagBtn.classList.remove('hidden');
+        notesStagBtn.classList.add('no-notes');
         viewerContent.innerHTML = text.split('\n')
             .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
             .join('');
