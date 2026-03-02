@@ -20,16 +20,10 @@
             --danger-border: rgba(248, 113, 113, 0.6);
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
             background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
             color: var(--text-main);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
@@ -39,675 +33,167 @@
         }
 
         body {
-            display: flex;
-            align-items: stretch;
-            justify-content: center;
-            padding: 14px;
+            display: flex; align-items: stretch; justify-content: center; padding: 14px;
         }
 
         .app-shell {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-            max-width: 1080px;
-            max-height: 100%;
-            margin: 0 auto;
-            padding: 14px 14px 10px;
-            border-radius: 30px;
-            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
-            border: 1px solid rgba(148, 163, 184, 0.28);
+            display: flex; flex-direction: column; gap: 8px;
+            width: 100%; max-width: 1080px; max-height: 100%; margin: 0 auto;
+            padding: 14px 14px 10px; border-radius: 30px;
+            background: radial-gradient(circle at top, rgba(34,197,94,.18) 0,transparent 45%),
+                        radial-gradient(circle at 0 0, rgba(59,130,246,.09) 0,transparent 50%),
+                        radial-gradient(circle at 100% 0, rgba(14,165,233,.11) 0,transparent 54%),
+                        radial-gradient(circle at 0 100%, rgba(34,197,94,.11) 0,transparent 50%),
+                        radial-gradient(circle at 100% 100%, rgba(147,51,234,.08) 0,transparent 52%),
+                        linear-gradient(145deg,#020617 0%,#020617 40%,#020617 100%);
+            border: 1px solid rgba(148,163,184,.28);
             box-shadow: var(--shadow-soft);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
 
         .app-shell::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
-            opacity: 0.85;
-            mix-blend-mode: soft-light;
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(circle at 0 20%, rgba(148,163,184,.09) 0,transparent 55%),
+                        radial-gradient(circle at 100% 80%, rgba(51,65,85,.55) 0,transparent 60%);
+            opacity: .85; mix-blend-mode: soft-light;
         }
 
         .app-shell-inner {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            height: 100%;
+            position: relative; z-index: 1; display: flex; flex-direction: column;
+            gap: 8px; height: 100%;
         }
 
         .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
         }
 
         .branding {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
         }
 
         .lf-logo {
-            width: 30px;
-            height: 30px;
-            border-radius: 12px;
-            background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.9), transparent 55%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), radial-gradient(circle at 30% 90%, rgba(59, 130, 246, 1), transparent 65%), linear-gradient(135deg, #020617, #020617);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(0, 0, 0, 0.9);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 30px; height: 30px; border-radius: 12px;
+            background: radial-gradient(circle at 20% 0%,rgba(248,250,252,.9),transparent 55%),
+                        radial-gradient(circle at 70% 80%,rgba(52,211,153,1),transparent 65%),
+                        radial-gradient(circle at 30% 90%,rgba(59,130,246,1),transparent 65%),
+                        linear-gradient(135deg,#020617,#020617);
+            box-shadow: 0 0 0 1px rgba(15,23,42,.95),0 12px 28px rgba(0,0,0,.9);
+            position: relative; overflow: hidden; display: flex;
+            align-items: center; justify-content: center;
         }
 
         .lf-logo-glyph {
-            position: relative;
-            width: 20px;
-            height: 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(148, 163, 184, 0.7);
-            background: radial-gradient(circle at 0 0, #020617, #020617);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
+            position: relative; width: 20px; height: 20px; border-radius: 8px;
+            border: 1px solid rgba(148,163,184,.7);
+            background: radial-gradient(circle at 0 0,#020617,#020617);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 1px rgba(15,23,42,.9),0 0 18px rgba(34,197,94,.7);
         }
+        .lf-logo-glyph::before { content:"L"; font-weight:700; font-size:11px; letter-spacing:.06em; color:#bbf7d0; position:absolute; left:4px; top:4px; }
+        .lf-logo-glyph::after  { content:"F"; font-weight:700; font-size:11px; letter-spacing:.08em; color:#22c55e;  position:absolute; right:4px; bottom:4px; }
 
-        .lf-logo-glyph::before {
-            content: "L";
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 0.06em;
-            color: #bbf7d0;
-            position: absolute;
-            left: 4px;
-            top: 4px;
-        }
-
-        .lf-logo-glyph::after {
-            content: "F";
-            font-weight: 700;
-            font-size: 11px;
-            letter-spacing: 0.08em;
-            color: #22c55e;
-            position: absolute;
-            right: 4px;
-            bottom: 4px;
-        }
-
-        .app-title-block {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .app-title {
-            font-size: 18px;
-            font-weight: 620;
-            letter-spacing: 0.02em;
-            color: #e5e7eb;
-            text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
-        }
-
-        .app-subtitle {
-            font-size: 11px;
-            color: var(--text-soft);
-        }
-
-        .top-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .status-line {
-            font-size: 11px;
-            color: var(--text-soft);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0 2px;
-        }
-
-        .status-label {
-            padding: 2px 7px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.96);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-pill-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 999px;
-            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-        }
-
-        .status-time {
-            opacity: 0.8;
-        }
-
-        .header-right {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .pill-label {
-            font-size: 10px;
-            color: var(--text-soft);
-            padding: 4px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .pill-label strong {
-            font-weight: 600;
-        }
-
-        .icon-btn {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 11px;
-            padding: 4px 7px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .pill-btn {
-            border-radius: 999px;
-            padding: 4px 10px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 0.98);
-            color: var(--text-soft);
-            font-size: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .main-stack {
-            flex: 1;
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .viewer-card {
-            flex: 1;
-            min-height: 0;
-            border-radius: 22px;
-            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.99)), radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.99), rgba(15, 23, 42, 1));
-            border: 1px solid rgba(55, 65, 81, 0.95);
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.95);
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .viewer-viewport {
-            flex: 1;
-            min-height: 0;
-            position: relative;
-            overflow: hidden;
-            border-radius: 18px;
-            background: radial-gradient(circle at 0 -25%, rgba(34, 197, 94, 0.28), transparent 60%), radial-gradient(circle at 100% 120%, rgba(59, 130, 246, 0.28), transparent 60%), linear-gradient(#020617, #020617);
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.95), 0 18px 30px rgba(0, 0, 0, 0.85);
-        }
-
-        .viewer-halo-top,
-        .viewer-halo-bottom,
-        .viewer-highlight,
-        .viewer-subtle-layer {
-            pointer-events: none;
-        }
-
-        .viewer-halo-top {
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 90px;
-            background: radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.42), transparent 70%);
-            filter: blur(12px);
-            opacity: 0.8;
-        }
-
-        .viewer-halo-bottom {
-            position: absolute;
-            bottom: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 100px;
-            background: radial-gradient(circle at 50% 0, rgba(34, 197, 94, 0.26), transparent 70%), radial-gradient(circle at 50% 0, rgba(59, 130, 246, 0.18), transparent 70%);
-            filter: blur(14px);
-            opacity: 0.9;
-        }
-
-        .viewer-highlight {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 100%;
-            height: 50%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.26)), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.03), rgba(15, 23, 42, 0.35));
-            border-radius: 40px;
-            border: 1px solid rgba(148, 163, 184, 0.28);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 0 2px rgba(34, 197, 94, 0.16), 0 20px 40px rgba(0, 0, 0, 0.9), 0 -16px 35px rgba(15, 23, 42, 0.95), 0 0 50px rgba(34, 197, 94, 0.45);
-            mix-blend-mode: screen;
-            opacity: 0.75;
-        }
-
-        .viewer-subtle-layer {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 0 50%, rgba(15, 23, 42, 0.6), transparent 60%), radial-gradient(circle at 100% 50%, rgba(15, 23, 42, 0.75), transparent 60%);
-            opacity: 0.85;
-            mix-blend-mode: multiply;
-        }
-
-        .viewer-text-rail {
-            position: absolute;
-            inset: 18px 10px;
-            border-radius: 32px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 10px;
-            -webkit-mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
-            mask-image: linear-gradient( to bottom, transparent, black 12%, black 88%, transparent 100% );
-        }
-
-        .viewer {
-            position: relative;
-            width: 100%;
-            max-width: 820px;
-            margin: 0 auto;
-            color: rgba(226, 232, 240, 0.98);
-            font-size: 20px;
-            line-height: 1.9;
-            text-align: center;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            padding: 0 4px;
-            text-shadow: 0 0 20px rgba(15, 23, 42, 0.95), 0 0 40px rgba(0, 0, 0, 0.85);
-            cursor: grab;
-            touch-action: none;
-            transition: transform 0.08s ease-out;
-        }
-
-        .viewer:active {
-            cursor: grabbing;
-        }
-
-        .viewer-content {
-            position: relative;
-            display: inline-block;
-            will-change: transform;
-            transform: translateY(0px);
-        }
-
-        .viewer-overlay-top,
-        .viewer-overlay-bottom {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 70px;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .viewer-overlay-top {
-            top: -4px;
-            background: linear-gradient( to bottom, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
-        }
-
-        .viewer-overlay-bottom {
-            bottom: -4px;
-            background: linear-gradient( to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0) );
-        }
-
-        .viewer-gradient-border-top,
-        .viewer-gradient-border-bottom {
-            position: absolute;
-            left: 20%;
-            right: 20%;
-            height: 2px;
-            border-radius: 999px;
-            background: linear-gradient( to right, rgba(15, 23, 42, 0), rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.9), rgba(15, 23, 42, 0) );
-            box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
-            opacity: 0.8;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .viewer-gradient-border-top {
-            top: 24%;
-        }
-
-        .viewer-gradient-border-bottom {
-            bottom: 24%;
-        }
+        .app-title-block { display:flex; flex-direction:column; gap:2px; }
+        .app-title { font-size:18px; font-weight:620; letter-spacing:.02em; color:#e5e7eb; text-shadow:0 0 18px rgba(34,197,94,.5),0 0 35px rgba(34,197,94,.4); }
+        .app-subtitle { font-size:11px; color:var(--text-soft); }
 
-        .viewer-content-line {
-            display: block;
-            padding: 1px 0;
-        }
-
-        .viewer-countin {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient( circle at 50% 50%, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5) );
-            color: rgba(226, 232, 240, 0.9);
-            font-size: 26px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            text-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
-            z-index: 5;
-        }
-
-        .viewer-countin.hidden {
-            display: none;
-        }
-
-        .bottom-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.97);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 1);
-        }
-
-        .transport-buttons {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            width: 100%;
-        }
+        .top-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 
-        .btn {
-            border: none;
-            cursor: pointer;
-            border-radius: 999px;
-            font-size: 11px;
-            padding: 7px 18px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(15, 23, 42, 0.9);
-            color: var(--text-soft);
-            border: 1px solid rgba(55, 65, 81, 0.9);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 0.95);
-            flex: 1;
-            justify-content: center;
-        }
+        .status-line { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:6px; padding:0 2px; }
+        .status-label { padding:2px 7px; border-radius:999px; background:rgba(15,23,42,.96); border:1px solid rgba(55,65,81,.9); display:inline-flex; align-items:center; gap:6px; }
+        .status-pill-dot { width:5px; height:5px; border-radius:999px; background:radial-gradient(circle at 30% 0%,#f9fafb,#22c55e); box-shadow:0 0 8px rgba(34,197,94,.9); }
+        .status-time { opacity:.8; }
 
-        .btn span {
-            font-size: 13px;
-        }
+        .header-right { display:inline-flex; align-items:center; gap:6px; }
 
-        .btn-primary {
-            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-            color: #020617;
-            border-color: rgba(74, 222, 128, 0.6);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(22, 163, 74, 0.7), 0 0 35px rgba(34, 197, 94, 0.8);
-        }
+        .pill-label { font-size:10px; color:var(--text-soft); padding:4px 10px; border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); display:inline-flex; align-items:center; gap:4px; cursor:pointer; }
 
-        .btn-reset {
-            padding: 6px 10px;
-            font-size: 10px;
-            border-color: rgba(248, 113, 113, 0.6);
-            color: var(--danger);
-        }
+        .icon-btn { border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:11px; padding:4px 7px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
 
-        .btn:hover {
-            transform: translateY(-0.5px) translateZ(0);
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
-            opacity: 0.97;
-        }
+        .pill-btn { border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
 
-        .btn:active {
-            transform: translateY(1px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(15, 23, 42, 0.9);
-        }
+        .main-stack { flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; }
 
-        #settingsBtnBottom.btn {
-            padding: 7px 16px;
-            font-size: 11px;
-        }
+        .viewer-card { flex:1; min-height:0; border-radius:22px; background:radial-gradient(circle at 0 0,rgba(15,23,42,1),rgba(15,23,42,.99)),radial-gradient(circle at 100% 100%,rgba(15,23,42,.99),rgba(15,23,42,1)); border:1px solid rgba(55,65,81,.95); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.95); padding:10px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
 
-        #settingsBtnBottom.btn span:first-child {
-            font-size: 15px;
-        }
+        .viewer-viewport { flex:1; min-height:0; position:relative; overflow:hidden; border-radius:18px; background:radial-gradient(circle at 0 -25%,rgba(34,197,94,.28),transparent 60%),radial-gradient(circle at 100% 120%,rgba(59,130,246,.28),transparent 60%),linear-gradient(#020617,#020617); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.85); }
 
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 40;
-        }
+        .viewer-halo-top,.viewer-halo-bottom,.viewer-highlight,.viewer-subtle-layer { pointer-events:none; }
 
-        .overlay.hidden {
-            display: none;
-        }
+        .viewer-halo-top { position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:80%; height:90px; background:radial-gradient(circle at 50% 100%,rgba(34,197,94,.42),transparent 70%); filter:blur(12px); opacity:.8; }
+        .viewer-halo-bottom { position:absolute; bottom:-50px; left:50%; transform:translateX(-50%); width:90%; height:100px; background:radial-gradient(circle at 50% 0,rgba(34,197,94,.26),transparent 70%),radial-gradient(circle at 50% 0,rgba(59,130,246,.18),transparent 70%); filter:blur(14px); opacity:.9; }
 
-        .modal {
-            max-width: 360px;
-            width: 90%;
-            border-radius: 18px;
-            background: rgba(15, 23, 42, 0.98);
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
-            padding: 12px 14px 10px;
-            color: var(--text-soft);
-            font-size: 13px;
-        }
+        .viewer-highlight { position:absolute; left:50%; top:50%; width:100%; height:50%; transform:translate(-50%,-50%); background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.02),rgba(15,23,42,.26)),radial-gradient(circle at 50% 50%,rgba(15,23,42,.03),rgba(15,23,42,.35)); border-radius:40px; border:1px solid rgba(148,163,184,.28); box-shadow:0 0 0 1px rgba(15,23,42,.9),0 0 0 2px rgba(34,197,94,.16),0 20px 40px rgba(0,0,0,.9),0 -16px 35px rgba(15,23,42,.95),0 0 50px rgba(34,197,94,.45); mix-blend-mode:screen; opacity:.75; }
 
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
+        .viewer-subtle-layer { position:absolute; inset:0; background:radial-gradient(circle at 0 50%,rgba(15,23,42,.6),transparent 60%),radial-gradient(circle at 100% 50%,rgba(15,23,42,.75),transparent 60%); opacity:.85; mix-blend-mode:multiply; }
 
-        .modal-title {
-            font-size: 13px;
-            font-weight: 550;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #e5e7eb;
-        }
+        .viewer-text-rail { position:absolute; inset:18px 10px; border-radius:32px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:0 10px; -webkit-mask-image:linear-gradient(to bottom,transparent,black 12%,black 88%,transparent 100%); mask-image:linear-gradient(to bottom,transparent,black 12%,black 88%,transparent 100%); }
 
-        .modal-close {
-            border: none;
-            background: transparent;
-            color: var(--text-soft);
-            cursor: pointer;
-            font-size: 14px;
-        }
+        .viewer { position:relative; width:100%; max-width:820px; margin:0 auto; color:rgba(226,232,240,.98); font-size:20px; line-height:1.9; text-align:center; white-space:pre-wrap; word-wrap:break-word; padding:0 4px; text-shadow:0 0 20px rgba(15,23,42,.95),0 0 40px rgba(0,0,0,.85); cursor:grab; touch-action:none; }
+        .viewer:active { cursor:grabbing; }
 
-        .modal-body p {
-            margin: 6px 0;
-        }
+        .viewer-content { position:relative; display:inline-block; will-change:transform; transform:translateY(0px); }
 
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 8px;
-        }
+        .viewer-overlay-top,.viewer-overlay-bottom { position:absolute; left:0; right:0; height:70px; pointer-events:none; z-index:3; }
+        .viewer-overlay-top    { top:-4px;    background:linear-gradient(to bottom,rgba(2,6,23,.98),rgba(2,6,23,0)); }
+        .viewer-overlay-bottom { bottom:-4px; background:linear-gradient(to top,  rgba(2,6,23,.98),rgba(2,6,23,0)); }
 
-        .modal-footer button {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 1);
-            color: var(--text-soft);
-            font-size: 11px;
-            padding: 4px 10px;
-            cursor: pointer;
-            margin-left: 6px;
-        }
+        .viewer-gradient-border-top,.viewer-gradient-border-bottom { position:absolute; left:20%; right:20%; height:2px; border-radius:999px; background:linear-gradient(to right,rgba(15,23,42,0),rgba(34,197,94,.9),rgba(59,130,246,.9),rgba(15,23,42,0)); box-shadow:0 0 18px rgba(34,197,94,.8); opacity:.8; pointer-events:none; z-index:3; }
+        .viewer-gradient-border-top    { top:24%; }
+        .viewer-gradient-border-bottom { bottom:24%; }
 
-        .modal-footer .btn-primary-small {
-            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-            border-color: rgba(74, 222, 128, 0.7);
-            color: #020617;
-        }
+        .viewer-content-line { display:block; padding:1px 0; }
 
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-top: 4px;
-        }
+        .viewer-countin { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.5),rgba(15,23,42,.5)); color:rgba(226,232,240,.9); font-size:26px; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 0 18px rgba(0,0,0,.85); z-index:5; }
+        .viewer-countin.hidden { display:none; }
 
-        .form-field label {
-            font-size: 11px;
-            color: var(--text-soft);
-        }
+        .bottom-bar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(15,23,42,.97); border:1px solid rgba(55,65,81,.9); box-shadow:0 -6px 20px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
 
-        .form-field input,
-        .form-field select {
-            border-radius: 999px;
-            border: 1px solid rgba(75, 85, 99, 0.95);
-            background: rgba(15, 23, 42, 1);
-            color: var(--text-main);
-            padding: 6px 10px;
-            font-size: 13px;
-            outline: none;
-        }
+        .transport-buttons { display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; }
 
-        .viewer::-webkit-scrollbar,
-        #editor::-webkit-scrollbar {
-            width: 8px;
-        }
+        .btn { border:none; cursor:pointer; border-radius:999px; font-size:11px; padding:7px 18px; display:inline-flex; align-items:center; gap:6px; background:rgba(15,23,42,.9); color:var(--text-soft); border:1px solid rgba(55,65,81,.9); box-shadow:0 8px 18px rgba(15,23,42,.95),0 0 0 1px rgba(15,23,42,.95); flex:1; justify-content:center; }
+        .btn span { font-size:13px; }
+        .btn-primary { background:radial-gradient(circle at 0 0,#22c55e,#16a34a); color:#020617; border-color:rgba(74,222,128,.6); box-shadow:0 0 0 1px rgba(15,23,42,.95),0 12px 28px rgba(22,163,74,.7),0 0 35px rgba(34,197,94,.8); }
+        .btn-reset { padding:6px 10px; font-size:10px; border-color:rgba(248,113,113,.6); color:var(--danger); }
+        .btn:hover { transform:translateY(-0.5px) translateZ(0); box-shadow:0 12px 24px rgba(15,23,42,.95),0 0 0 1px rgba(15,23,42,1); opacity:.97; }
+        .btn:active { transform:translateY(1px); box-shadow:0 4px 10px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,.9); }
 
-        .viewer::-webkit-scrollbar-thumb,
-        #editor::-webkit-scrollbar-thumb {
-            background: rgba(75, 85, 99, 0.9);
-            border-radius: 999px;
-        }
+        #settingsBtnBottom.btn { padding:7px 16px; font-size:11px; }
+        #settingsBtnBottom.btn span:first-child { font-size:15px; }
 
-        .viewer::-webkit-scrollbar-track,
-        #editor::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        .overlay { position:fixed; inset:0; background:rgba(15,23,42,.75); display:flex; align-items:center; justify-content:center; z-index:40; }
+        .overlay.hidden { display:none; }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .app-shell {
-                padding: 12px 10px 8px;
-                border-radius: 26px;
-            }
-
-            .viewer {
-                font-size: 18px;
-            }
-
-            .bottom-bar {
-                padding: 6px 8px;
-            }
-
-            .btn {
-                padding: 7px 14px;
-            }
-        }
+        .modal { max-width:360px; width:90%; border-radius:18px; background:rgba(15,23,42,.98); border:1px solid rgba(75,85,99,.95); box-shadow:0 18px 40px rgba(0,0,0,.95); padding:12px 14px 10px; color:var(--text-soft); font-size:13px; }
+        .modal-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+        .modal-title { font-size:13px; font-weight:550; letter-spacing:.06em; text-transform:uppercase; color:#e5e7eb; }
+        .modal-close { border:none; background:transparent; color:var(--text-soft); cursor:pointer; font-size:14px; }
+        .modal-body p { margin:6px 0; }
+        .modal-footer { display:flex; justify-content:flex-end; margin-top:8px; }
+        .modal-footer button { border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:11px; padding:4px 10px; cursor:pointer; margin-left:6px; }
+        .modal-footer .btn-primary-small { background:radial-gradient(circle at 0 0,#22c55e,#16a34a); border-color:rgba(74,222,128,.7); color:#020617; }
 
-        @media (max-width: 480px) {
-            body {
-                padding: 8px 6px;
-            }
-
-            .app-shell {
-                border-radius: 22px;
-            }
-
-            .viewer {
-                font-size: 17px;
-            }
-
-            .branding {
-                max-width: 62%;
-            }
-
-            .btn {
-                padding: 6px 12px;
-            }
-        }
+        .form-field { display:flex; flex-direction:column; gap:4px; margin-top:4px; }
+        .form-field label { font-size:11px; color:var(--text-soft); }
+        .form-field input,.form-field select { border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:6px 10px; font-size:13px; outline:none; }
 
-        .hidden {
-            display: none !important;
-        }
+        .viewer::-webkit-scrollbar { width:8px; }
+        .viewer::-webkit-scrollbar-thumb { background:rgba(75,85,99,.9); border-radius:999px; }
+        .viewer::-webkit-scrollbar-track { background:transparent; }
 
-        body.high-contrast-stage .viewer-card {
-            background: #020617;
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
-        }
+        .app-footer { margin-top:4px; font-size:10px; color:var(--text-muted); text-align:center; opacity:.85; }
 
-        body.high-contrast-stage .viewer-viewport {
-            background: #020617;
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
-        }
+        @media (max-width:768px) { body{padding:10px;} .app-shell{padding:12px 10px 8px;border-radius:26px;} .viewer{font-size:18px;} .bottom-bar{padding:6px 8px;} .btn{padding:7px 14px;} }
+        @media (max-width:480px) { body{padding:8px 6px;} .app-shell{border-radius:22px;} .viewer{font-size:17px;} .branding{max-width:62%;} .btn{padding:6px 12px;} }
 
-        body.high-contrast-stage .viewer {
-            text-shadow: 0 0 28px rgba(0, 0, 0, 1), 0 0 50px rgba(0, 0, 0, 1);
-        }
+        .hidden { display:none !important; }
 
+        body.high-contrast-stage .viewer-card      { background:#020617; box-shadow:0 0 0 1px rgba(15,23,42,1); }
+        body.high-contrast-stage .viewer-viewport  { background:#020617; box-shadow:0 0 0 1px rgba(15,23,42,1); }
+        body.high-contrast-stage .viewer           { text-shadow:0 0 28px rgba(0,0,0,1),0 0 50px rgba(0,0,0,1); }
         body.high-contrast-stage .viewer-halo-top,
         body.high-contrast-stage .viewer-halo-bottom,
-        body.high-contrast-stage .viewer-subtle-layer {
-            opacity: 0.4;
-        }
-
-        body.high-contrast-stage .viewer-highlight {
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 1), 0 0 0 3px rgba(34, 197, 94, 0.7), 0 0 55px rgba(34, 197, 94, 0.9);
-        }
+        body.high-contrast-stage .viewer-subtle-layer { opacity:.4; }
+        body.high-contrast-stage .viewer-highlight { box-shadow:0 0 0 1px rgba(15,23,42,1),0 0 0 3px rgba(34,197,94,.7),0 0 55px rgba(34,197,94,.9); }
     </style>
 </head>
 
@@ -716,15 +202,13 @@
         <div class="app-shell-inner">
             <header class="header">
                 <div class="branding" id="infoMainTrigger">
-                    <div class="lf-logo">
-                        <div class="lf-logo-glyph"></div>
-                    </div>
+                    <div class="lf-logo"><div class="lf-logo-glyph"></div></div>
                     <div class="app-title-block">
                         <div class="app-title">LyricFlow</div>
                         <div class="app-subtitle">Stage Mode</div>
                     </div>
                 </div>
-                <button class="pill-btn" onclick="window.location.href='playlist.html'" id="playlistBtn">Playlist</button>
+                <button class="pill-btn" onclick="window.location.href='playlist.html'">Playlist</button>
             </header>
 
             <div class="top-row">
@@ -753,22 +237,17 @@
                         <div class="viewer-halo-bottom"></div>
                         <div class="viewer-subtle-layer"></div>
                         <div class="viewer-highlight"></div>
-
                         <div class="viewer-text-rail">
                             <div class="viewer-overlay-top"></div>
                             <div class="viewer-overlay-bottom"></div>
                             <div class="viewer-gradient-border-top"></div>
                             <div class="viewer-gradient-border-bottom"></div>
-
                             <div class="viewer" id="viewer">
                                 <div class="viewer-content" id="viewerContent">
-                                    <span class="viewer-content-line">
-                                        Ready for lyrics from playlist.html
-                                    </span>
+                                    <span class="viewer-content-line">Load a song from the Playlist page to begin.</span>
                                 </div>
                             </div>
                         </div>
-
                         <div class="viewer-countin hidden" id="viewerCountIn"></div>
                     </div>
                 </div>
@@ -776,24 +255,14 @@
 
             <div class="bottom-bar" id="bottomBar">
                 <div class="transport-buttons">
-                    <button id="start" class="btn btn-primary">
-                        <span>▶ Start</span>
-                    </button>
-                    <button id="pause" class="btn hidden">
-                        <span>⏸ Pause</span>
-                    </button>
-                    <button id="resetBtn" class="btn btn-reset">
-                        <span>⟲ Reset</span>
-                    </button>
-                    <button id="settingsBtnBottom" class="btn">
-                        <span>⚙ Settings</span>
-                    </button>
+                    <button id="start"     class="btn btn-primary"><span>▶ Start</span></button>
+                    <button id="pause"     class="btn hidden"><span>⏸ Pause</span></button>
+                    <button id="resetBtn"  class="btn btn-reset"><span>⟲ Reset</span></button>
+                    <button id="settingsBtnBottom" class="btn"><span>⚙ Settings</span></button>
                 </div>
             </div>
 
-            <footer class="app-footer">
-                © 2026 LyricFlow. Stage Mode - Load songs from playlist.html
-            </footer>
+            <footer class="app-footer">© 2026 LyricFlow. Stage Mode</footer>
         </div>
     </div>
 
@@ -802,17 +271,17 @@
         <div class="modal">
             <div class="modal-header">
                 <div class="modal-title">Stage Mode</div>
-                <button class="modal-close" onclick="closeStageInfo()">✕</button>
+                <button class="modal-close" onclick="closeModal('stageInfoOverlay')">✕</button>
             </div>
             <div class="modal-body">
-                <p>• Load songs from playlist.html first</p>
+                <p>• Load songs from the Playlist page first</p>
                 <p>• Set scroll speed, press Start</p>
-                <p>• Drag lyrics up/down during song</p>
+                <p>• Drag lyrics up/down during song to adjust</p>
                 <p>• Space = Start/Pause, R = Reset</p>
-                <p>• Prev/Next navigate playlist</p>
+                <p>• Prev/Next buttons navigate the playlist</p>
             </div>
             <div class="modal-footer">
-                <button onclick="closeStageInfo()">Got it</button>
+                <button onclick="closeModal('stageInfoOverlay')">Got it</button>
             </div>
         </div>
     </div>
@@ -822,7 +291,7 @@
         <div class="modal">
             <div class="modal-header">
                 <div class="modal-title">Settings</div>
-                <button class="modal-close" onclick="closeSettings()">✕</button>
+                <button class="modal-close" onclick="closeModal('settingsOverlay')">✕</button>
             </div>
             <div class="modal-body">
                 <div class="form-field">
@@ -842,342 +311,369 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeSettings()">Close</button>
+                <button onclick="closeModal('settingsOverlay')">Close</button>
             </div>
         </div>
     </div>
 
     <script>
-    // === BULLETPROOF AUTOSCROLL/DRAG/RESET FROM YOUR OLD CODE ===
-    
-    // Core state (ENHANCED)
-    let scrollSpeed = 0.8;
-    let fontSize = 20;
-    let lineHeight = 1.9;
-    let isPlaying = false;
-    let startTime = 0;
-    let currentY = 0;
-    let velocityY = 0;
-    let rafId = null;
-    let songs = JSON.parse(localStorage.getItem('lyricflow_songs') || '[]');
-    let currentPlaylist = localStorage.getItem('lyricflow_currentPlaylist') || 'Set 1';
-    let currentSongIndex = 0;
-    let currentSongId = localStorage.getItem('lyricflow_currentSongId') || null;
-    let isDragging = false;
-    let lastTouchY = 0;
-    let wasScrollingBeforeDrag = false;  // NEW: Track scroll state
-    let canonicalBaseContentY = 0;       // NEW: Reset reference point
-    let songStartBaseContentY = 0;       // NEW: Song start position
-
-    // DOM elements
-    const viewerCard = document.getElementById('viewerCard');  // FIXED: Use viewerCard
-    const viewer = document.getElementById('viewer');
-    const viewerContent = document.getElementById('viewerContent');
-    const statusText = document.getElementById('statusText');
-    const timeDisplay = document.getElementById('timeDisplay');
-    const startBtn = document.getElementById('start');
-    const pauseBtn = document.getElementById('pause');
-    const resetBtn = document.getElementById('resetBtn');
-    const prevSongBtn = document.getElementById('prevSongBtn');
-    const nextSongBtn = document.getElementById('nextSongBtn');
-    const playlistPill = document.getElementById('playlistPill');
-    const playlistPillText = document.getElementById('playlistPillText');
+    // ─── DOM ─────────────────────────────────────────────────────────────
+    const viewer         = document.getElementById('viewer');
+    const viewerContent  = document.getElementById('viewerContent');
+    const viewerCard     = document.getElementById('viewerCard');
+    const statusText     = document.getElementById('statusText');
+    const timeDisplay    = document.getElementById('timeDisplay');
+    const startBtn       = document.getElementById('start');
+    const pauseBtn       = document.getElementById('pause');
+    const resetBtn       = document.getElementById('resetBtn');
+    const prevSongBtn    = document.getElementById('prevSongBtn');
+    const nextSongBtn    = document.getElementById('nextSongBtn');
+    const playlistPill   = document.getElementById('playlistPill');
+    const playlistPillText  = document.getElementById('playlistPillText');
     const playlistPillIndex = document.getElementById('playlistPillIndex');
 
-    // Settings elements
-    const scrollSpeedInput = document.getElementById('scrollSpeedInput');
-    const scrollSpeedValue = document.getElementById('scrollSpeedValue');
-    const fontSizeInput = document.getElementById('fontSizeInput');
-    const fontSizeValue = document.getElementById('fontSizeValue');
-    const lineHeightInput = document.getElementById('lineHeightInput');
-    const lineHeightValue = document.getElementById('lineHeightValue');
+    const scrollSpeedInput  = document.getElementById('scrollSpeedInput');
+    const scrollSpeedValue  = document.getElementById('scrollSpeedValue');
+    const fontSizeInput     = document.getElementById('fontSizeInput');
+    const fontSizeValue     = document.getElementById('fontSizeValue');
+    const lineHeightInput   = document.getElementById('lineHeightInput');
+    const lineHeightValue   = document.getElementById('lineHeightValue');
 
-    // Load settings
-    const savedSettings = JSON.parse(localStorage.getItem('lyricflow_settings') || '{}');
-    scrollSpeed = savedSettings.scrollSpeed || 0.8;
-    fontSize = savedSettings.fontSize || 20;
-    lineHeight = savedSettings.lineHeight || 1.9;
+    // ─── STATE ────────────────────────────────────────────────────────────
+    // ── Matches playlist.html storage key exactly ──
+    const STORAGE_KEY = 'lyricflow_v3_songs';
 
-    // Apply settings
+    let scrollSpeed = 0.8;   // multiplier (same meaning as old code)
+    let fontSize    = 20;
+    let lineHeight  = 1.9;
+
+    let isPlaying   = false;
+    let rafId       = null;
+    let lastFrameTs = null;   // for delta-time scroll (bulletproof)
+    let elapsedMs   = 0;
+
+    let baseContentY         = 0;
+    let canonicalBaseContentY= 0;
+    let songStartBaseContentY= 0;
+
+    let isDragging       = false;
+    let dragStartY       = 0;
+    let dragStartBaseY   = 0;
+    let wasPlayingBeforeDrag = false;
+
+    let songs            = [];
+    let currentPlaylist  = 'Set 1';
+    let currentSongIndex = 0;
+    let currentSongId    = localStorage.getItem('lyricflow_currentSongId') || null;
+
+    // ─── LOAD SETTINGS ───────────────────────────────────────────────────
+    const saved = JSON.parse(localStorage.getItem('lyricflow_stage_settings') || '{}');
+    scrollSpeed = saved.scrollSpeed || 0.8;
+    fontSize    = saved.fontSize    || 20;
+    lineHeight  = saved.lineHeight  || 1.9;
+
     scrollSpeedInput.value = scrollSpeed;
     scrollSpeedValue.textContent = scrollSpeed;
-    fontSizeInput.value = fontSize;
+    fontSizeInput.value  = fontSize;
     fontSizeValue.textContent = fontSize + 'px';
     lineHeightInput.value = lineHeight;
     lineHeightValue.textContent = lineHeight;
-    viewer.style.fontSize = fontSize + 'px';
+    viewer.style.fontSize   = fontSize + 'px';
     viewer.style.lineHeight = lineHeight;
 
-    // Storage sync with playlist.html
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'lyricflow_currentSongId') {
-            currentSongId = e.newValue;
-            localStorage.setItem('lyricflow_currentSongId', currentSongId);
-            loadSongIntoUI(currentSongId);
+    function saveSettings() {
+        localStorage.setItem('lyricflow_stage_settings', JSON.stringify({ scrollSpeed, fontSize, lineHeight }));
+    }
+
+    // ─── SONG DATA ───────────────────────────────────────────────────────
+    function loadSongsFromStorage() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            songs = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(songs)) songs = [];
+        } catch(e) { songs = []; }
+    }
+
+    // ─── CROSS-TAB SONG TRIGGER ──────────────────────────────────────────
+    // BroadcastChannel fires instantly in the same browser, same origin.
+    // The storage-event fallback handles older browsers / same-tab edge cases.
+    let bc = null;
+    try {
+        bc = new BroadcastChannel('lyricflow_stage');
+        bc.onmessage = e => {
+            if (e.data && e.data.type === 'loadSong') {
+                loadSongsFromStorage();
+                loadSongIntoUI(e.data.songId);
+            }
+        };
+    } catch(err) {}
+
+    // storage event fires only in OTHER tabs (not the tab that wrote)
+    window.addEventListener('storage', e => {
+        if (e.key === STORAGE_KEY) {
+            loadSongsFromStorage();
         }
-        if (e.key === 'lyricflow_songs') {
-            songs = JSON.parse(e.newValue || '[]');
-            updatePlaylistDisplay();
+        if (e.key === 'lyricflow_currentSongId' && e.newValue) {
+            loadSongsFromStorage();
+            loadSongIntoUI(e.newValue);
         }
     });
 
-    // Load song into viewer (ENHANCED with snap)
-    function loadSongIntoUI(songId) {
-        const song = songs.find(s => s.id === songId);
-        if (song) {
-            currentSongId = songId;
-            viewerContent.innerHTML = song.lyrics.split('\\n').map(line => 
-                `<span class="viewer-content-line">${line || '&nbsp;'}</span>`
-            ).join('');
-            statusText.textContent = song.title || 'Song loaded';
-            updatePlaylistDisplay();
-            currentY = 0;
-            canonicalBaseContentY = 0;
-            snapFirstLineIntoGlow();  // NEW: Auto-snap first line
-            viewerContent.style.transform = 'translateY(0px)';
+    // Polling fallback – checks every 500 ms if currentSongId changed in another tab
+    let _lastPolledSongId = currentSongId;
+    setInterval(() => {
+        const latest = localStorage.getItem('lyricflow_currentSongId');
+        if (latest && latest !== _lastPolledSongId) {
+            _lastPolledSongId = latest;
+            currentSongId = latest;
+            loadSongsFromStorage();
+            loadSongIntoUI(latest);
         }
-    }
+    }, 500);
 
-    // NEW: Snap first line into glow band (bulletproof positioning)
+    // ─── SNAP FIRST LINE INTO GLOW ───────────────────────────────────────
     function snapFirstLineIntoGlow() {
         requestAnimationFrame(() => {
-            const lines = viewerContent.querySelectorAll('.viewer-content-line');
-            const glowBand = viewer.querySelector('.viewer-highlight');
-            if (!lines.length || !glowBand) return;
+            requestAnimationFrame(() => {
+                const lines   = viewerContent.querySelectorAll('.viewer-content-line');
+                const glowBand = viewer.querySelector
+                    ? null
+                    : null;
+                const glow    = document.querySelector('.viewer-highlight');
+                if (!lines.length || !glow) return;
 
-            const firstLine = lines[0];
-            const viewerRect = viewer.getBoundingClientRect();
-            const glowRect = glowBand.getBoundingClientRect();
-            const lineRect = firstLine.getBoundingClientRect();
+                baseContentY = 0;
+                viewerContent.style.transform = 'translateY(0px)';
 
-            const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
-            const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top;
-            const delta = glowCenter - lineCenter;
+                const viewerRect  = viewer.getBoundingClientRect();
+                const glowRect    = glow.getBoundingClientRect();
+                const lineRect    = lines[0].getBoundingClientRect();
 
-            canonicalBaseContentY = delta;
-            songStartBaseContentY = delta;
-            currentY = delta;
-            viewerContent.style.transform = `translateY(${currentY}px)`;
+                const glowCenter  = glowRect.top  + glowRect.height  / 2 - viewerRect.top;
+                const lineCenter  = lineRect.top  + lineRect.height  / 2 - viewerRect.top;
+                const delta       = glowCenter - lineCenter;
+
+                baseContentY          = delta;
+                canonicalBaseContentY = delta;
+                songStartBaseContentY = delta;
+
+                viewerContent.style.transform = `translateY(${baseContentY}px)`;
+            });
         });
     }
 
-    // Update playlist display
+    // ─── LOAD SONG INTO UI ───────────────────────────────────────────────
+    function loadSongIntoUI(songId) {
+        // ── Use correct field names (name / content) ──
+        const song = songs.find(s => s.id === songId);
+        if (!song) return;
+
+        currentSongId = songId;
+        statusText.textContent = song.name || 'Song loaded';
+
+        viewerContent.innerHTML = (song.content || '')
+            .split('\n')
+            .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
+            .join('');
+
+        stopScroll();
+        elapsedMs   = 0;
+        updateTimeDisplay();
+        updatePlaylistDisplay();
+        snapFirstLineIntoGlow();
+    }
+
+    // ─── PLAYLIST DISPLAY ────────────────────────────────────────────────
     function updatePlaylistDisplay() {
         const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
         if (currentSongId) {
             currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
         }
-        playlistPillText.textContent = currentPlaylist;
+        playlistPillText.textContent  = currentPlaylist;
         playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
-        playlistPill.classList.toggle('hidden', playlistSongs.length === 0);
-        prevSongBtn.classList.toggle('hidden', currentSongIndex <= 0 || playlistSongs.length === 0);
-        nextSongBtn.classList.toggle('hidden', currentSongIndex >= playlistSongs.length - 1 || playlistSongs.length === 0);
+        playlistPill.classList.toggle('hidden',    playlistSongs.length === 0);
+        prevSongBtn.classList.toggle('hidden',     currentSongIndex <= 0 || playlistSongs.length === 0);
+        nextSongBtn.classList.toggle('hidden',     currentSongIndex >= playlistSongs.length - 1 || playlistSongs.length === 0);
     }
 
-    // Navigation
+    // ─── NAVIGATION ──────────────────────────────────────────────────────
     prevSongBtn.onclick = () => {
-        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongIndex > 0 && playlistSongs.length > 0) {
+        const pl = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongIndex > 0) {
             currentSongIndex--;
-            currentSongId = playlistSongs[currentSongIndex].id;
+            currentSongId = pl[currentSongIndex].id;
             localStorage.setItem('lyricflow_currentSongId', currentSongId);
             loadSongIntoUI(currentSongId);
         }
     };
-
     nextSongBtn.onclick = () => {
-        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongIndex < playlistSongs.length - 1 && playlistSongs.length > 0) {
+        const pl = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongIndex < pl.length - 1) {
             currentSongIndex++;
-            currentSongId = playlistSongs[currentSongIndex].id;
+            currentSongId = pl[currentSongIndex].id;
             localStorage.setItem('lyricflow_currentSongId', currentSongId);
             loadSongIntoUI(currentSongId);
         }
     };
 
-    // Transport controls (ENHANCED)
-    startBtn.onclick = () => {
-        if (!isPlaying) {
-            isPlaying = true;
-            wasScrollingBeforeDrag = false;
-            startTime = performance.now();
-            startBtn.classList.add('hidden');
-            pauseBtn.classList.remove('hidden');
-            animate();
-        }
-    };
-
-    pauseBtn.onclick = () => {
-        isPlaying = false;
-        cancelAnimationFrame(rafId);
-        pauseBtn.classList.add('hidden');
-        startBtn.classList.remove('hidden');
-    };
-
-    // BULLETPROOF RESET (NEW)
-    resetBtn.onclick = () => {
-        isPlaying = false;
-        cancelAnimationFrame(rafId);
-        currentY = songStartBaseContentY || canonicalBaseContentY || 0;
-        velocityY = 0;
-        startTime = 0;
-        viewerContent.style.transform = `translateY(${currentY}px)`;
-        startBtn.classList.remove('hidden');
-        pauseBtn.classList.add('hidden');
-        snapFirstLineIntoGlow();  // PERFECT RESET POSITION
-    };
-
-    // ENHANCED Animation loop with end detection
-    function animate(currentTime = performance.now()) {
-        if (isPlaying) {
-            const elapsed = (currentTime - startTime) / 1000;
-            const scrollY = (elapsed * scrollSpeed * 30) + currentY;
-            
-            // End of song detection
-            const contentRect = viewerContent.getBoundingClientRect();
-            const viewerRect = viewer.getBoundingClientRect();
-            if (contentRect.bottom < viewerRect.top + viewerRect.height * 0.3) {
-                isPlaying = false;
-                pauseBtn.classList.add('hidden');
-                startBtn.classList.remove('hidden');
-            } else {
-                viewerContent.style.transform = `translateY(${-scrollY}px)`;
-                statusText.textContent = `${Math.floor(elapsed/60)}:${(Math.floor(elapsed%60)).toString().padStart(2,'0')}`;
-                timeDisplay.textContent = `${Math.floor(elapsed/60)}:${(Math.floor(elapsed%60)).toString().padStart(2,'0')}`;
-                rafId = requestAnimationFrame(animate);
-            }
-        }
+    // ─── TIME DISPLAY ────────────────────────────────────────────────────
+    function updateTimeDisplay() {
+        const s = Math.floor(elapsedMs / 1000);
+        timeDisplay.textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
     }
 
-    // BULLETPROOF DRAG HANDLING (NEW & IMPROVED)
-    function handleStart(e) {
-        isDragging = true;
-        wasScrollingBeforeDrag = isPlaying;  // REMEMBER STATE
-        cancelAnimationFrame(rafId);
-        isPlaying = false;
-        startBtn.classList.remove('hidden');
-        pauseBtn.classList.add('hidden');
-        
-        const touch = e.touches ? e.touches[0] : e;
-        lastTouchY = touch.clientY;
-        
-        if (e.pointerId) {
-            viewerCard.setPointerCapture(e.pointerId);  // BETTER TRACKING
-        }
-    }
+    // ─── SCROLL ENGINE (delta-time RAF – matches old working code) ────────
+    function animate(ts) {
+        if (!isPlaying) return;
 
-    function handleMove(e) {
-        if (!isDragging) return;
-        e.preventDefault();
-        
-        const touch = e.touches ? e.touches[0] : e;
-        const deltaY = lastTouchY - touch.clientY;
-        
-        // CLAMPING: Prevent overscroll
-        const viewerRect = viewer.getBoundingClientRect();
+        if (lastFrameTs === null) { lastFrameTs = ts; }
+        const delta = ts - lastFrameTs;
+        lastFrameTs = ts;
+
+        elapsedMs += delta;
+        updateTimeDisplay();
+
+        // pixels per ms = scrollSpeed * 30 / 1000  (same feel as old code)
+        const pxPerMs = (scrollSpeed * 30) / 1000;
+        baseContentY -= pxPerMs * delta;
+        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+
+        // End-of-song detection
         const contentRect = viewerContent.getBoundingClientRect();
-        const maxY = 0;
-        const minY = viewerRect.height - contentRect.height;
-        currentY = Math.max(minY, Math.min(maxY, currentY + deltaY * 0.4));  // SMOOTHER
-        
-        lastTouchY = touch.clientY;
-        viewerContent.style.transform = `translateY(${currentY}px)`;
+        const viewerRect  = viewer.getBoundingClientRect();
+        if (contentRect.bottom < viewerRect.top + viewerRect.height * 0.3) {
+            stopScroll();
+            statusText.textContent = 'End of lyrics';
+            return;
+        }
+
+        rafId = requestAnimationFrame(animate);
     }
 
-    function handleEnd(e) {
+    function startScroll() {
+        if (isPlaying) return;
+        isPlaying   = true;
+        lastFrameTs = null;
+        startBtn.classList.add('hidden');
+        pauseBtn.classList.remove('hidden');
+        statusText.textContent = 'Scrolling';
+        rafId = requestAnimationFrame(animate);
+    }
+
+    function stopScroll() {
+        isPlaying = false;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        pauseBtn.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+        lastFrameTs = null;
+    }
+
+    // ─── TRANSPORT BUTTONS ───────────────────────────────────────────────
+    startBtn.onclick  = () => startScroll();
+    pauseBtn.onclick  = () => { stopScroll(); statusText.textContent = 'Paused'; };
+    resetBtn.onclick  = () => {
+        stopScroll();
+        elapsedMs    = 0;
+        baseContentY = songStartBaseContentY || canonicalBaseContentY || 0;
+        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+        updateTimeDisplay();
+        statusText.textContent = 'Ready';
+        snapFirstLineIntoGlow();
+    };
+
+    // ─── KEYBOARD ────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+        if (e.code === 'Space') { e.preventDefault(); isPlaying ? pauseBtn.click() : startBtn.click(); }
+        if (e.key  === 'r' || e.key === 'R') resetBtn.click();
+    });
+
+    // ─── DRAG (pointerdown on viewerCard – same pattern as old code) ──────
+    function applyScroll() {
+        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+    }
+
+    viewerCard.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        try { viewerCard.setPointerCapture(e.pointerId); } catch(_) {}
+        wasPlayingBeforeDrag = isPlaying;
+        if (isPlaying) stopScroll();
+        isDragging   = true;
+        dragStartY   = e.clientY;
+        dragStartBaseY = baseContentY;
+        viewer.style.cursor = 'grabbing';
+    });
+
+    viewerCard.addEventListener('pointermove', e => {
+        if (!isDragging) return;
+        const delta    = e.clientY - dragStartY;
+        baseContentY   = dragStartBaseY + delta;
+        applyScroll();
+    });
+
+    const endDrag = () => {
+        if (!isDragging) return;
         isDragging = false;
-        
-        // OPTIONAL: Resume scrolling after drag (uncomment if desired)
-        // setTimeout(() => {
-        //     if (wasScrollingBeforeDrag) {
-        //         startBtn.click();
-        //     }
-        // }, 500);
-    }
+        viewer.style.cursor = 'grab';
+        // Resume if was playing before drag
+        if (wasPlayingBeforeDrag) startScroll();
+    };
+    viewerCard.addEventListener('pointerup',     endDrag);
+    viewerCard.addEventListener('pointercancel', endDrag);
+    viewerCard.addEventListener('mouseleave',    endDrag);
 
-    // FIXED: Proper event listeners on viewerCard with pointer capture
-    ['mousedown', 'touchstart'].forEach(type => {
-        viewerCard.addEventListener(type, handleStart, { passive: false });
-    });
-    ['mousemove', 'touchmove'].forEach(type => {
-        viewerCard.addEventListener(type, handleMove, { passive: false });
-    });
-    ['mouseup', 'touchend'].forEach(type => {
-        viewerCard.addEventListener(type, handleEnd, { passive: false });
-    });
-    viewerCard.addEventListener('mouseleave', handleEnd);
+    // Touch fallback
+    viewerCard.addEventListener('touchstart',  e => {
+        wasPlayingBeforeDrag = isPlaying;
+        if (isPlaying) stopScroll();
+        isDragging     = true;
+        dragStartY     = e.touches[0].clientY;
+        dragStartBaseY = baseContentY;
+    }, { passive: true });
+    viewerCard.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        const delta  = e.touches[0].clientY - dragStartY;
+        baseContentY = dragStartBaseY + delta;
+        applyScroll();
+    }, { passive: true });
+    viewerCard.addEventListener('touchend', endDrag);
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-            e.preventDefault();
-            if (isPlaying) {
-                pauseBtn.click();
-            } else {
-                startBtn.click();
-            }
-        }
-        if (e.code === 'KeyR') {
-            resetBtn.click();
-        }
-    });
-
-    // Settings handlers (UNCHANGED)
-    scrollSpeedInput.oninput = (e) => {
+    // ─── SETTINGS ────────────────────────────────────────────────────────
+    scrollSpeedInput.oninput = e => {
         scrollSpeed = parseFloat(e.target.value);
         scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
         saveSettings();
     };
-
-    fontSizeInput.oninput = (e) => {
+    fontSizeInput.oninput = e => {
         fontSize = parseInt(e.target.value);
         fontSizeValue.textContent = fontSize + 'px';
         viewer.style.fontSize = fontSize + 'px';
-        snapFirstLineIntoGlow();  // NEW: Re-snap after font change
+        snapFirstLineIntoGlow();
         saveSettings();
     };
-
-    lineHeightInput.oninput = (e) => {
+    lineHeightInput.oninput = e => {
         lineHeight = parseFloat(e.target.value);
         lineHeightValue.textContent = lineHeight.toFixed(1);
         viewer.style.lineHeight = lineHeight;
-        snapFirstLineIntoGlow();  // NEW: Re-snap after line height change
+        snapFirstLineIntoGlow();
         saveSettings();
     };
 
-    function saveSettings() {
-        localStorage.setItem('lyricflow_settings', JSON.stringify({
-            scrollSpeed, fontSize, lineHeight
-        }));
-    }
+    document.getElementById('stageInfoBtn').onclick      = () => openModal('stageInfoOverlay');
+    document.getElementById('infoMainTrigger').onclick   = () => openModal('stageInfoOverlay');
+    document.getElementById('settingsBtnBottom').onclick = () => openModal('settingsOverlay');
 
-    function closeStageInfo() {
-        document.getElementById('stageInfoOverlay').classList.add('hidden');
-    }
+    function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-    function closeSettings() {
-        document.getElementById('settingsOverlay').classList.add('hidden');
-    }
+    // Close on backdrop click
+    document.querySelectorAll('.overlay').forEach(ov => {
+        ov.addEventListener('click', e => { if (e.target === ov) ov.classList.add('hidden'); });
+    });
 
-    // Event listeners (UNCHANGED)
-    document.getElementById('infoMainTrigger').onclick = () => {
-        document.getElementById('stageInfoOverlay').classList.remove('hidden');
-    };
-
-    document.getElementById('stageInfoBtn').onclick = () => {
-        document.getElementById('stageInfoOverlay').classList.remove('hidden');
-    };
-
-    document.getElementById('settingsBtnBottom').onclick = () => {
-        document.getElementById('settingsOverlay').classList.remove('hidden');
-    };
-
-    // Init
+    // ─── BOOT ────────────────────────────────────────────────────────────
+    loadSongsFromStorage();
     updatePlaylistDisplay();
-    if (currentSongId) {
-        loadSongIntoUI(currentSongId);
-    }
-</script>
-
+    if (currentSongId) loadSongIntoUI(currentSongId);
+    </script>
 </body>
 </html>
