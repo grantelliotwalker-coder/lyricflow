@@ -250,6 +250,10 @@
             overflow: hidden;
         }
 
+        .viewer-notes-btn { position:absolute; top:8px; right:8px; z-index:10; border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+
+        .textarea-wrap { position:relative; flex:1; min-height:0; display:flex; flex-direction:column; }
+
         .editor-inner {
             position: relative;
             z-index: 1;
@@ -625,7 +629,6 @@
                                     <button class="tiny-btn tiny-btn-danger icon-only" id="clearEditorBtn" title="Clear lyrics">🗑</button>
                                 </div>
                                 <div class="editor-buttons">
-                                    <button class="tiny-btn" id="notesBtn">Notes</button>
                                     <button class="tiny-btn" id="editPlaylistBtn">Edit Playlist</button>
                                 </div>
                             </div>
@@ -635,8 +638,11 @@
                             <span id="currentPlaylist">-</span>
                             <span id="currentSongIndex">-</span>
                         </div>
-                        <textarea id="editor"
-                                  placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;Save As → creates new song (never overwrites).&#10;Load → sends lyrics to stage window."></textarea>
+                        <div class="textarea-wrap">
+                            <button class="viewer-notes-btn hidden" id="notesBtn">Notes</button>
+                            <textarea id="editor"
+                                      placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;Save As → creates new song (never overwrites).&#10;Load → sends lyrics to stage window."></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -667,11 +673,11 @@
         </div>
     </div>
 
-    <!-- Save As New -->
+    <!-- Save / Save As -->
     <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">Save As New Song</div>
+                <div class="modal-title" id="saveModalTitle">Save Song</div>
                 <button class="modal-close" data-close-save>✕</button>
             </div>
             <div class="modal-body">
@@ -683,13 +689,11 @@
                     <label for="playlistInput">Playlist</label>
                     <input id="playlistInput" type="text" value="Set 1" />
                 </div>
-                <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">
-                    This will create a <strong>new song</strong> (never overwrites)
-                </p>
+                <p id="saveModalHint" style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;"></p>
             </div>
             <div class="modal-footer">
                 <button data-close-save>Cancel</button>
-                <button class="btn-primary-small" id="saveConfirmBtn">Save New</button>
+                <button class="btn-primary-small" id="saveConfirmBtn">Save</button>
             </div>
         </div>
     </div>
@@ -787,9 +791,34 @@
 
         let savedSongs = [];
         let currentSong = null;
+        let hasUnsavedChanges = false;
         const SONGS_PER_PAGE = 10;
         let currentLoadPage = 0;
         let currentEditPage = 0;
+
+        function markDirty() {
+            if (!currentSong) return;
+            hasUnsavedChanges = true;
+            statusText.textContent = `${currentSong.name} · unsaved changes`;
+            if (saveSongBtn) saveSongBtn.textContent = 'Save';
+        }
+
+        function markClean(name) {
+            hasUnsavedChanges = false;
+            statusText.textContent = `Saved: ${name}`;
+            if (saveSongBtn) saveSongBtn.textContent = 'Save';
+        }
+
+        function updateSaveButton() {
+            if (!saveSongBtn) return;
+            if (currentSong) {
+                saveSongBtn.textContent = hasUnsavedChanges ? 'Save' : 'Save';
+                saveSongBtn.className = 'tiny-btn save';
+            } else {
+                saveSongBtn.textContent = 'Save As';
+                saveSongBtn.className = 'tiny-btn save';
+            }
+        }
 
         // ─── STORAGE KEY matches stage.html ───────────────────────────────
         const STORAGE_KEY = 'lyricflow_v3_songs';
@@ -938,17 +967,26 @@
             if (!song) return;
 
             currentSong = song;
-            // ─── Use correct field name ───────────────────────────────────
             editor.value = song.content || '';
+            hasUnsavedChanges = false;
             updatePlaylistDetails();
+            updateSaveButton();
 
-            // Signal stage.html via localStorage + BroadcastChannel
+            // Show notes button now that a song is loaded
+            if (notesBtn) notesBtn.classList.remove('hidden');
+
+            // Signal stage via localStorage + BroadcastChannel
             localStorage.setItem('lyricflow_currentSongId', song.id);
             if (bc) bc.postMessage({ type: 'loadSong', songId: song.id });
 
             loadOverlay.classList.add('hidden');
             statusText.textContent = `Loaded: ${song.name}`;
         }
+
+        // Mark dirty whenever editor text changes on a known song
+        if (editor) editor.addEventListener('input', () => {
+            if (currentSong) markDirty();
+        });
 
         function moveSong(idx, direction) {
             if (idx < 0 || idx >= savedSongs.length) return;
@@ -982,39 +1020,41 @@
             qs('currentSongIndex').textContent  = `${globalIdx + 1}/${savedSongs.length}`;
         }
 
-        // Save As New
+        // Save / Save As
         if (saveConfirmBtn) saveConfirmBtn.onclick = () => {
             const name = (songTitleInput.value || '').trim() || 'Untitled';
             const playlistName = (playlistInput.value || '').trim() || 'Set 1';
             const content = editor.value.trim();
-
             if (!content) { alert('Please add some lyrics first'); return; }
 
-            // ─── Always use name / content (stage schema) ─────────────────
-            const newSong = {
-                id:          'song_' + Math.random().toString(36).slice(2),
-                name:        name,
-                playlist:    playlistName,
-                content:     content,
-                notes:       '',
-                speedPercent: 50,
-                fontSize:    18,
-                lineHeight:  1.9,
-                bpm:         null,
-                linesPerMeasure: 4,
-                createdAt:   new Date().toISOString()
-            };
+            if (currentSong && !saveOverlay.dataset.forceNew) {
+                // ── SAVE — overwrite existing ─────────────────────────────
+                const idx = savedSongs.findIndex(s => s.id === currentSong.id);
+                if (idx !== -1) {
+                    savedSongs[idx].name     = name;
+                    savedSongs[idx].playlist = playlistName;
+                    savedSongs[idx].content  = content;
+                    currentSong = savedSongs[idx];
+                }
+            } else {
+                // ── SAVE AS — create new ──────────────────────────────────
+                const newSong = {
+                    id: 'song_' + Math.random().toString(36).slice(2),
+                    name, playlist: playlistName, content,
+                    notes: '', speedPercent: 50, fontSize: 18, lineHeight: 1.9,
+                    bpm: null, linesPerMeasure: 4,
+                    createdAt: new Date().toISOString()
+                };
+                savedSongs.push(newSong);
+                currentSong = newSong;
+            }
 
-            savedSongs.push(newSong);
             saveSongsToStorage();
-
-            currentSong = newSong;
             updatePlaylistDetails();
-
             saveOverlay.classList.add('hidden');
-            songTitleInput.value = '';
-            playlistInput.value = playlistName;
-            statusText.textContent = `Saved: ${name}`;
+            saveOverlay.dataset.forceNew = '';
+            markClean(name);
+            updateSaveButton();
         };
 
         if (notesBtn) notesBtn.onclick = () => {
@@ -1035,8 +1075,15 @@
         };
 
         // Button wiring
-        if (editorInfoBtn)    editorInfoBtn.onclick    = () => editInfoOverlay.classList.remove('hidden');
-        if (saveSongBtn)      saveSongBtn.onclick      = () => {
+        if (editorInfoBtn) editorInfoBtn.onclick = () => editInfoOverlay.classList.remove('hidden');
+        if (saveSongBtn)   saveSongBtn.onclick   = () => {
+            const isSaved = !!currentSong;
+            qs('saveModalTitle').textContent = isSaved ? 'Save Song' : 'Save As New Song';
+            qs('saveModalHint').innerHTML    = isSaved
+                ? `Overwrites <strong>${currentSong.name}</strong> · rename to save as new`
+                : 'Creates a <strong>new song</strong> (never overwrites)';
+            saveConfirmBtn.textContent       = isSaved ? 'Save' : 'Save New';
+            saveOverlay.dataset.forceNew     = isSaved ? '' : 'yes';
             songTitleInput.value = currentSong ? currentSong.name : '';
             playlistInput.value  = currentSong ? currentSong.playlist : 'Set 1';
             saveOverlay.classList.remove('hidden');
@@ -1057,8 +1104,11 @@
             if (confirm('Clear all lyrics?')) {
                 editor.value = '';
                 currentSong = null;
+                hasUnsavedChanges = false;
+                if (notesBtn) notesBtn.classList.add('hidden');
                 playlistEditDetails.style.display = 'none';
                 statusText.textContent = 'Cleared';
+                updateSaveButton();
             }
         };
 
