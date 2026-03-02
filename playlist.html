@@ -1,588 +1,584 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <title>LyricFlow - Playlist Editor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-```
-<style>
-    :root {
-        --bg: #070b10;
-        --card: #111827;
-        --accent: #22c55e;
-        --accent-soft: rgba(34, 197, 94, 0.12);
-        --accent-bright: #22c55e;
-        --text-main: #e5e7eb;
-        --text-soft: #9ca3af;
-        --text-muted: #6b7280;
-        --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
-        --danger: #f97373;
-        --danger-border: rgba(248, 113, 113, 0.6);
-    }
-
-    * {
-        box-sizing: border-box;
-    }
-
-    html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
-        color: var(--text-main);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
-        overflow: hidden;
-    }
-
-    body {
-        display: flex;
-        align-items: stretch;
-        justify-content: center;
-        padding: 14px;
-    }
-
-    .app-shell {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-        max-width: 1080px;
-        max-height: 100%;
-        margin: 0 auto;
-        padding: 14px 14px 10px;
-        border-radius: 30px;
-        background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
-        border: 1px solid rgba(148, 163, 184, 0.28);
-        box-shadow: var(--shadow-soft);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .app-shell::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
-        opacity: 0.85;
-        mix-blend-mode: soft-light;
-    }
-
-    .app-shell-inner {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        height: 100%;
-    }
-
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-
-    .branding {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .lf-logo {
-        width: 30px;
-        height: 30px;
-        border-radius: 12px;
-        background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.9), transparent 55%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), radial-gradient(circle at 30% 90%, rgba(59, 130, 246, 1), transparent 65%), linear-gradient(135deg, #020617, #020617);
-        box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(0, 0, 0, 0.9);
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .lf-logo-glyph {
-        position: relative;
-        width: 20px;
-        height: 20px;
-        border-radius: 8px;
-        border: 1px solid rgba(148, 163, 184, 0.7);
-        background: radial-gradient(circle at 0 0, #020617, #020617);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
-    }
-
-    .lf-logo-glyph::before {
-        content: "L";
-        font-weight: 700;
-        font-size: 11px;
-        letter-spacing: 0.06em;
-        color: #bbf7d0;
-        position: absolute;
-        left: 4px;
-        top: 4px;
-    }
-
-    .lf-logo-glyph::after {
-        content: "F";
-        font-weight: 700;
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        color: #22c55e;
-        position: absolute;
-        right: 4px;
-        bottom: 4px;
-    }
-
-    .app-title-block {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .app-title {
-        font-size: 18px;
-        font-weight: 620;
-        letter-spacing: 0.02em;
-        color: #e5e7eb;
-        text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
-    }
-
-    .app-subtitle {
-        font-size: 11px;
-        color: var(--text-soft);
-    }
-
-    .mode-toggle {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 10px;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.96);
-        border: 1px solid rgba(71, 85, 105, 0.9);
-        color: var(--text-soft);
-        font-size: 11px;
-        cursor: pointer;
-        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .mode-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-        box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-    }
-
-    .mode-toggle span strong {
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-size: 10px;
-        color: #e5e7eb;
-    }
-
-    .mode-toggle span small {
-        font-size: 10px;
-        color: var(--text-muted);
-    }
-
-    .top-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .status-line {
-        font-size: 11px;
-        color: var(--text-soft);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 0 2px;
-    }
-
-    .status-label {
-        padding: 2px 7px;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.96);
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .status-pill-dot {
-        width: 5px;
-        height: 5px;
-        border-radius: 999px;
-        background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
-        box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-    }
-
-    .main-stack {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .editor-card {
-        flex: 1;
-        min-height: 0;
-        border-radius: 22px;
-        background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%), radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%), linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        box-shadow: 0 18px 60px rgba(15, 23, 42, 0.98), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .editor-inner {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        height: 100%;
-        min-height: 0;
-    }
-
-    .editor-header-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 8px;
-        border-radius: 14px;
-        background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
-        border: 1px solid rgba(55, 65, 81, 0.95);
-        gap: 8px;
-    }
-
-    .editor-buttons-wrap {
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-        align-items: flex-end;
-    }
-
-    .editor-title {
-        font-size: 12px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: rgba(226, 232, 240, 0.96);
-    }
-
-    .editor-buttons {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .playlist-edit-details {
-        margin-top: 4px;
-        padding: 4px 6px;
-        border-radius: 8px;
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        font-size: 11px;
-        color: var(--text-soft);
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 4px 8px;
-    }
-
-    .playlist-edit-details span {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .tiny-btn {
-        border-radius: 999px;
-        padding: 3px 8px;
-        border: 1px solid rgba(55, 65, 81, 0.98);
-        background: rgba(15, 23, 42, 0.98);
-        color: var(--text-soft);
-        font-size: 10px;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        cursor: pointer;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
-    }
-
-    .tiny-btn.icon-only {
-        padding: 3px 7px;
-        font-size: 12px;
-    }
-
-    .tiny-btn.save {
-        background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-        border-color: rgba(74, 222, 128, 0.7);
-        color: #020617;
-        font-weight: 600;
-    }
-
-    .tiny-btn-danger {
-        border-color: var(--danger-border);
-        color: var(--danger);
-    }
-
-    #editor {
-        flex: 1;
-        min-height: 0;
-        border-radius: 16px;
-        border: 1px solid rgba(75, 85, 99, 0.92);
-        background: rgba(15, 23, 42, 0.98);
-        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
-        padding: 8px 10px;
-        color: var(--text-main);
-        font-size: 14px;
-        line-height: 1.6;
-        resize: none;
-        outline: none;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-        background-image: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
-    }
-
-    #editor::placeholder {
-        color: rgba(75, 85, 99, 0.95);
-    }
-
-    .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.75);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 40;
-    }
-
-    .overlay.hidden {
-        display: none;
-    }
-
-    .modal {
-        max-width: 420px;
-        width: 90%;
-        max-height: 80vh;
-        border-radius: 18px;
-        background: rgba(15, 23, 42, 0.98);
-        border: 1px solid rgba(75, 85, 99, 0.95);
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
-        padding: 12px 14px 10px;
-        color: var(--text-soft);
-        font-size: 13px;
-        overflow-y: auto;
-    }
-
-    .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 6px;
-    }
-
-    .modal-title {
-        font-size: 13px;
-        font-weight: 550;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: #e5e7eb;
-    }
-
-    .modal-close {
-        border: none;
-        background: transparent;
-        color: var(--text-soft);
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .modal-body p {
-        margin: 6px 0;
-    }
-
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 8px;
-        gap: 6px;
-    }
-
-    .modal-footer button {
-        border-radius: 999px;
-        border: 1px solid rgba(75, 85, 99, 0.95);
-        background: rgba(15, 23, 42, 1);
-        color: var(--text-soft);
-        font-size: 11px;
-        padding: 4px 10px;
-        cursor: pointer;
-    }
-
-    .form-field {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-top: 4px;
-    }
-
-    .form-field label {
-        font-size: 11px;
-        color: var(--text-soft);
-    }
-
-    .form-field input,
-    .form-field select {
-        border-radius: 999px;
-        border: 1px solid rgba(75, 85, 99, 0.95);
-        background: rgba(15, 23, 42, 1);
-        color: var(--text-main);
-        padding: 6px 10px;
-        font-size: 13px;
-        outline: none;
-    }
-
-    .modal-footer .btn-primary-small {
-        background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
-        border-color: rgba(74, 222, 128, 0.7);
-        color: #020617;
-    }
-
-    .playlist-pagination {
-        display: flex;
-        justify-content: center;
-        gap: 8px;
-        margin-top: 8px;
-    }
-
-    .playlist-page-btn {
-        padding: 4px 8px;
-        font-size: 11px;
-        border: 1px solid rgba(75, 85, 99, 0.8);
-        background: rgba(15, 23, 42, 0.9);
-        color: var(--text-soft);
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    .playlist-page-btn.active,
-    .playlist-page-btn:hover {
-        background: var(--accent-bright);
-        color: #020617;
-        border-color: var(--accent);
-    }
-
-    .playlist-edit-list,
-    .track-list {
-        max-height: 300px;
-        overflow-y: auto;
-        margin-top: 6px;
-        padding-right: 4px;
-    }
-
-    .playlist-edit-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        padding: 6px 0;
-        font-size: 12px;
-        border-bottom: 1px solid rgba(31, 41, 55, 0.9);
-    }
-
-    .playlist-edit-item:last-child {
-        border-bottom: none;
-    }
-
-    .playlist-edit-name {
-        flex: 1;
-        color: var(--text-main);
-    }
-
-    .playlist-edit-controls {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-    }
-
-    .playlist-edit-controls button {
-        border-radius: 4px;
-        border: 1px solid rgba(75, 85, 99, 0.95);
-        background: rgba(15, 23, 42, 1);
-        color: var(--text-soft);
-        font-size: 10px;
-        padding: 2px 5px;
-        cursor: pointer;
-        min-width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .track-item {
-        padding: 8px 10px;
-        border-radius: 10px;
-        border: 1px solid rgba(55, 65, 81, 0.9);
-        background: rgba(15, 23, 42, 0.98);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        cursor: pointer;
-        margin-bottom: 6px;
-        transition: all 0.2s;
-    }
-
-    .track-item:hover {
-        background: rgba(30, 64, 175, 0.25);
-        border-color: rgba(59, 130, 246, 0.6);
-    }
-
-    #editor::-webkit-scrollbar { width: 8px; }
-    #editor::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.9); border-radius: 999px; }
-    #editor::-webkit-scrollbar-track { background: transparent; }
-
-    .app-footer {
-        margin-top: 4px;
-        font-size: 10px;
-        color: var(--text-muted);
-        text-align: center;
-        opacity: 0.85;
-    }
-
-    @media (max-width: 768px) {
-        body { padding: 10px; }
-        .app-shell { padding: 12px 10px 8px; border-radius: 26px; }
-        .playlist-edit-list, .track-list { max-height: 250px; }
-    }
-</style>
-```
-
+    <style>
+        :root {
+            --bg: #070b10;
+            --card: #111827;
+            --accent: #22c55e;
+            --accent-soft: rgba(34, 197, 94, 0.12);
+            --accent-bright: #22c55e;
+            --text-main: #e5e7eb;
+            --text-soft: #9ca3af;
+            --text-muted: #6b7280;
+            --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
+            --danger: #f97373;
+            --danger-border: rgba(248, 113, 113, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            padding: 14px;
+        }
+
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 1080px;
+            max-height: 100%;
+            margin: 0 auto;
+            padding: 14px 14px 10px;
+            border-radius: 30px;
+            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
+            opacity: 0.85;
+            mix-blend-mode: soft-light;
+        }
+
+        .app-shell-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .branding {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lf-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.9), transparent 55%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), radial-gradient(circle at 30% 90%, rgba(59, 130, 246, 1), transparent 65%), linear-gradient(135deg, #020617, #020617);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lf-logo-glyph {
+            position: relative;
+            width: 20px;
+            height: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: radial-gradient(circle at 0 0, #020617, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
+        }
+
+        .lf-logo-glyph::before {
+            content: "L";
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            color: #bbf7d0;
+            position: absolute;
+            left: 4px;
+            top: 4px;
+        }
+
+        .lf-logo-glyph::after {
+            content: "F";
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            color: #22c55e;
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+        }
+
+        .app-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 620;
+            letter-spacing: 0.02em;
+            color: #e5e7eb;
+            text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
+        }
+
+        .app-subtitle {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            color: var(--text-soft);
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .mode-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .mode-toggle span strong {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 10px;
+            color: #e5e7eb;
+        }
+
+        .mode-toggle span small {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .status-line {
+            font-size: 11px;
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 2px;
+        }
+
+        .status-label {
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-pill-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        .main-stack {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .editor-card {
+            flex: 1;
+            min-height: 0;
+            border-radius: 22px;
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%), radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%), linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.98), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .editor-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            gap: 8px;
+        }
+
+        .editor-buttons-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            align-items: flex-end;
+        }
+
+        .editor-title {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.96);
+        }
+
+        .editor-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .playlist-edit-details {
+            margin-top: 4px;
+            padding: 4px 6px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            font-size: 11px;
+            color: var(--text-soft);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px 8px;
+        }
+
+        .playlist-edit-details span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tiny-btn {
+            border-radius: 999px;
+            padding: 3px 8px;
+            border: 1px solid rgba(55, 65, 81, 0.98);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
+
+        .tiny-btn.icon-only {
+            padding: 3px 7px;
+            font-size: 12px;
+        }
+
+        .tiny-btn.save {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            border-color: rgba(74, 222, 128, 0.7);
+            color: #020617;
+            font-weight: 600;
+        }
+
+        .tiny-btn-danger {
+            border-color: var(--danger-border);
+            color: var(--danger);
+        }
+
+        #editor {
+            flex: 1;
+            min-height: 0;
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.92);
+            background: rgba(15, 23, 42, 0.98);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+            padding: 8px 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            background-image: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
+        }
+
+        #editor::placeholder {
+            color: rgba(75, 85, 99, 0.95);
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .modal {
+            max-width: 420px;
+            width: 90%;
+            max-height: 80vh;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
+            padding: 12px 14px 10px;
+            color: var(--text-soft);
+            font-size: 13px;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .modal-title {
+            font-size: 13px;
+            font-weight: 550;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            color: var(--text-soft);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-body p {
+            margin: 6px 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+            gap: 6px;
+        }
+
+        .modal-footer button {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-soft);
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .form-field label {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .form-field input,
+        .form-field select {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-main);
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .modal-footer .btn-primary-small {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            border-color: rgba(74, 222, 128, 0.7);
+            color: #020617;
+        }
+
+        .playlist-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .playlist-page-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid rgba(75, 85, 99, 0.8);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .playlist-page-btn.active,
+        .playlist-page-btn:hover {
+            background: var(--accent-bright);
+            color: #020617;
+            border-color: var(--accent);
+        }
+
+        .playlist-edit-list,
+        .track-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 6px;
+            padding-right: 4px;
+        }
+
+        .playlist-edit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .playlist-edit-item:last-child {
+            border-bottom: none;
+        }
+
+        .playlist-edit-name {
+            flex: 1;
+            color: var(--text-main);
+        }
+
+        .playlist-edit-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .playlist-edit-controls button {
+            border-radius: 4px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-soft);
+            font-size: 10px;
+            padding: 2px 5px;
+            cursor: pointer;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .track-item {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+        }
+
+        .track-item:hover {
+            background: rgba(30, 64, 175, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+
+        #editor::-webkit-scrollbar { width: 8px; }
+        #editor::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.9); border-radius: 999px; }
+        #editor::-webkit-scrollbar-track { background: transparent; }
+
+        .app-footer {
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            opacity: 0.85;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .app-shell { padding: 12px 10px 8px; border-radius: 26px; }
+            .playlist-edit-list, .track-list { max-height: 250px; }
+        }
+    </style>
 </head>
 
 <body>
@@ -607,496 +603,493 @@
                 </div>
             </header>
 
-```
-        <div class="top-row">
-            <div class="status-line">
-                <div class="status-label">
-                    <span class="status-pill-dot"></span>
-                    <span id="statusText">Playlist Editor</span>
+            <div class="top-row">
+                <div class="status-line">
+                    <div class="status-label">
+                        <span class="status-pill-dot"></span>
+                        <span id="statusText">Playlist Editor</span>
+                    </div>
                 </div>
+                <button class="tiny-btn icon-only" id="editorInfoBtn" title="Editor help">ℹ</button>
             </div>
-            <button class="tiny-btn icon-only" id="editorInfoBtn" title="Editor help">ℹ</button>
-        </div>
 
-        <div class="main-stack">
-            <div class="editor-card" id="editorCard">
-                <div class="editor-inner">
-                    <div class="editor-header-bar">
-                        <div class="editor-title">Lyrics editor</div>
-                        <div class="editor-buttons-wrap">
-                            <div class="editor-buttons">
-                                <button class="tiny-btn save" id="saveSongBtn">Save As</button>
-                                <button class="tiny-btn" id="loadSongBtn">Load</button>
-                                <button class="tiny-btn tiny-btn-danger icon-only" id="clearEditorBtn" title="Clear lyrics">🗑</button>
-                            </div>
-                            <div class="editor-buttons">
-                                <button class="tiny-btn" id="notesBtn">Notes</button>
-                                <button class="tiny-btn" id="editPlaylistBtn">Edit Playlist</button>
+            <div class="main-stack">
+                <div class="editor-card" id="editorCard">
+                    <div class="editor-inner">
+                        <div class="editor-header-bar">
+                            <div class="editor-title">Lyrics editor</div>
+                            <div class="editor-buttons-wrap">
+                                <div class="editor-buttons">
+                                    <button class="tiny-btn save" id="saveSongBtn">Save As</button>
+                                    <button class="tiny-btn" id="loadSongBtn">Load</button>
+                                    <button class="tiny-btn tiny-btn-danger icon-only" id="clearEditorBtn" title="Clear lyrics">🗑</button>
+                                </div>
+                                <div class="editor-buttons">
+                                    <button class="tiny-btn" id="notesBtn">Notes</button>
+                                    <button class="tiny-btn" id="editPlaylistBtn">Edit Playlist</button>
+                                </div>
                             </div>
                         </div>
+                        <div class="playlist-edit-details" id="playlistEditDetails" style="display: none;">
+                            <span id="currentSongTitle">-</span>
+                            <span id="currentPlaylist">-</span>
+                            <span id="currentSongIndex">-</span>
+                        </div>
+                        <textarea id="editor"
+                                  placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;Save As → creates new song (never overwrites).&#10;Load → sends lyrics to stage window."></textarea>
                     </div>
-                    <div class="playlist-edit-details" id="playlistEditDetails" style="display: none;">
-                        <span id="currentSongTitle">-</span>
-                        <span id="currentPlaylist">-</span>
-                        <span id="currentSongIndex">-</span>
-                    </div>
-                    <textarea id="editor"
-                              placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;Save As → creates new song (never overwrites).&#10;Load → sends lyrics to stage window."></textarea>
                 </div>
             </div>
-        </div>
 
-        <footer class="app-footer">
-            © 2026 LyricFlow. All rights reserved.
-        </footer>
-    </div>
-</div>
-
-<!-- Edit info -->
-<div class="overlay hidden" id="editInfoOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">Playlist Editor</div>
-            <button class="modal-close" data-close-edit-info>✕</button>
-        </div>
-        <div class="modal-body">
-            <p>• <strong>Save As</strong> always creates new song (never overwrites)</p>
-            <p>• <strong>Load</strong> sends lyrics to stage window automatically</p>
-            <p>• Unlimited songs per playlist with pagination</p>
-            <p>• Reorder with ↑↓, delete with ✕ in Edit Playlist</p>
-            <p>• Tap "Playlist mode" (top right) to return to stage</p>
-        </div>
-        <div class="modal-footer">
-            <button data-close-edit-info>Got it</button>
+            <footer class="app-footer">
+                © 2026 LyricFlow. All rights reserved.
+            </footer>
         </div>
     </div>
-</div>
 
-<!-- Save As New -->
-<div class="overlay hidden" id="saveOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">Save As New Song</div>
-            <button class="modal-close" data-close-save>✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-field">
-                <label for="songTitleInput">Song title</label>
-                <input id="songTitleInput" type="text" placeholder="e.g. Whole Lotta Love" />
+    <!-- Edit info -->
+    <div class="overlay hidden" id="editInfoOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Playlist Editor</div>
+                <button class="modal-close" data-close-edit-info>✕</button>
             </div>
-            <div class="form-field">
-                <label for="playlistInput">Playlist</label>
-                <input id="playlistInput" type="text" value="Set 1" />
+            <div class="modal-body">
+                <p>• <strong>Save As</strong> always creates new song (never overwrites)</p>
+                <p>• <strong>Load</strong> sends lyrics to stage window automatically</p>
+                <p>• Unlimited songs per playlist with pagination</p>
+                <p>• Reorder with ↑↓, delete with ✕ in Edit Playlist</p>
+                <p>• Tap "Playlist mode" (top right) to return to stage</p>
             </div>
-            <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">
-                This will create a <strong>new song</strong> (never overwrites)
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button data-close-save>Cancel</button>
-            <button class="btn-primary-small" id="saveConfirmBtn">Save New</button>
-        </div>
-    </div>
-</div>
-
-<!-- Load song -->
-<div class="overlay hidden" id="loadOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">Load song</div>
-            <button class="modal-close" data-close-load>✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-field">
-                <label for="playlistSelect">Playlist</label>
-                <select id="playlistSelect"></select>
+            <div class="modal-footer">
+                <button data-close-edit-info>Got it</button>
             </div>
-            <div class="track-list" id="loadSongList"></div>
-            <div class="playlist-pagination" id="loadPagination"></div>
-        </div>
-        <div class="modal-footer">
-            <button data-close-load>Cancel</button>
         </div>
     </div>
-</div>
 
-<!-- Edit playlist -->
-<div class="overlay hidden" id="editPlaylistOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">Edit playlist</div>
-            <button class="modal-close" data-close-edit-playlist>✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-field">
-                <label for="editPlaylistSelect">Playlist</label>
-                <select id="editPlaylistSelect"></select>
+    <!-- Save As New -->
+    <div class="overlay hidden" id="saveOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Save As New Song</div>
+                <button class="modal-close" data-close-save>✕</button>
             </div>
-            <div class="playlist-edit-list" id="playlistEditList"></div>
-            <div class="playlist-pagination" id="editPagination"></div>
-        </div>
-        <div class="modal-footer">
-            <button data-close-edit-playlist>Close</button>
-        </div>
-    </div>
-</div>
-
-<!-- Notes -->
-<div class="overlay hidden" id="notesOverlay">
-    <div class="modal">
-        <div class="modal-header">
-            <div class="modal-title">Song Notes</div>
-            <button class="modal-close" data-close-notes>✕</button>
-        </div>
-        <div class="modal-body">
-            <p style="font-size:11px; color:var(--text-muted); margin:0 0 6px 0;">Chords, triggers, cues — saved with this song.</p>
-            <textarea id="notesEditor"
-                style="width:100%; height:160px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;"
-                placeholder="e.g. Verse 1: Capo 3, G D Em C&#10;Chorus: watch for cue light&#10;Bridge: half tempo"></textarea>
-        </div>
-        <div class="modal-footer">
-            <button data-close-notes>Cancel</button>
-            <button class="btn-primary-small" id="saveNotesBtn">Save Notes</button>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="songTitleInput">Song title</label>
+                    <input id="songTitleInput" type="text" placeholder="e.g. Whole Lotta Love" />
+                </div>
+                <div class="form-field">
+                    <label for="playlistInput">Playlist</label>
+                    <input id="playlistInput" type="text" value="Set 1" />
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;">
+                    This will create a <strong>new song</strong> (never overwrites)
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button data-close-save>Cancel</button>
+                <button class="btn-primary-small" id="saveConfirmBtn">Save New</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    const qs = id => document.getElementById(id);
+    <!-- Load song -->
+    <div class="overlay hidden" id="loadOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Load song</div>
+                <button class="modal-close" data-close-load>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="playlistSelect">Playlist</label>
+                    <select id="playlistSelect"></select>
+                </div>
+                <div class="track-list" id="loadSongList"></div>
+                <div class="playlist-pagination" id="loadPagination"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-load>Cancel</button>
+            </div>
+        </div>
+    </div>
 
-    const editor = qs('editor');
-    const statusText = qs('statusText');
-    const editorInfoBtn = qs('editorInfoBtn');
-    const editInfoOverlay = qs('editInfoOverlay');
-    const saveSongBtn = qs('saveSongBtn');
-    const loadSongBtn = qs('loadSongBtn');
-    const editPlaylistBtn = qs('editPlaylistBtn');
-    const notesBtn        = qs('notesBtn');
-    const notesOverlay    = qs('notesOverlay');
-    const notesEditor     = qs('notesEditor');
-    const saveNotesBtn    = qs('saveNotesBtn');
-    const clearEditorBtn = qs('clearEditorBtn');
-    const saveOverlay = qs('saveOverlay');
-    const songTitleInput = qs('songTitleInput');
-    const playlistInput = qs('playlistInput');
-    const saveConfirmBtn = qs('saveConfirmBtn');
-    const loadOverlay = qs('loadOverlay');
-    const playlistSelect = qs('playlistSelect');
-    const loadSongList = qs('loadSongList');
-    const loadPagination = qs('loadPagination');
-    const editPlaylistOverlay = qs('editPlaylistOverlay');
-    const editPlaylistSelect = qs('editPlaylistSelect');
-    const playlistEditList = qs('playlistEditList');
-    const editPagination = qs('editPagination');
-    const playlistEditDetails = qs('playlistEditDetails');
+    <!-- Edit playlist -->
+    <div class="overlay hidden" id="editPlaylistOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit playlist</div>
+                <button class="modal-close" data-close-edit-playlist>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="editPlaylistSelect">Playlist</label>
+                    <select id="editPlaylistSelect"></select>
+                </div>
+                <div class="playlist-edit-list" id="playlistEditList"></div>
+                <div class="playlist-pagination" id="editPagination"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-edit-playlist>Close</button>
+            </div>
+        </div>
+    </div>
 
-    let savedSongs = [];
-    let currentSong = null;
-    const SONGS_PER_PAGE = 10;
-    let currentLoadPage = 0;
-    let currentEditPage = 0;
+    <!-- Notes -->
+    <div class="overlay hidden" id="notesOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Song Notes</div>
+                <button class="modal-close" data-close-notes>✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:11px; color:var(--text-muted); margin:0 0 6px 0;">Chords, triggers, cues — saved with this song.</p>
+                <textarea id="notesEditor"
+                    style="width:100%; height:160px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;"
+                    placeholder="e.g. Verse 1: Capo 3, G D Em C&#10;Chorus: watch for cue light&#10;Bridge: half tempo"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button data-close-notes>Cancel</button>
+                <button class="btn-primary-small" id="saveNotesBtn">Save Notes</button>
+            </div>
+        </div>
+    </div>
 
-    // ─── STORAGE KEY matches stage.html ───────────────────────────────
-    const STORAGE_KEY = 'lyricflow_v3_songs';
+    <script>
+        const qs = id => document.getElementById(id);
 
-    // BroadcastChannel for same-origin cross-tab song loading
-    let bc = null;
-    try { bc = new BroadcastChannel('lyricflow_stage'); } catch(e) {}
+        const editor = qs('editor');
+        const statusText = qs('statusText');
+        const editorInfoBtn = qs('editorInfoBtn');
+        const editInfoOverlay = qs('editInfoOverlay');
+        const saveSongBtn = qs('saveSongBtn');
+        const loadSongBtn = qs('loadSongBtn');
+        const editPlaylistBtn = qs('editPlaylistBtn');
+        const notesBtn        = qs('notesBtn');
+        const notesOverlay    = qs('notesOverlay');
+        const notesEditor     = qs('notesEditor');
+        const saveNotesBtn    = qs('saveNotesBtn');
+        const clearEditorBtn = qs('clearEditorBtn');
+        const saveOverlay = qs('saveOverlay');
+        const songTitleInput = qs('songTitleInput');
+        const playlistInput = qs('playlistInput');
+        const saveConfirmBtn = qs('saveConfirmBtn');
+        const loadOverlay = qs('loadOverlay');
+        const playlistSelect = qs('playlistSelect');
+        const loadSongList = qs('loadSongList');
+        const loadPagination = qs('loadPagination');
+        const editPlaylistOverlay = qs('editPlaylistOverlay');
+        const editPlaylistSelect = qs('editPlaylistSelect');
+        const playlistEditList = qs('playlistEditList');
+        const editPagination = qs('editPagination');
+        const playlistEditDetails = qs('playlistEditDetails');
 
-    function storageAvailable() {
-        try {
-            localStorage.setItem('__test__', '1');
-            localStorage.removeItem('__test__');
-            return true;
-        } catch (e) { return false; }
-    }
+        let savedSongs = [];
+        let currentSong = null;
+        const SONGS_PER_PAGE = 10;
+        let currentLoadPage = 0;
+        let currentEditPage = 0;
 
-    function saveSongsToStorage() {
-        if (!storageAvailable()) return;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSongs));
-    }
+        // ─── STORAGE KEY matches stage.html ───────────────────────────────
+        const STORAGE_KEY = 'lyricflow_v3_songs';
 
-    function loadSongsFromStorage() {
-        if (!storageAvailable()) { savedSongs = []; return; }
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) { savedSongs = []; return; }
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) { savedSongs = []; return; }
-            // ─── Field names match stage.html schema: name / content ───
-            savedSongs = parsed.map(s => ({
-                id:          s.id || ('song_' + Math.random().toString(36).slice(2)),
-                name:        s.name || s.title || 'Untitled',
-                playlist:    s.playlist || 'Set 1',
-                content:     s.content || s.lyrics || '',
-                notes:       s.notes || '',
-                speedPercent: typeof s.speedPercent === 'number' ? s.speedPercent : 50,
-                fontSize:    typeof s.fontSize    === 'number' ? s.fontSize    : 18,
-                lineHeight:  typeof s.lineHeight  === 'number' ? s.lineHeight  : 1.9,
-                bpm:         typeof s.bpm         === 'number' ? s.bpm         : null,
-                linesPerMeasure: typeof s.linesPerMeasure === 'number' ? s.linesPerMeasure : 4,
-                createdAt:   s.createdAt || new Date().toISOString()
-            }));
-        } catch (e) { savedSongs = []; }
-    }
+        // BroadcastChannel for same-origin cross-tab song loading
+        let bc = null;
+        try { bc = new BroadcastChannel('lyricflow_stage'); } catch(e) {}
 
-    // Pagination helpers
-    function getPagesForPlaylist(playlistName) {
-        const songs = savedSongs.filter(s => s.playlist === playlistName);
-        return Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
-    }
-
-    function buildPagination(container, currentPage, totalPages, onPageClick) {
-        if (!container) return;
-        if (totalPages <= 1) { container.style.display = 'none'; return; }
-        container.style.display = 'flex';
-        container.innerHTML = '';
-        for (let i = 0; i < totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.className = 'playlist-page-btn' + (i === currentPage ? ' active' : '');
-            btn.textContent = i + 1;
-            btn.onclick = () => onPageClick(i);
-            container.appendChild(btn);
+        function storageAvailable() {
+            try {
+                localStorage.setItem('__test__', '1');
+                localStorage.removeItem('__test__');
+                return true;
+            } catch (e) { return false; }
         }
-    }
 
-    function buildPlaylistSelect() {
-        const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
-        [playlistSelect, editPlaylistSelect].forEach(sel => {
-            if (!sel) return;
-            sel.innerHTML = playlists.length
-                ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
-                : '<option value="Set 1">Set 1</option>';
-        });
-    }
+        function saveSongsToStorage() {
+            if (!storageAvailable()) return;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSongs));
+        }
 
-    function buildLoadSongList() {
-        const playlistName = playlistSelect ? playlistSelect.value : 'Set 1';
-        const songs = savedSongs.filter(s => s.playlist === playlistName);
-        const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
-        currentLoadPage = Math.min(currentLoadPage, totalPages - 1);
-        const startIdx = currentLoadPage * SONGS_PER_PAGE;
-        const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
+        function loadSongsFromStorage() {
+            if (!storageAvailable()) { savedSongs = []; return; }
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) { savedSongs = []; return; }
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) { savedSongs = []; return; }
+                // ─── Field names match stage.html schema: name / content ───
+                savedSongs = parsed.map(s => ({
+                    id:          s.id || ('song_' + Math.random().toString(36).slice(2)),
+                    name:        s.name || s.title || 'Untitled',
+                    playlist:    s.playlist || 'Set 1',
+                    content:     s.content || s.lyrics || '',
+                    notes:       s.notes || '',
+                    speedPercent: typeof s.speedPercent === 'number' ? s.speedPercent : 50,
+                    fontSize:    typeof s.fontSize    === 'number' ? s.fontSize    : 18,
+                    lineHeight:  typeof s.lineHeight  === 'number' ? s.lineHeight  : 1.9,
+                    bpm:         typeof s.bpm         === 'number' ? s.bpm         : null,
+                    linesPerMeasure: typeof s.linesPerMeasure === 'number' ? s.linesPerMeasure : 4,
+                    createdAt:   s.createdAt || new Date().toISOString()
+                }));
+            } catch (e) { savedSongs = []; }
+        }
 
-        loadSongList.innerHTML = pageSongs.length
-            ? pageSongs.map((s, i) =>
-                `<div class="track-item" data-id="${s.id}">
-                    <span>${startIdx + i + 1}. ${s.name}</span>
-                </div>`
-            ).join('')
-            : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+        // Pagination helpers
+        function getPagesForPlaylist(playlistName) {
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            return Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+        }
 
-        loadSongList.querySelectorAll('.track-item').forEach(item => {
-            item.onclick = () => loadSongIntoEditor(item.dataset.id);
-        });
+        function buildPagination(container, currentPage, totalPages, onPageClick) {
+            if (!container) return;
+            if (totalPages <= 1) { container.style.display = 'none'; return; }
+            container.style.display = 'flex';
+            container.innerHTML = '';
+            for (let i = 0; i < totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'playlist-page-btn' + (i === currentPage ? ' active' : '');
+                btn.textContent = i + 1;
+                btn.onclick = () => onPageClick(i);
+                container.appendChild(btn);
+            }
+        }
 
-        buildPagination(loadPagination, currentLoadPage, totalPages, page => {
-            currentLoadPage = page;
-            buildLoadSongList();
-        });
-    }
+        function buildPlaylistSelect() {
+            const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
+            [playlistSelect, editPlaylistSelect].forEach(sel => {
+                if (!sel) return;
+                sel.innerHTML = playlists.length
+                    ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
+                    : '<option value="Set 1">Set 1</option>';
+            });
+        }
 
-    function buildPlaylistEditList() {
-        const playlistName = editPlaylistSelect ? editPlaylistSelect.value : 'Set 1';
-        const songs = savedSongs.filter(s => s.playlist === playlistName);
-        const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
-        currentEditPage = Math.min(currentEditPage, totalPages - 1);
-        const startIdx = currentEditPage * SONGS_PER_PAGE;
-        const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
+        function buildLoadSongList() {
+            const playlistName = playlistSelect ? playlistSelect.value : 'Set 1';
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+            currentLoadPage = Math.min(currentLoadPage, totalPages - 1);
+            const startIdx = currentLoadPage * SONGS_PER_PAGE;
+            const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
 
-        playlistEditList.innerHTML = pageSongs.length
-            ? pageSongs.map((s, i) => {
-                const globalIdx = savedSongs.findIndex(x => x.id === s.id);
-                return `
-                    <div class="playlist-edit-item">
-                        <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
-                        <div class="playlist-edit-controls">
-                            <button data-move="${globalIdx}" data-dir="-1" title="Move up">↑</button>
-                            <button data-move="${globalIdx}" data-dir="1"  title="Move down">↓</button>
-                            <button data-delete="${s.id}" title="Delete">✕</button>
-                        </div>
-                    </div>`;
-            }).join('')
-            : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+            loadSongList.innerHTML = pageSongs.length
+                ? pageSongs.map((s, i) =>
+                    `<div class="track-item" data-id="${s.id}">
+                        <span>${startIdx + i + 1}. ${s.name}</span>
+                    </div>`
+                ).join('')
+                : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
 
-        // Attach move / delete listeners safely (no inline onclick globals)
-        playlistEditList.querySelectorAll('[data-move]').forEach(btn => {
-            btn.onclick = () => {
-                const idx = parseInt(btn.dataset.move, 10);
-                const dir = parseInt(btn.dataset.dir, 10);
-                moveSong(idx, dir);
-            };
-        });
-        playlistEditList.querySelectorAll('[data-delete]').forEach(btn => {
-            btn.onclick = () => deleteSong(btn.dataset.delete);
-        });
+            loadSongList.querySelectorAll('.track-item').forEach(item => {
+                item.onclick = () => loadSongIntoEditor(item.dataset.id);
+            });
 
-        buildPagination(editPagination, currentEditPage, totalPages, page => {
-            currentEditPage = page;
+            buildPagination(loadPagination, currentLoadPage, totalPages, page => {
+                currentLoadPage = page;
+                buildLoadSongList();
+            });
+        }
+
+        function buildPlaylistEditList() {
+            const playlistName = editPlaylistSelect ? editPlaylistSelect.value : 'Set 1';
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+            currentEditPage = Math.min(currentEditPage, totalPages - 1);
+            const startIdx = currentEditPage * SONGS_PER_PAGE;
+            const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
+
+            playlistEditList.innerHTML = pageSongs.length
+                ? pageSongs.map((s, i) => {
+                    const globalIdx = savedSongs.findIndex(x => x.id === s.id);
+                    return `
+                        <div class="playlist-edit-item">
+                            <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
+                            <div class="playlist-edit-controls">
+                                <button data-move="${globalIdx}" data-dir="-1" title="Move up">↑</button>
+                                <button data-move="${globalIdx}" data-dir="1"  title="Move down">↓</button>
+                                <button data-delete="${s.id}" title="Delete">✕</button>
+                            </div>
+                        </div>`;
+                }).join('')
+                : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+
+            // Attach move / delete listeners safely (no inline onclick globals)
+            playlistEditList.querySelectorAll('[data-move]').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.move, 10);
+                    const dir = parseInt(btn.dataset.dir, 10);
+                    moveSong(idx, dir);
+                };
+            });
+            playlistEditList.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.onclick = () => deleteSong(btn.dataset.delete);
+            });
+
+            buildPagination(editPagination, currentEditPage, totalPages, page => {
+                currentEditPage = page;
+                buildPlaylistEditList();
+            });
+        }
+
+        // Song operations
+        function loadSongIntoEditor(songId) {
+            const song = savedSongs.find(s => s.id === songId);
+            if (!song) return;
+
+            currentSong = song;
+            // ─── Use correct field name ───────────────────────────────────
+            editor.value = song.content || '';
+            updatePlaylistDetails();
+
+            // Signal stage.html via localStorage + BroadcastChannel
+            localStorage.setItem('lyricflow_currentSongId', song.id);
+            if (bc) bc.postMessage({ type: 'loadSong', songId: song.id });
+
+            loadOverlay.classList.add('hidden');
+            statusText.textContent = `Loaded: ${song.name}`;
+        }
+
+        function moveSong(idx, direction) {
+            if (idx < 0 || idx >= savedSongs.length) return;
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= savedSongs.length) return;
+            [savedSongs[idx], savedSongs[targetIdx]] = [savedSongs[targetIdx], savedSongs[idx]];
+            saveSongsToStorage();
             buildPlaylistEditList();
-        });
-    }
-
-    // Song operations
-    function loadSongIntoEditor(songId) {
-        const song = savedSongs.find(s => s.id === songId);
-        if (!song) return;
-
-        currentSong = song;
-        // ─── Use correct field name ───────────────────────────────────
-        editor.value = song.content || '';
-        updatePlaylistDetails();
-
-        // Signal stage.html via localStorage + BroadcastChannel
-        localStorage.setItem('lyricflow_currentSongId', song.id);
-        if (bc) bc.postMessage({ type: 'loadSong', songId: song.id });
-
-        loadOverlay.classList.add('hidden');
-        statusText.textContent = `Loaded: ${song.name}`;
-    }
-
-    function moveSong(idx, direction) {
-        if (idx < 0 || idx >= savedSongs.length) return;
-        const targetIdx = idx + direction;
-        if (targetIdx < 0 || targetIdx >= savedSongs.length) return;
-        [savedSongs[idx], savedSongs[targetIdx]] = [savedSongs[targetIdx], savedSongs[idx]];
-        saveSongsToStorage();
-        buildPlaylistEditList();
-    }
-
-    function deleteSong(songId) {
-        if (!confirm('Delete this song permanently?')) return;
-        savedSongs = savedSongs.filter(s => s.id !== songId);
-        if (currentSong && currentSong.id === songId) {
-            currentSong = null;
-            editor.value = '';
-            playlistEditDetails.style.display = 'none';
         }
-        saveSongsToStorage();
-        buildPlaylistEditList();
-        buildPlaylistSelect();
-        buildLoadSongList();
-    }
 
-    function updatePlaylistDetails() {
-        if (!currentSong || !playlistEditDetails) return;
-        const globalIdx = savedSongs.findIndex(s => s.id === currentSong.id);
-        playlistEditDetails.style.display = 'grid';
-        qs('currentSongTitle').textContent  = currentSong.name;
-        qs('currentPlaylist').textContent   = currentSong.playlist;
-        qs('currentSongIndex').textContent  = `${globalIdx + 1}/${savedSongs.length}`;
-    }
+        function deleteSong(songId) {
+            if (!confirm('Delete this song permanently?')) return;
+            savedSongs = savedSongs.filter(s => s.id !== songId);
+            if (currentSong && currentSong.id === songId) {
+                currentSong = null;
+                editor.value = '';
+                playlistEditDetails.style.display = 'none';
+            }
+            saveSongsToStorage();
+            buildPlaylistEditList();
+            buildPlaylistSelect();
+            buildLoadSongList();
+        }
 
-    // Save As New
-    if (saveConfirmBtn) saveConfirmBtn.onclick = () => {
-        const name = (songTitleInput.value || '').trim() || 'Untitled';
-        const playlistName = (playlistInput.value || '').trim() || 'Set 1';
-        const content = editor.value.trim();
+        function updatePlaylistDetails() {
+            if (!currentSong || !playlistEditDetails) return;
+            const globalIdx = savedSongs.findIndex(s => s.id === currentSong.id);
+            playlistEditDetails.style.display = 'grid';
+            qs('currentSongTitle').textContent  = currentSong.name;
+            qs('currentPlaylist').textContent   = currentSong.playlist;
+            qs('currentSongIndex').textContent  = `${globalIdx + 1}/${savedSongs.length}`;
+        }
 
-        if (!content) { alert('Please add some lyrics first'); return; }
+        // Save As New
+        if (saveConfirmBtn) saveConfirmBtn.onclick = () => {
+            const name = (songTitleInput.value || '').trim() || 'Untitled';
+            const playlistName = (playlistInput.value || '').trim() || 'Set 1';
+            const content = editor.value.trim();
 
-        // ─── Always use name / content (stage schema) ─────────────────
-        const newSong = {
-            id:          'song_' + Math.random().toString(36).slice(2),
-            name:        name,
-            playlist:    playlistName,
-            content:     content,
-            notes:       '',
-            speedPercent: 50,
-            fontSize:    18,
-            lineHeight:  1.9,
-            bpm:         null,
-            linesPerMeasure: 4,
-            createdAt:   new Date().toISOString()
+            if (!content) { alert('Please add some lyrics first'); return; }
+
+            // ─── Always use name / content (stage schema) ─────────────────
+            const newSong = {
+                id:          'song_' + Math.random().toString(36).slice(2),
+                name:        name,
+                playlist:    playlistName,
+                content:     content,
+                notes:       '',
+                speedPercent: 50,
+                fontSize:    18,
+                lineHeight:  1.9,
+                bpm:         null,
+                linesPerMeasure: 4,
+                createdAt:   new Date().toISOString()
+            };
+
+            savedSongs.push(newSong);
+            saveSongsToStorage();
+
+            currentSong = newSong;
+            updatePlaylistDetails();
+
+            saveOverlay.classList.add('hidden');
+            songTitleInput.value = '';
+            playlistInput.value = playlistName;
+            statusText.textContent = `Saved: ${name}`;
         };
 
-        savedSongs.push(newSong);
-        saveSongsToStorage();
+        if (notesBtn) notesBtn.onclick = () => {
+            if (!currentSong) { alert('Load a song first to add notes.'); return; }
+            notesEditor.value = currentSong.notes || '';
+            notesOverlay.classList.remove('hidden');
+        };
 
-        currentSong = newSong;
-        updatePlaylistDetails();
+        if (saveNotesBtn) saveNotesBtn.onclick = () => {
+            if (!currentSong) return;
+            const idx = savedSongs.findIndex(s => s.id === currentSong.id);
+            if (idx === -1) return;
+            savedSongs[idx].notes = notesEditor.value;
+            currentSong = savedSongs[idx];
+            saveSongsToStorage();
+            notesOverlay.classList.add('hidden');
+            statusText.textContent = `Notes saved: ${currentSong.name}`;
+        };
 
-        saveOverlay.classList.add('hidden');
-        songTitleInput.value = '';
-        playlistInput.value = playlistName;
-        statusText.textContent = `Saved: ${name}`;
-    };
+        // Button wiring
+        if (editorInfoBtn)    editorInfoBtn.onclick    = () => editInfoOverlay.classList.remove('hidden');
+        if (saveSongBtn)      saveSongBtn.onclick      = () => {
+            songTitleInput.value = currentSong ? currentSong.name : '';
+            playlistInput.value  = currentSong ? currentSong.playlist : 'Set 1';
+            saveOverlay.classList.remove('hidden');
+        };
+        if (loadSongBtn)      loadSongBtn.onclick      = () => {
+            buildPlaylistSelect();
+            currentLoadPage = 0;
+            buildLoadSongList();
+            loadOverlay.classList.remove('hidden');
+        };
+        if (editPlaylistBtn)  editPlaylistBtn.onclick  = () => {
+            buildPlaylistSelect();
+            currentEditPage = 0;
+            buildPlaylistEditList();
+            editPlaylistOverlay.classList.remove('hidden');
+        };
+        if (clearEditorBtn)   clearEditorBtn.onclick   = () => {
+            if (confirm('Clear all lyrics?')) {
+                editor.value = '';
+                currentSong = null;
+                playlistEditDetails.style.display = 'none';
+                statusText.textContent = 'Cleared';
+            }
+        };
 
-    if (notesBtn) notesBtn.onclick = () => {
-        if (!currentSong) { alert('Load a song first to add notes.'); return; }
-        notesEditor.value = currentSong.notes || '';
-        notesOverlay.classList.remove('hidden');
-    };
+        // Modal close handlers
+        document.querySelectorAll(
+            '[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist],[data-close-notes]'
+        ).forEach(btn => {
+            btn.onclick = () => btn.closest('.overlay').classList.add('hidden');
+        });
+        [editInfoOverlay, saveOverlay, loadOverlay, editPlaylistOverlay, notesOverlay].forEach(ov => {
+            if (ov) ov.onclick = e => { if (e.target === ov) ov.classList.add('hidden'); };
+        });
 
-    if (saveNotesBtn) saveNotesBtn.onclick = () => {
-        if (!currentSong) return;
-        const idx = savedSongs.findIndex(s => s.id === currentSong.id);
-        if (idx === -1) return;
-        savedSongs[idx].notes = notesEditor.value;
-        currentSong = savedSongs[idx];
-        saveSongsToStorage();
-        notesOverlay.classList.add('hidden');
-        statusText.textContent = `Notes saved: ${currentSong.name}`;
-    };
+        if (playlistSelect)     playlistSelect.onchange     = () => { currentLoadPage = 0; buildLoadSongList(); };
+        if (editPlaylistSelect) editPlaylistSelect.onchange = () => { currentEditPage = 0; buildPlaylistEditList(); };
 
-    // Button wiring
-    if (editorInfoBtn)    editorInfoBtn.onclick    = () => editInfoOverlay.classList.remove('hidden');
-    if (saveSongBtn)      saveSongBtn.onclick      = () => {
-        songTitleInput.value = currentSong ? currentSong.name : '';
-        playlistInput.value  = currentSong ? currentSong.playlist : 'Set 1';
-        saveOverlay.classList.remove('hidden');
-    };
-    if (loadSongBtn)      loadSongBtn.onclick      = () => {
+        // Boot
+        loadSongsFromStorage();
         buildPlaylistSelect();
-        currentLoadPage = 0;
-        buildLoadSongList();
-        loadOverlay.classList.remove('hidden');
-    };
-    if (editPlaylistBtn)  editPlaylistBtn.onclick  = () => {
-        buildPlaylistSelect();
-        currentEditPage = 0;
-        buildPlaylistEditList();
-        editPlaylistOverlay.classList.remove('hidden');
-    };
-    if (clearEditorBtn)   clearEditorBtn.onclick   = () => {
-        if (confirm('Clear all lyrics?')) {
-            editor.value = '';
-            currentSong = null;
-            playlistEditDetails.style.display = 'none';
-            statusText.textContent = 'Cleared';
+        statusText.textContent = 'Playlist Editor – Ready';
+
+        // ─── DRAFT: carry unsaved editor text to stage ────────────────────
+        function goToStage() {
+            const text = editor ? editor.value.trim() : '';
+            if (text) {
+                localStorage.setItem('lyricflow_draft', text);
+            } else {
+                localStorage.removeItem('lyricflow_draft');
+            }
+            window.location.href = 'index.html';
         }
-    };
-
-    // Modal close handlers
-    document.querySelectorAll(
-        '[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist],[data-close-notes]'
-    ).forEach(btn => {
-        btn.onclick = () => btn.closest('.overlay').classList.add('hidden');
-    });
-    [editInfoOverlay, saveOverlay, loadOverlay, editPlaylistOverlay, notesOverlay].forEach(ov => {
-        if (ov) ov.onclick = e => { if (e.target === ov) ov.classList.add('hidden'); };
-    });
-
-    if (playlistSelect)     playlistSelect.onchange     = () => { currentLoadPage = 0; buildLoadSongList(); };
-    if (editPlaylistSelect) editPlaylistSelect.onchange = () => { currentEditPage = 0; buildPlaylistEditList(); };
-
-    // Boot
-    loadSongsFromStorage();
-    buildPlaylistSelect();
-    statusText.textContent = 'Playlist Editor – Ready';
-
-    // ─── DRAFT: carry unsaved editor text to stage ────────────────────
-    function goToStage() {
-        const text = editor ? editor.value.trim() : '';
-        if (text) {
-            localStorage.setItem('lyricflow_draft', text);
-        } else {
-            localStorage.removeItem('lyricflow_draft');
-        }
-        window.location.href = 'index.html';
-    }
-</script>
-```
-
+    </script>
 </body>
 </html>
