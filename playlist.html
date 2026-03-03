@@ -729,7 +729,10 @@
             <div class="modal-body">
                 <div class="form-field">
                     <label for="editPlaylistSelect">Playlist</label>
-                    <select id="editPlaylistSelect"></select>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="tiny-btn" id="renamePlaylistBtn" title="Rename playlist">Rename</button>
+                        <select id="editPlaylistSelect" style="flex:1;"></select>
+                    </div>
                 </div>
                 <div class="playlist-edit-list" id="playlistEditList"></div>
                 <div class="playlist-pagination" id="editPagination"></div>
@@ -749,18 +752,22 @@
             </div>
             <div class="modal-body">
                 <div class="form-field">
+                    <label>Song name</label>
+                    <input id="songNameInput" type="text" placeholder="Song name" style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:6px 10px; font-size:13px; outline:none; width:100%;" />
+                </div>
+                <div class="form-field" style="margin-top:6px;">
                     <label>Scroll speed</label>
-                    <input id="songSpeedInput" type="range" min="0.1" max="6" step="0.05" value="0.8">
+                    <input id="songSpeedInput" type="range" min="0.05" max="2" step="0.01" value="0.8">
                     <span id="songSpeedValue">0.8</span>
                 </div>
                 <div class="form-field">
                     <label>Font size</label>
-                    <input id="songFontInput" type="range" min="12" max="52" step="1" value="20">
+                    <input id="songFontInput" type="range" min="12" max="72" step="1" value="20">
                     <span id="songFontValue">20px</span>
                 </div>
                 <div class="form-field">
                     <label>Line height</label>
-                    <input id="songLineInput" type="range" min="1.0" max="3.5" step="0.05" value="1.9">
+                    <input id="songLineInput" type="range" min="1.0" max="4.0" step="0.05" value="1.9">
                     <span id="songLineValue">1.9</span>
                 </div>
                 <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(55,65,81,.6);">
@@ -1003,6 +1010,7 @@
         let songSettingsId = null;
         const songSettingsOverlay = qs('songSettingsOverlay');
         const songSettingsTitle   = qs('songSettingsTitle');
+        const songNameInput       = qs('songNameInput');
         const songSpeedInput      = qs('songSpeedInput');
         const songSpeedValue      = qs('songSpeedValue');
         const songFontInput       = qs('songFontInput');
@@ -1011,18 +1019,38 @@
         const songLineValue       = qs('songLineValue');
         const songNotesInput      = qs('songNotesInput');
         const saveSongSettingsBtn = qs('saveSongSettingsBtn');
+        const renamePlaylistBtn   = qs('renamePlaylistBtn');
+
+        // Rename playlist
+        if (renamePlaylistBtn) renamePlaylistBtn.onclick = () => {
+            const current = editPlaylistSelect ? editPlaylistSelect.value : '';
+            if (!current) return;
+            const newName = prompt(`Rename playlist "${current}" to:`, current);
+            if (!newName || !newName.trim() || newName.trim() === current) return;
+            const trimmed = newName.trim();
+            savedSongs = savedSongs.map(s => s.playlist === current ? { ...s, playlist: trimmed } : s);
+            saveSongsToStorage();
+            buildPlaylistSelect();
+            // re-select renamed playlist
+            if (editPlaylistSelect) {
+                editPlaylistSelect.value = trimmed;
+                buildPlaylistEditList();
+            }
+            statusText.textContent = `Renamed: ${current} → ${trimmed}`;
+        };
 
         function openSongSettings(songId) {
             const song = savedSongs.find(s => s.id === songId);
             if (!song) return;
             songSettingsId = songId;
             songSettingsTitle.textContent = song.name;
+            if (songNameInput) songNameInput.value = song.name;
             songSpeedInput.value = song.scrollSpeed || 0.8;
-            songSpeedValue.textContent = (song.scrollSpeed || 0.8).toFixed(2);
+            songSpeedValue.textContent = parseFloat(song.scrollSpeed || 0.8).toFixed(2);
             songFontInput.value  = song.fontSize    || 20;
             songFontValue.textContent  = (song.fontSize || 20) + 'px';
             songLineInput.value  = song.lineHeight  || 1.9;
-            songLineValue.textContent  = (song.lineHeight || 1.9).toFixed(2);
+            songLineValue.textContent  = parseFloat(song.lineHeight || 1.9).toFixed(2);
             songNotesInput.value = song.notes || '';
             songSettingsOverlay.classList.remove('hidden');
         }
@@ -1038,14 +1066,21 @@
         if (saveSongSettingsBtn) saveSongSettingsBtn.onclick = () => {
             const idx = savedSongs.findIndex(s => s.id === songSettingsId);
             if (idx === -1) return;
+            const newName = songNameInput ? songNameInput.value.trim() : '';
+            if (newName) savedSongs[idx].name = newName;
             savedSongs[idx].scrollSpeed = parseFloat(songSpeedInput.value);
             savedSongs[idx].fontSize    = parseInt(songFontInput.value);
             savedSongs[idx].lineHeight  = parseFloat(songLineInput.value);
             savedSongs[idx].notes       = songNotesInput.value;
-            if (currentSong && currentSong.id === songSettingsId) currentSong = savedSongs[idx];
+            if (currentSong && currentSong.id === songSettingsId) {
+                currentSong = savedSongs[idx];
+                editor.value = currentSong.content || '';
+                updatePlaylistDetails();
+            }
             saveSongsToStorage();
+            buildPlaylistEditList();
             closeSongSettings();
-            statusText.textContent = `Settings saved: ${savedSongs[idx].name}`;
+            statusText.textContent = `Saved: ${savedSongs[idx].name}`;
         };
 
         if (songSettingsOverlay) songSettingsOverlay.onclick = e => { if (e.target === songSettingsOverlay) closeSongSettings(); };
@@ -1082,7 +1117,15 @@
 
         // Mark dirty whenever editor text changes on a known song
         if (editor) editor.addEventListener('input', () => {
-            if (currentSong) markDirty();
+            if (currentSong) {
+                markDirty();
+                // sync live to stage
+                if (bc) bc.postMessage({ type: 'liveEdit', content: editor.value, songId: currentSong.id });
+            } else {
+                // draft — persist and sync live
+                localStorage.setItem('lyricflow_draft', editor.value);
+                if (bc) bc.postMessage({ type: 'liveDraft', content: editor.value });
+            }
             updateNotesBtn();
         });
 
@@ -1241,17 +1284,37 @@
         // Boot
         loadSongsFromStorage();
         buildPlaylistSelect();
-        statusText.textContent = 'Playlist Editor – Ready';
+
+        // ─── RESTORE state if returning from stage ────────────────────────
+        const persistedSongId = localStorage.getItem('lyricflow_currentSongId');
+        const persistedDraft  = localStorage.getItem('lyricflow_draft');
+        if (persistedSongId) {
+            const song = savedSongs.find(s => s.id === persistedSongId);
+            if (song) {
+                currentSong = song;
+                editor.value = song.content || '';
+                draftNotes = song.notes || '';
+                updatePlaylistDetails();
+                updateSaveButton();
+                updateNotesBtn();
+                statusText.textContent = `Loaded: ${song.name}`;
+            }
+        } else if (persistedDraft) {
+            editor.value = persistedDraft;
+            draftNotes = localStorage.getItem('lyricflow_draft_notes') || '';
+            updateNotesBtn();
+            statusText.textContent = 'Draft restored';
+        } else {
+            statusText.textContent = 'Playlist Editor – Ready';
+        }
 
         // ─── DRAFT: carry unsaved editor text to stage ────────────────────
         function goToStage() {
             const text = editor ? editor.value.trim() : '';
-            if (text) {
+            if (text && !currentSong) {
+                // draft — persist for return trip
                 localStorage.setItem('lyricflow_draft', text);
                 localStorage.setItem('lyricflow_draft_notes', draftNotes || '');
-            } else {
-                localStorage.removeItem('lyricflow_draft');
-                localStorage.removeItem('lyricflow_draft_notes');
             }
             window.location.href = 'index.html';
         }
