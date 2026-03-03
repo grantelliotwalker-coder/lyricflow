@@ -49,7 +49,7 @@
             flex-direction: column;
             gap: 8px;
             width: 100%;
-            max-width: 1080px;
+            max-width: 1800px;
             max-height: 100%;
             margin: 0 auto;
             padding: 14px 14px 10px;
@@ -250,7 +250,7 @@
             overflow: hidden;
         }
 
-        .viewer-notes-btn { position:absolute; top:8px; right:8px; z-index:10; border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+        .viewer-notes-btn { position:absolute; top:16px; right:16px; z-index:10; border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
 
         .textarea-wrap { position:relative; flex:1; min-height:0; display:flex; flex-direction:column; }
 
@@ -641,7 +641,7 @@
                         <div class="textarea-wrap">
                             <button class="viewer-notes-btn hidden" id="notesBtn">Notes</button>
                             <textarea id="editor"
-                                      placeholder="Type or paste your lyrics here.&#10;Use blank lines between sections (verses, chorus, bridge).&#10;&#10;Save As → creates new song (never overwrites).&#10;Load → sends lyrics to stage window."></textarea>
+                                      placeholder="Paste or type your lyrics here.&#10;&#10;Each line will scroll as a separate line on stage.&#10;Use blank lines to separate verses, chorus and bridge.&#10;&#10;When you're ready:&#10;  • Save As → name and save to your playlist&#10;  • Load → pick a saved song to edit&#10;  • Tap Stage mode (top right) to perform"></textarea>
                         </div>
                     </div>
                 </div>
@@ -736,6 +736,41 @@
             </div>
             <div class="modal-footer">
                 <button data-close-edit-playlist>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Song settings modal (from ℹ in edit playlist) -->
+    <div class="overlay hidden" id="songSettingsOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="songSettingsTitle">Song Settings</div>
+                <button class="modal-close" onclick="closeSongSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Scroll speed</label>
+                    <input id="songSpeedInput" type="range" min="0.1" max="6" step="0.05" value="0.8">
+                    <span id="songSpeedValue">0.8</span>
+                </div>
+                <div class="form-field">
+                    <label>Font size</label>
+                    <input id="songFontInput" type="range" min="12" max="52" step="1" value="20">
+                    <span id="songFontValue">20px</span>
+                </div>
+                <div class="form-field">
+                    <label>Line height</label>
+                    <input id="songLineInput" type="range" min="1.0" max="3.5" step="0.05" value="1.9">
+                    <span id="songLineValue">1.9</span>
+                </div>
+                <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(55,65,81,.6);">
+                    <label style="font-size:11px; color:var(--text-soft); display:block; margin-bottom:4px;">Notes</label>
+                    <textarea id="songNotesInput" style="width:100%; height:100px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;" placeholder="Chords, cues, triggers..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSongSettings()">Cancel</button>
+                <button class="btn-primary-small" id="saveSongSettingsBtn">Save</button>
             </div>
         </div>
     </div>
@@ -935,6 +970,7 @@
                         <div class="playlist-edit-item">
                             <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
                             <div class="playlist-edit-controls">
+                                <button data-info="${s.id}" title="Song settings">ℹ</button>
                                 <button data-move="${globalIdx}" data-dir="-1" title="Move up">↑</button>
                                 <button data-move="${globalIdx}" data-dir="1"  title="Move down">↓</button>
                                 <button data-delete="${s.id}" title="Delete">✕</button>
@@ -954,12 +990,65 @@
             playlistEditList.querySelectorAll('[data-delete]').forEach(btn => {
                 btn.onclick = () => deleteSong(btn.dataset.delete);
             });
+            playlistEditList.querySelectorAll('[data-info]').forEach(btn => {
+                btn.onclick = () => openSongSettings(btn.dataset.info);
+            });
 
             buildPagination(editPagination, currentEditPage, totalPages, page => {
                 currentEditPage = page;
                 buildPlaylistEditList();
             });
         }
+
+        let songSettingsId = null;
+        const songSettingsOverlay = qs('songSettingsOverlay');
+        const songSettingsTitle   = qs('songSettingsTitle');
+        const songSpeedInput      = qs('songSpeedInput');
+        const songSpeedValue      = qs('songSpeedValue');
+        const songFontInput       = qs('songFontInput');
+        const songFontValue       = qs('songFontValue');
+        const songLineInput       = qs('songLineInput');
+        const songLineValue       = qs('songLineValue');
+        const songNotesInput      = qs('songNotesInput');
+        const saveSongSettingsBtn = qs('saveSongSettingsBtn');
+
+        function openSongSettings(songId) {
+            const song = savedSongs.find(s => s.id === songId);
+            if (!song) return;
+            songSettingsId = songId;
+            songSettingsTitle.textContent = song.name;
+            songSpeedInput.value = song.scrollSpeed || 0.8;
+            songSpeedValue.textContent = (song.scrollSpeed || 0.8).toFixed(2);
+            songFontInput.value  = song.fontSize    || 20;
+            songFontValue.textContent  = (song.fontSize || 20) + 'px';
+            songLineInput.value  = song.lineHeight  || 1.9;
+            songLineValue.textContent  = (song.lineHeight || 1.9).toFixed(2);
+            songNotesInput.value = song.notes || '';
+            songSettingsOverlay.classList.remove('hidden');
+        }
+
+        function closeSongSettings() {
+            songSettingsOverlay.classList.add('hidden');
+        }
+
+        songSpeedInput.oninput = () => songSpeedValue.textContent = parseFloat(songSpeedInput.value).toFixed(2);
+        songFontInput.oninput  = () => songFontValue.textContent  = songFontInput.value + 'px';
+        songLineInput.oninput  = () => songLineValue.textContent  = parseFloat(songLineInput.value).toFixed(2);
+
+        if (saveSongSettingsBtn) saveSongSettingsBtn.onclick = () => {
+            const idx = savedSongs.findIndex(s => s.id === songSettingsId);
+            if (idx === -1) return;
+            savedSongs[idx].scrollSpeed = parseFloat(songSpeedInput.value);
+            savedSongs[idx].fontSize    = parseInt(songFontInput.value);
+            savedSongs[idx].lineHeight  = parseFloat(songLineInput.value);
+            savedSongs[idx].notes       = songNotesInput.value;
+            if (currentSong && currentSong.id === songSettingsId) currentSong = savedSongs[idx];
+            saveSongsToStorage();
+            closeSongSettings();
+            statusText.textContent = `Settings saved: ${savedSongs[idx].name}`;
+        };
+
+        if (songSettingsOverlay) songSettingsOverlay.onclick = e => { if (e.target === songSettingsOverlay) closeSongSettings(); };
 
         // Song operations
         function loadSongIntoEditor(songId) {
@@ -974,6 +1063,7 @@
 
             // Show notes button now that a song is loaded
             if (notesBtn) notesBtn.classList.remove('hidden');
+            updateNotesBtn();
 
             // Signal stage via localStorage + BroadcastChannel
             localStorage.setItem('lyricflow_currentSongId', song.id);
@@ -983,9 +1073,17 @@
             statusText.textContent = `Loaded: ${song.name}`;
         }
 
+        // Show/hide notes button based on editor content
+        function updateNotesBtn() {
+            if (!notesBtn) return;
+            const hasContent = editor && editor.value.trim().length > 0;
+            notesBtn.classList.toggle('hidden', !hasContent);
+        }
+
         // Mark dirty whenever editor text changes on a known song
         if (editor) editor.addEventListener('input', () => {
             if (currentSong) markDirty();
+            updateNotesBtn();
         });
 
         function moveSong(idx, direction) {
@@ -1057,21 +1155,30 @@
             updateSaveButton();
         };
 
+        let draftNotes = '';
+
         if (notesBtn) notesBtn.onclick = () => {
-            if (!currentSong) { alert('Load a song first to add notes.'); return; }
-            notesEditor.value = currentSong.notes || '';
+            notesEditor.value = currentSong ? (currentSong.notes || '') : draftNotes;
             notesOverlay.classList.remove('hidden');
         };
 
         if (saveNotesBtn) saveNotesBtn.onclick = () => {
-            if (!currentSong) return;
-            const idx = savedSongs.findIndex(s => s.id === currentSong.id);
-            if (idx === -1) return;
-            savedSongs[idx].notes = notesEditor.value;
-            currentSong = savedSongs[idx];
-            saveSongsToStorage();
+            if (currentSong) {
+                const idx = savedSongs.findIndex(s => s.id === currentSong.id);
+                if (idx !== -1) {
+                    savedSongs[idx].notes = notesEditor.value;
+                    currentSong = savedSongs[idx];
+                    saveSongsToStorage();
+                }
+                statusText.textContent = `Notes saved: ${currentSong.name}`;
+            } else {
+                // draft — hold in memory
+                draftNotes = notesEditor.value;
+                statusText.textContent = 'Notes saved to draft';
+            }
+            // show/hide button based on content
+            if (notesBtn) notesBtn.classList.toggle('hidden', !(currentSong ? currentSong.notes : draftNotes).trim());
             notesOverlay.classList.add('hidden');
-            statusText.textContent = `Notes saved: ${currentSong.name}`;
         };
 
         // Button wiring
@@ -1080,8 +1187,8 @@
             const isSaved = !!currentSong;
             qs('saveModalTitle').textContent = isSaved ? 'Save Song' : 'Save As New Song';
             qs('saveModalHint').innerHTML    = isSaved
-                ? `Overwrites <strong>${currentSong.name}</strong> · rename to save as new`
-                : 'Creates a <strong>new song</strong> (never overwrites)';
+                ? `Overwrites ${currentSong.name} · rename to save as new`
+                : 'Creates a new song';
             saveConfirmBtn.textContent       = isSaved ? 'Save' : 'Save New';
             saveOverlay.dataset.forceNew     = isSaved ? '' : 'yes';
             songTitleInput.value = currentSong ? currentSong.name : '';
@@ -1105,10 +1212,16 @@
                 editor.value = '';
                 currentSong = null;
                 hasUnsavedChanges = false;
+                draftNotes = '';
                 if (notesBtn) notesBtn.classList.add('hidden');
+                updateNotesBtn();
                 playlistEditDetails.style.display = 'none';
                 statusText.textContent = 'Cleared';
                 updateSaveButton();
+                // Signal index.html to return to welcome screen
+                localStorage.removeItem('lyricflow_currentSongId');
+                localStorage.removeItem('lyricflow_draft');
+                if (bc) bc.postMessage({ type: 'showWelcome' });
             }
         };
 
@@ -1135,8 +1248,10 @@
             const text = editor ? editor.value.trim() : '';
             if (text) {
                 localStorage.setItem('lyricflow_draft', text);
+                localStorage.setItem('lyricflow_draft_notes', draftNotes || '');
             } else {
                 localStorage.removeItem('lyricflow_draft');
+                localStorage.removeItem('lyricflow_draft_notes');
             }
             window.location.href = 'index.html';
         }
