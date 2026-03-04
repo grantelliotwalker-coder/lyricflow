@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>LyricFlow</title>
+    <title>LyricFlow - Playlist Editor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
     <style>
@@ -20,10 +20,15 @@
             --danger-border: rgba(248, 113, 113, 0.6);
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         html, body {
-            margin: 0; padding: 0; height: 100%; width: 100%;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
             background: radial-gradient(circle at top, #020617 0%, #020617 48%, #000 100%);
             color: var(--text-main);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
@@ -33,277 +38,632 @@
         }
 
         body {
-            display: flex; align-items: stretch; justify-content: center; padding: 14px;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            padding: 14px;
         }
 
         .app-shell {
-            display: flex; flex-direction: column; gap: 8px;
-            width: 100%; max-width: 1800px; max-height: 100%; margin: 0 auto;
-            padding: 14px 14px 10px; border-radius: 30px;
-            background: radial-gradient(circle at top, rgba(34,197,94,.18) 0,transparent 45%),
-                        radial-gradient(circle at 0 0, rgba(59,130,246,.09) 0,transparent 50%),
-                        radial-gradient(circle at 100% 0, rgba(14,165,233,.11) 0,transparent 54%),
-                        radial-gradient(circle at 0 100%, rgba(34,197,94,.11) 0,transparent 50%),
-                        radial-gradient(circle at 100% 100%, rgba(147,51,234,.08) 0,transparent 52%),
-                        linear-gradient(145deg,#020617 0%,#020617 40%,#020617 100%);
-            border: 1px solid rgba(148,163,184,.28);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            max-width: 1800px;
+            max-height: 100%;
+            margin: 0 auto;
+            padding: 14px 14px 10px;
+            border-radius: 30px;
+            background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18) 0, transparent 45%), radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.09) 0, transparent 50%), radial-gradient(circle at 100% 0, rgba(14, 165, 233, 0.11) 0, transparent 54%), radial-gradient(circle at 0 100%, rgba(34, 197, 94, 0.11) 0, transparent 50%), radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.08) 0, transparent 52%), linear-gradient(145deg, #020617 0%, #020617 40%, #020617 100%);
+            border: 1px solid rgba(148, 163, 184, 0.28);
             box-shadow: var(--shadow-soft);
-            position: relative; overflow: hidden;
+            position: relative;
+            overflow: hidden;
         }
 
         .app-shell::before {
-            content: ""; position: absolute; inset: 0; pointer-events: none;
-            background: radial-gradient(circle at 0 20%, rgba(148,163,184,.09) 0,transparent 55%),
-                        radial-gradient(circle at 100% 80%, rgba(51,65,85,.55) 0,transparent 60%);
-            opacity: .85; mix-blend-mode: soft-light;
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 0 20%, rgba(148, 163, 184, 0.09) 0, transparent 55%), radial-gradient(circle at 100% 80%, rgba(51, 65, 85, 0.55) 0, transparent 60%);
+            opacity: 0.85;
+            mix-blend-mode: soft-light;
         }
 
         .app-shell-inner {
-            position: relative; z-index: 1; display: flex; flex-direction: column;
-            gap: 8px; height: 100%;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
         }
 
         .header {
-            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
 
         .branding {
-            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .lf-logo {
-            width: 30px; height: 30px; border-radius: 12px;
-            background: radial-gradient(circle at 20% 0%,rgba(248,250,252,.9),transparent 55%),
-                        radial-gradient(circle at 70% 80%,rgba(52,211,153,1),transparent 65%),
-                        radial-gradient(circle at 30% 90%,rgba(59,130,246,1),transparent 65%),
-                        linear-gradient(135deg,#020617,#020617);
-            box-shadow: 0 0 0 1px rgba(15,23,42,.95),0 12px 28px rgba(0,0,0,.9);
-            position: relative; overflow: hidden; display: flex;
-            align-items: center; justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.9), transparent 55%), radial-gradient(circle at 70% 80%, rgba(52, 211, 153, 1), transparent 65%), radial-gradient(circle at 30% 90%, rgba(59, 130, 246, 1), transparent 65%), linear-gradient(135deg, #020617, #020617);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.95), 0 12px 28px rgba(0, 0, 0, 0.9);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .lf-logo-glyph {
-            position: relative; width: 20px; height: 20px; border-radius: 8px;
-            border: 1px solid rgba(148,163,184,.7);
-            background: radial-gradient(circle at 0 0,#020617,#020617);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 0 1px rgba(15,23,42,.9),0 0 18px rgba(34,197,94,.7);
+            position: relative;
+            width: 20px;
+            height: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: radial-gradient(circle at 0 0, #020617, #020617);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 0 18px rgba(34, 197, 94, 0.7);
         }
-        .lf-logo-glyph::before { content:"L"; font-weight:700; font-size:11px; letter-spacing:.06em; color:#bbf7d0; position:absolute; left:4px; top:4px; }
-        .lf-logo-glyph::after  { content:"F"; font-weight:700; font-size:11px; letter-spacing:.08em; color:#22c55e;  position:absolute; right:4px; bottom:4px; }
 
-        .app-title-block { display:flex; flex-direction:column; gap:2px; }
-        .app-title { font-size:18px; font-weight:620; letter-spacing:.02em; color:#e5e7eb; text-shadow:0 0 18px rgba(34,197,94,.5),0 0 35px rgba(34,197,94,.4); }
-        .app-subtitle { font-size:11px; color:var(--text-soft); }
+        .lf-logo-glyph::before {
+            content: "L";
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            color: #bbf7d0;
+            position: absolute;
+            left: 4px;
+            top: 4px;
+        }
 
-        .top-row { display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:nowrap; }
+        .lf-logo-glyph::after {
+            content: "F";
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            color: #22c55e;
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+        }
 
-        .status-line { font-size:11px; color:var(--text-soft); display:flex; align-items:center; min-width:0; flex:1; overflow:hidden; }
-        .status-label { padding:4px 8px; border-radius:999px; background:rgba(15,23,42,.96); border:1px solid rgba(55,65,81,.9); display:inline-flex; align-items:center; gap:5px; min-width:0; max-width:100%; overflow:hidden; }
-        .status-label #statusText { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; max-width:120px; }
-        .status-pill-dot { width:5px; height:5px; flex-shrink:0; border-radius:999px; background:radial-gradient(circle at 30% 0%,#f9fafb,#22c55e); box-shadow:0 0 8px rgba(34,197,94,.9); }
-        .status-time { opacity:.8; white-space:nowrap; flex-shrink:0; }
+        .app-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
 
-        .header-right { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
+        .app-title {
+            font-size: 18px;
+            font-weight: 620;
+            letter-spacing: 0.02em;
+            color: #e5e7eb;
+            text-shadow: 0 0 18px rgba(34, 197, 94, 0.5), 0 0 35px rgba(34, 197, 94, 0.4);
+        }
 
-        /* Compound playlist nav pill: ⏮  Set 1 · 3/9  ⏭ */
-        .playlist-nav-pill { display:none; align-items:center; gap:0; border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); overflow:hidden; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
-        .playlist-nav-pill.visible { display:inline-flex; }
-        .playlist-nav-pill .nav-arrow { padding:5px 9px; font-size:11px; color:var(--text-soft); cursor:pointer; background:transparent; border:none; display:flex; align-items:center; }
-        .playlist-nav-pill .nav-arrow:hover { color:#e5e7eb; }
-        .playlist-nav-pill .nav-divider { width:1px; background:rgba(75,85,99,.6); align-self:stretch; }
-        .playlist-nav-pill .nav-info { padding:4px 8px; font-size:10px; color:var(--text-soft); display:flex; flex-direction:column; align-items:center; line-height:1.3; white-space:nowrap; }
-        .playlist-nav-pill .nav-info .nav-set { font-size:9px; color:var(--text-muted); }
-        .playlist-nav-pill .nav-info .nav-index { font-size:11px; color:var(--text-soft); }
+        .app-subtitle {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
 
-        .pill-label { font-size:10px; color:var(--text-soft); padding:4px 10px; border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); display:inline-flex; align-items:center; gap:4px; cursor:pointer; }
+        .mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(71, 85, 105, 0.9);
+            color: var(--text-soft);
+            font-size: 11px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.96), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
 
-        .icon-btn { border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:11px; padding:4px 7px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+        .mode-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
 
-        .pill-btn { border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+        .mode-toggle span strong {
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 10px;
+            color: #e5e7eb;
+        }
 
-        .mode-toggle { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:rgba(15,23,42,.96); border:1px solid rgba(71,85,105,.9); color:var(--text-soft); font-size:11px; cursor:pointer; box-shadow:0 8px 16px rgba(15,23,42,.96),0 0 0 1px rgba(15,23,42,1); text-decoration:none; }
-        .mode-dot { width:7px; height:7px; border-radius:999px; background:radial-gradient(circle at 30% 0%,#f9fafb,#22c55e); box-shadow:0 0 8px rgba(34,197,94,.9); }
-        .mode-toggle span strong { text-transform:uppercase; letter-spacing:.06em; font-size:10px; color:#e5e7eb; }
-        .mode-toggle span small  { font-size:10px; color:var(--text-muted); }
+        .mode-toggle span small {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
 
-        .main-stack { flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; }
+        .top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
 
-        .viewer-card { flex:1; min-height:0; border-radius:22px; background:radial-gradient(circle at 0 0,rgba(15,23,42,1),rgba(15,23,42,.99)),radial-gradient(circle at 100% 100%,rgba(15,23,42,.99),rgba(15,23,42,1)); border:1px solid rgba(55,65,81,.95); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.95); padding:10px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+        .status-line {
+            font-size: 11px;
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 2px;
+        }
 
-        .viewer-viewport { flex:1; min-height:0; position:relative; overflow:hidden; border-radius:18px; background:radial-gradient(circle at 0 -25%,rgba(34,197,94,.28),transparent 60%),radial-gradient(circle at 100% 120%,rgba(59,130,246,.28),transparent 60%),linear-gradient(#020617,#020617); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.85); }
+        .status-label {
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .viewer-halo-top,.viewer-halo-bottom,.viewer-highlight,.viewer-subtle-layer { pointer-events:none; }
+        .status-pill-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 30% 0%, #f9fafb, #22c55e);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
 
-        .viewer-halo-top { position:absolute; top:-40px; left:50%; transform:translateX(-50%); width:80%; height:90px; background:radial-gradient(circle at 50% 100%,rgba(34,197,94,.42),transparent 70%); filter:blur(12px); opacity:.8; }
-        .viewer-halo-bottom { position:absolute; bottom:-50px; left:50%; transform:translateX(-50%); width:90%; height:100px; background:radial-gradient(circle at 50% 0,rgba(34,197,94,.26),transparent 70%),radial-gradient(circle at 50% 0,rgba(59,130,246,.18),transparent 70%); filter:blur(14px); opacity:.9; }
+        .main-stack {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-        .viewer-highlight { position:absolute; left:50%; top:50%; width:100%; height:50%; transform:translate(-50%,-50%); background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.02),rgba(15,23,42,.26)),radial-gradient(circle at 50% 50%,rgba(15,23,42,.03),rgba(15,23,42,.35)); border-radius:40px; border:1px solid rgba(148,163,184,.28); box-shadow:0 0 0 1px rgba(15,23,42,.9),0 0 0 2px rgba(34,197,94,.16),0 20px 40px rgba(0,0,0,.9),0 -16px 35px rgba(15,23,42,.95),0 0 50px rgba(34,197,94,.45); mix-blend-mode:screen; opacity:.75; }
+        .editor-card {
+            flex: 1;
+            min-height: 0;
+            border-radius: 22px;
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 55%), radial-gradient(circle at 100% 100%, rgba(30, 64, 175, 0.16), transparent 55%), linear-gradient(135deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.99));
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            box-shadow: 0 18px 60px rgba(15, 23, 42, 0.98), inset 0 0 0 1px rgba(15, 23, 42, 0.95);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
 
-        .viewer-subtle-layer { position:absolute; inset:0; background:radial-gradient(circle at 0 50%,rgba(15,23,42,.6),transparent 60%),radial-gradient(circle at 100% 50%,rgba(15,23,42,.75),transparent 60%); opacity:.85; mix-blend-mode:multiply; }
+        .viewer-notes-btn { position:absolute; top:16px; right:16px; z-index:10; border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
 
-        .viewer-text-rail { position:absolute; inset:18px 10px; border-radius:32px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:0 10px; -webkit-mask-image:linear-gradient(to bottom,transparent,black 12%,black 88%,transparent 100%); mask-image:linear-gradient(to bottom,transparent,black 12%,black 88%,transparent 100%); }
+        .textarea-wrap { position:relative; flex:1; min-height:0; display:flex; flex-direction:column; }
 
-        .viewer { position:relative; width:100%; max-width:1200px; margin:0 auto; color:rgba(226,232,240,.98); font-size:20px; line-height:1.9; text-align:center; white-space:pre-wrap; word-wrap:break-word; padding:0 4px; text-shadow:0 0 20px rgba(15,23,42,.95),0 0 40px rgba(0,0,0,.85); cursor:grab; touch-action:none; }
-        .viewer:active { cursor:grabbing; }
+        .editor-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+            min-height: 0;
+        }
 
-        .viewer-content { position:relative; display:inline-block; will-change:transform; transform:translateY(0px); }
+        .editor-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98)), linear-gradient(to right, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            gap: 8px;
+        }
 
-        .viewer-overlay-top,.viewer-overlay-bottom { position:absolute; left:0; right:0; height:70px; pointer-events:none; z-index:3; }
-        .viewer-overlay-top    { top:-4px;    background:linear-gradient(to bottom,rgba(2,6,23,.98),rgba(2,6,23,0)); }
-        .viewer-overlay-bottom { bottom:-4px; background:linear-gradient(to top,  rgba(2,6,23,.98),rgba(2,6,23,0)); }
+        .editor-buttons-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            align-items: flex-end;
+        }
 
-        .viewer-gradient-border-top,.viewer-gradient-border-bottom { position:absolute; left:20%; right:20%; height:2px; border-radius:999px; background:linear-gradient(to right,rgba(15,23,42,0),rgba(34,197,94,.9),rgba(59,130,246,.9),rgba(15,23,42,0)); box-shadow:0 0 18px rgba(34,197,94,.8); opacity:.8; pointer-events:none; z-index:3; }
-        .viewer-gradient-border-top    { top:24%; }
-        .viewer-gradient-border-bottom { bottom:24%; }
+        .editor-title {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(226, 232, 240, 0.96);
+        }
 
-        .viewer-content-line { display:block; padding:1px 0; }
+        .editor-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .viewer-countin { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.5),rgba(15,23,42,.5)); color:rgba(226,232,240,.9); font-size:26px; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 0 18px rgba(0,0,0,.85); z-index:5; }
-        .viewer-countin.hidden { display:none; }
+        .playlist-edit-details {
+            margin-top: 4px;
+            padding: 4px 6px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            font-size: 11px;
+            color: var(--text-soft);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 4px 8px;
+        }
 
-        .bottom-bar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(15,23,42,.97); border:1px solid rgba(55,65,81,.9); box-shadow:0 -6px 20px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+        .playlist-edit-details span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .transport-buttons { display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; }
+        .tiny-btn {
+            border-radius: 999px;
+            padding: 3px 8px;
+            border: 1px solid rgba(55, 65, 81, 0.98);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-soft);
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(15, 23, 42, 1);
+        }
 
-        .btn { border:none; cursor:pointer; border-radius:999px; font-size:12px; padding:7px 18px; display:inline-flex; align-items:center; gap:6px; background:rgba(15,23,42,.9); color:var(--text-soft); border:1px solid rgba(55,65,81,.9); box-shadow:0 8px 18px rgba(15,23,42,.95),0 0 0 1px rgba(15,23,42,.95); flex:1; justify-content:center; }
-        .btn-primary { background:radial-gradient(circle at 0 0,#22c55e,#16a34a); color:#020617; border-color:rgba(74,222,128,.6); box-shadow:0 0 0 1px rgba(15,23,42,.95),0 12px 28px rgba(22,163,74,.7),0 0 35px rgba(34,197,94,.8); }
-        .btn-reset { padding:6px 10px; border-color:rgba(248,113,113,.6); color:var(--danger); }
-        .btn:hover  { transform:translateY(-0.5px) translateZ(0); box-shadow:0 12px 24px rgba(15,23,42,.95),0 0 0 1px rgba(15,23,42,1); opacity:.97; }
-        .btn:active { transform:translateY(1px); box-shadow:0 4px 10px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,.9); }
+        .tiny-btn.icon-only {
+            padding: 3px 7px;
+            font-size: 12px;
+        }
 
-        .overlay { position:fixed; inset:0; background:rgba(15,23,42,.75); display:flex; align-items:center; justify-content:center; z-index:40; }
-        .overlay.hidden { display:none; }
+        .tiny-btn.save {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            border-color: rgba(74, 222, 128, 0.7);
+            color: #020617;
+            font-weight: 600;
+        }
 
-        .modal { max-width:360px; width:90%; border-radius:18px; background:rgba(15,23,42,.98); border:1px solid rgba(75,85,99,.95); box-shadow:0 18px 40px rgba(0,0,0,.95); padding:12px 14px 10px; color:var(--text-soft); font-size:13px; }
-        .modal-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
-        .modal-title { font-size:13px; font-weight:550; letter-spacing:.06em; text-transform:uppercase; color:#e5e7eb; }
-        .modal-close { border:none; background:transparent; color:var(--text-soft); cursor:pointer; font-size:14px; }
-        .modal-body p { margin:6px 0; }
-        .modal-footer { display:flex; justify-content:flex-end; margin-top:8px; }
-        .modal-footer button { border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:11px; padding:4px 10px; cursor:pointer; margin-left:6px; }
-        .modal-footer .btn-primary-small { background:radial-gradient(circle at 0 0,#22c55e,#16a34a); border-color:rgba(74,222,128,.7); color:#020617; }
+        .tiny-btn-danger {
+            border-color: rgba(75,85,99,.95);
+            color: var(--text-soft);
+        }
 
-        .form-field { display:flex; flex-direction:column; gap:4px; margin-top:4px; }
-        .form-field label { font-size:11px; color:var(--text-soft); }
-        .form-field input,.form-field select { border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:6px 10px; font-size:13px; outline:none; }
+        #editor {
+            flex: 1;
+            min-height: 0;
+            border-radius: 16px;
+            border: 1px solid rgba(75, 85, 99, 0.92);
+            background: rgba(15, 23, 42, 0.98);
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+            padding: 8px 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(75, 85, 99, 0.9) transparent;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            background-image: radial-gradient(circle at 0 0, rgba(15, 23, 42, 1), rgba(15, 23, 42, 0.98));
+        }
 
-        .viewer::-webkit-scrollbar { width:8px; }
-        .viewer::-webkit-scrollbar-thumb { background:rgba(75,85,99,.9); border-radius:999px; }
-        .viewer::-webkit-scrollbar-track { background:transparent; }
+        #editor::placeholder {
+            color: rgba(75, 85, 99, 0.95);
+        }
 
-        .viewer-notes-btn         { position:absolute; top:16px; right:16px; z-index:20; border-radius:999px; padding:6px 14px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); touch-action:manipulation; }
-    .viewer-notes-btn.no-notes { opacity:0.35; cursor:default; pointer-events:none; }
-    .viewer-notes-btn:not(.no-notes):hover { opacity:.85; }
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+        }
 
-        @media (max-width:768px) { body{padding:10px;} .app-shell{padding:12px 10px 8px;border-radius:26px;} .viewer{font-size:18px;} .bottom-bar{padding:6px 8px;} .btn{padding:7px 14px;} }
-        @media (max-width:480px) { body{padding:8px 6px;} .app-shell{border-radius:22px;} .viewer{font-size:17px;} .branding{max-width:62%;} .btn{padding:6px 12px;} }
+        .overlay.hidden {
+            display: none;
+        }
 
-        .hidden { display:none !important; }
+        .modal {
+            max-width: 420px;
+            width: 90%;
+            max-height: 80vh;
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
+            padding: 12px 14px 10px;
+            color: var(--text-soft);
+            font-size: 13px;
+            overflow-y: auto;
+        }
 
-        body.high-contrast-stage .viewer-card      { background:#020617; box-shadow:0 0 0 1px rgba(15,23,42,1); }
-        body.high-contrast-stage .viewer-viewport  { background:#020617; box-shadow:0 0 0 1px rgba(15,23,42,1); }
-        body.high-contrast-stage .viewer           { text-shadow:0 0 28px rgba(0,0,0,1),0 0 50px rgba(0,0,0,1); }
-        body.high-contrast-stage .viewer-halo-top,
-        body.high-contrast-stage .viewer-halo-bottom,
-        body.high-contrast-stage .viewer-subtle-layer { opacity:.4; }
-        body.high-contrast-stage .viewer-highlight { box-shadow:0 0 0 1px rgba(15,23,42,1),0 0 0 3px rgba(34,197,94,.7),0 0 55px rgba(34,197,94,.9); }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
 
-        .app-footer { margin-top:4px; font-size:10px; color:var(--text-muted); text-align:center; opacity:.85; }
+        .modal-title {
+            font-size: 13px;
+            font-weight: 550;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+        }
 
-    .about-tab { flex:1; padding:8px; background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid transparent; }
-    .about-tab.active { color:var(--accent-bright); border-bottom-color:var(--accent-bright); }
-    .about-panel p { margin:6px 0; font-size:12px; line-height:1.6; }
+        .modal-close {
+            border: none;
+            background: transparent;
+            color: var(--text-soft);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .modal-body p {
+            margin: 6px 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+            gap: 6px;
+        }
+
+        .modal-footer button {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-soft);
+            font-size: 11px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .form-field label {
+            font-size: 11px;
+            color: var(--text-soft);
+        }
+
+        .form-field input,
+        .form-field select {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-main);
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .modal-footer .btn-primary-small {
+            background: radial-gradient(circle at 0 0, #22c55e, #16a34a);
+            border-color: rgba(74, 222, 128, 0.7);
+            color: #020617;
+        }
+
+        .playlist-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .playlist-page-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid rgba(75, 85, 99, 0.8);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-soft);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .playlist-page-btn.active,
+        .playlist-page-btn:hover {
+            background: var(--accent-bright);
+            color: #020617;
+            border-color: var(--accent);
+        }
+
+        .playlist-edit-list,
+        .track-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 6px;
+            padding-right: 4px;
+        }
+
+        .playlist-edit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .playlist-edit-item:last-child {
+            border-bottom: none;
+        }
+
+        .playlist-edit-name {
+            flex: 1;
+            color: var(--text-main);
+        }
+
+        .playlist-edit-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .playlist-edit-controls button {
+            border-radius: 4px;
+            border: 1px solid rgba(75, 85, 99, 0.95);
+            background: rgba(15, 23, 42, 1);
+            color: var(--text-soft);
+            font-size: 10px;
+            padding: 2px 5px;
+            cursor: pointer;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .track-item {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+        }
+
+        .track-item:hover {
+            background: rgba(30, 64, 175, 0.25);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+
+        #editor::-webkit-scrollbar { width: 8px; }
+        #editor::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.9); border-radius: 999px; }
+        #editor::-webkit-scrollbar-track { background: transparent; }
+
+        .app-footer {
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            opacity: 0.85;
+            cursor: pointer;
+        }
+
+        .about-tab { flex:1; padding:8px; background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid transparent; }
+        .about-tab.active { color:var(--accent-bright); border-bottom-color:var(--accent-bright); }
+        .about-panel p { margin:6px 0; font-size:12px; line-height:1.6; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .app-shell { padding: 12px 10px 8px; border-radius: 26px; }
+            .playlist-edit-list, .track-list { max-height: 250px; }
+        }
     </style>
 </head>
 
-<body class="high-contrast-stage">
+<body>
     <div class="app-shell">
         <div class="app-shell-inner">
             <header class="header">
-                <div class="branding" id="infoMainTrigger">
-                    <div class="lf-logo"><div class="lf-logo-glyph"></div></div>
+                <div class="branding">
+                    <div class="lf-logo">
+                        <div class="lf-logo-glyph"></div>
+                    </div>
                     <div class="app-title-block">
                         <div class="app-title">LyricFlow</div>
-                        <div class="app-subtitle">Stage Mode</div>
+                        <div class="app-subtitle">Playlist Editor</div>
                     </div>
                 </div>
-                <a class="mode-toggle" href="playlist.html">
+                <div class="mode-toggle" id="modeToggle" onclick="goToStage()">
                     <div class="mode-dot"></div>
                     <span>
-                        <strong>Stage mode</strong>
-                        <small>· tap for playlist</small>
+                        <strong>Playlist mode</strong>
+                        <small>· tap for stage</small>
                     </span>
-                </a>
+                </div>
             </header>
 
             <div class="top-row">
                 <div class="status-line">
                     <div class="status-label">
                         <span class="status-pill-dot"></span>
-                        <span id="statusText">Ready</span>
-                        <span class="status-time">· <span id="timeDisplay">0:00</span></span>
+                        <span id="statusText">Playlist Editor</span>
                     </div>
                 </div>
-                <div class="header-right">
-                    <!-- Compound playlist nav pill: prev · Set 1 · 3/9 · next -->
-                    <div class="playlist-nav-pill" id="playlistNavPill">
-                        <button class="nav-arrow" id="prevSongBtn" title="Previous song">⏮</button>
-                        <div class="nav-divider"></div>
-                        <div class="nav-info">
-                            <span class="nav-set" id="playlistPillText">Set 1</span>
-                            <span class="nav-index" id="playlistPillIndex">1/1</span>
-                        </div>
-                        <div class="nav-divider"></div>
-                        <button class="nav-arrow" id="nextSongBtn" title="Next song">⏭</button>
-                    </div>
-                    <button class="pill-btn" id="stageInfoBtn">Stage tips</button>
-                </div>
+                <button class="pill-btn" id="editorInfoBtn">Editor tips</button>
             </div>
 
             <div class="main-stack">
-                <div class="viewer-card" id="viewerCard">
-                    <button class="viewer-notes-btn hidden" id="notesStagBtn">Notes</button>
-                    <div class="viewer-viewport">
-                        <div class="viewer-halo-top"></div>
-                        <div class="viewer-halo-bottom"></div>
-                        <div class="viewer-subtle-layer"></div>
-                        <div class="viewer-highlight"></div>
-                        <div class="viewer-text-rail">
-                            <div class="viewer-overlay-top"></div>
-                            <div class="viewer-overlay-bottom"></div>
-                            <div class="viewer-gradient-border-top"></div>
-                            <div class="viewer-gradient-border-bottom"></div>
-                            <div class="viewer" id="viewer">
-                                <div class="viewer-content" id="viewerContent">
-                                    <span class="viewer-content-line">Load a song from the Playlist page to begin.</span>
+                <div class="editor-card" id="editorCard">
+                    <div class="editor-inner">
+                        <div class="editor-header-bar">
+                            <div class="editor-title">Lyrics editor</div>
+                            <div class="editor-buttons-wrap">
+                                <div class="editor-buttons">
+                                    <button class="tiny-btn save" id="saveSongBtn">Save As</button>
+                                    <button class="tiny-btn" id="loadSongBtn">Load</button>
+                                    <button class="tiny-btn tiny-btn-danger icon-only" id="clearEditorBtn" title="Clear lyrics">🗑</button>
+                                </div>
+                                <div class="editor-buttons">
+                                    <button class="tiny-btn" id="editPlaylistBtn">Edit Playlist</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="viewer-countin hidden" id="viewerCountIn"></div>
+                        <div class="playlist-edit-details" id="playlistEditDetails" style="display: none;">
+                            <span id="currentSongTitle">-</span>
+                            <span id="currentPlaylist">-</span>
+                            <span id="currentSongIndex">-</span>
+                        </div>
+                        <div class="textarea-wrap">
+                            <button class="viewer-notes-btn hidden" id="notesBtn">Notes</button>
+                            <textarea id="editor"
+                                      placeholder="Paste or type your lyrics here.&#10;&#10;Each line will scroll as a separate line on stage.&#10;Use blank lines to separate verses, chorus and bridge.&#10;&#10;When you're ready:&#10;  • Save As → name and save to your playlist&#10;  • Load → pick a saved song to edit&#10;  • Tap Stage mode (top right) to perform"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bottom-bar" id="bottomBar">
-                <div class="transport-buttons">
-                    <button id="start"     class="btn btn-primary">Start</button>
-                    <button id="pause"     class="btn hidden">Pause</button>
-                    <button id="resetBtn"  class="btn btn-reset">Reset</button>
-                    <button id="settingsBtnBottom" class="btn">Settings</button>
-                </div>
-            </div>
-
-            <footer class="app-footer">© 2026 LyricFlow. Stage Mode</footer>
+            <footer class="app-footer">
+                © 2026 LyricFlow. All rights reserved.
+            </footer>
         </div>
     </div>
 
-    <!-- Logo / About modal -->
+    <!-- About modal -->
     <div class="overlay hidden" id="aboutOverlay">
         <div class="modal" style="max-width:400px;">
             <div class="modal-header">
                 <div class="modal-title">LyricFlow</div>
-                <button class="modal-close" onclick="closeModal('aboutOverlay')">✕</button>
+                <button class="modal-close" onclick="this.closest('.overlay').classList.add('hidden')">✕</button>
             </div>
             <div class="modal-body" style="padding:0;">
                 <div style="display:flex; border-bottom:1px solid rgba(55,65,81,.6); margin-bottom:10px;">
@@ -320,7 +680,7 @@
                 <div id="contact-tab" class="about-panel hidden" style="padding:0 4px;">
                     <p style="color:var(--accent-bright); font-weight:600;">Get in touch</p>
                     <p>Have a feature request, bug report or just want to say hello?</p>
-                    <p>📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb838e878784ab87929982888d87849cc58a9b9b">[email&#160;protected]</a></p>
+                    <p>📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="49212c2525260925303b202a2f25263e67283939">[email&#160;protected]</a></p>
                     <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">We read every message and try to respond within a few days.</p>
                 </div>
                 <div id="donate-tab" class="about-panel hidden" style="padding:0 4px;">
@@ -331,642 +691,742 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('aboutOverlay')">Close</button>
+                <button onclick="this.closest('.overlay').classList.add('hidden')">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- Notes modal (read-only on stage) -->
-    <div class="overlay hidden" id="notesStageOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title" id="notesStageSongTitle">Notes</div>
-                <button class="modal-close" onclick="closeModal('notesStageOverlay')">✕</button>
-            </div>
-            <div class="modal-body">
-                <pre id="notesStageContent" style="margin:0; white-space:pre-wrap; word-wrap:break-word; font-family:system-ui,-apple-system,sans-serif; font-size:13px; line-height:1.7; color:var(--text-main);"></pre>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal('notesStageOverlay')">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stage info modal -->
-    <div class="overlay hidden" id="stageInfoOverlay">
+    <!-- Edit info -->
+    <div class="overlay hidden" id="editInfoOverlay">
         <div class="modal" style="max-width:420px;">
             <div class="modal-header">
-                <div class="modal-title">How to use Stage Mode</div>
-                <button class="modal-close" onclick="closeModal('stageInfoOverlay')">✕</button>
+                <div class="modal-title">How to use the Editor</div>
+                <button class="modal-close" data-close-edit-info>✕</button>
             </div>
             <div class="modal-body" style="font-size:12px; line-height:1.7;">
-                <p style="color:var(--accent-bright); font-weight:600; margin-bottom:2px;">Getting started</p>
-                <p>• Go to Playlist (top right) to add or load your songs first.</p>
-                <p>• Once loaded, your lyrics appear here ready to scroll.</p>
-                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Playback</p>
-                <p>• Tap <strong>Start</strong> to begin scrolling. Tap <strong>Pause</strong> to stop mid-song.</p>
-                <p>• Tap <strong>Reset</strong> to snap back to the first line instantly.</p>
-                <p>• On a keyboard: <strong>Space</strong> = Start / Pause, <strong>R</strong> = Reset.</p>
-                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Adjusting on the fly</p>
-                <p>• <strong>Drag</strong> the lyric window up or down at any time to reposition.</p>
-                <p>• Dragging while playing pauses scroll, then resumes when you release.</p>
-                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Settings</p>
-                <p>• Use <strong>Settings</strong> to adjust scroll speed, font size and line spacing.</p>
-                <p>• Tap <strong>Save to song</strong> in Settings to remember these values per song.</p>
-                <p>• Enable <strong>4-beat count-in</strong> for a 4-second countdown overlay before scrolling starts.</p>
-                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Navigation</p>
-                <p>• Use <strong>⏮ ⏭</strong> buttons to jump between songs in your playlist.</p>
-                <p>• The <strong>Notes</strong> button shows chords or cues saved for the current song.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin-bottom:2px;">Adding lyrics</p>
+                <p>• Paste or type your lyrics into the editor below.</p>
+                <p>• Each line becomes one scrolling line on stage — keep them short enough to read at a glance.</p>
+                <p>• Use blank lines to create breathing space between verse, chorus and bridge.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Saving songs</p>
+                <p>• Tap <strong>Save As</strong> to name your song and add it to a playlist. This always creates a new song.</p>
+                <p>• Once a song is loaded, the button changes to <strong>Save</strong> and overwrites it directly.</p>
+                <p>• To duplicate a song, change its name before saving.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Loading & editing</p>
+                <p>• Tap <strong>Load</strong> to pick a saved song. It loads into the editor and onto the stage simultaneously.</p>
+                <p>• Edits you make are reflected live on stage — no need to reload.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Notes & settings</p>
+                <p>• The <strong>Notes</strong> button (top-right of editor) lets you store chords, cues or triggers with the song.</p>
+                <p>• In <strong>Edit Playlist</strong>, tap ℹ next to any song to set its scroll speed, font size and line height individually.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Playlists</p>
+                <p>• Songs are grouped by playlist name. Create a new playlist by typing a new name when saving.</p>
+                <p>• Use <strong>Edit Playlist</strong> to reorder or delete songs, rename songs, or rename the playlist.</p>
+                <p>• Use <strong>Export</strong> to save a backup file. Use <strong>Import</strong> to restore it on any device.</p>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('stageInfoOverlay')">Got it</button>
+                <button data-close-edit-info>Got it</button>
             </div>
         </div>
     </div>
 
-    <!-- Settings modal -->
-    <div class="overlay hidden" id="settingsOverlay">
+    <!-- Save / Save As -->
+    <div class="overlay hidden" id="saveOverlay">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">Settings</div>
-                <button class="modal-close" onclick="closeModal('settingsOverlay')">✕</button>
+                <div class="modal-title" id="saveModalTitle">Save Song</div>
+                <button class="modal-close" data-close-save>✕</button>
             </div>
             <div class="modal-body">
                 <div class="form-field">
-                    <label for="scrollSpeedInput">Scroll speed <span id="scrollSpeedValue" style="color:var(--accent-bright);">0.40</span></label>
-                    <input id="scrollSpeedInput" type="range" min="0.05" max="2" step="0.01" value="0.4" style="width:100%;height:28px;cursor:pointer;accent-color:#22c55e;touch-action:none;">
+                    <label for="songTitleInput">Song title</label>
+                    <input id="songTitleInput" type="text" placeholder="e.g. Whole Lotta Love" />
                 </div>
                 <div class="form-field">
-                    <label for="fontSizeInput">Font size <span id="fontSizeValue" style="color:var(--accent-bright);">20px</span></label>
-                    <input id="fontSizeInput" type="range" min="12" max="72" step="1" value="20" style="width:100%;height:28px;cursor:pointer;accent-color:#22c55e;touch-action:none;">
+                    <label for="playlistInput">Playlist</label>
+                    <input id="playlistInput" type="text" value="Set 1" />
+                </div>
+                <p id="saveModalHint" style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0 0;"></p>
+            </div>
+            <div class="modal-footer">
+                <button data-close-save>Cancel</button>
+                <button class="btn-primary-small" id="saveConfirmBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load song -->
+    <div class="overlay hidden" id="loadOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Load song</div>
+                <button class="modal-close" data-close-load>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="playlistSelect">Playlist</label>
+                    <select id="playlistSelect"></select>
+                </div>
+                <div class="track-list" id="loadSongList"></div>
+                <div class="playlist-pagination" id="loadPagination"></div>
+            </div>
+            <div class="modal-footer">
+                <button data-close-load>Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit playlist -->
+    <div class="overlay hidden" id="editPlaylistOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Edit playlist</div>
+                <button class="modal-close" data-close-edit-playlist>✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="editPlaylistSelect">Playlist</label>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button class="tiny-btn" id="renamePlaylistBtn" title="Rename playlist">Rename</button>
+                        <select id="editPlaylistSelect" style="flex:1;"></select>
+                    </div>
+                </div>
+                <div class="playlist-edit-list" id="playlistEditList"></div>
+                <div class="playlist-pagination" id="editPagination"></div>
+            </div>
+            <div class="modal-footer" style="justify-content:space-between;">
+                <div style="display:flex;gap:6px;">
+                    <button id="exportBtn">Export</button>
+                    <label style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:11px; padding:4px 10px; cursor:pointer; display:inline-flex; align-items:center;">
+                        Import
+                        <input type="file" id="importFile" accept=".json" style="display:none;">
+                    </label>
+                </div>
+                <button data-close-edit-playlist>Close</button>
+            </div>
+    <div class="overlay hidden" id="songSettingsOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="songSettingsTitle">Song Settings</div>
+                <button class="modal-close" onclick="closeSongSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Song name</label>
+                    <input id="songNameInput" type="text" placeholder="Song name" style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:6px 10px; font-size:13px; outline:none; width:100%;" />
+                </div>
+                <div class="form-field" style="margin-top:6px;">
+                    <label>Scroll speed</label>
+                    <input id="songSpeedInput" type="range" min="0.05" max="2" step="0.01" value="0.8">
+                    <span id="songSpeedValue">0.8</span>
                 </div>
                 <div class="form-field">
-                    <label for="lineHeightInput">Line height <span id="lineHeightValue" style="color:var(--accent-bright);">1.90</span></label>
-                    <input id="lineHeightInput" type="range" min="1.0" max="4.0" step="0.05" value="1.9" style="width:100%;height:28px;cursor:pointer;accent-color:#22c55e;touch-action:none;">
+                    <label>Font size</label>
+                    <input id="songFontInput" type="range" min="12" max="72" step="1" value="20">
+                    <span id="songFontValue">20px</span>
                 </div>
-                <div class="form-field" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(55,65,81,.6); flex-direction:row; align-items:center; justify-content:space-between;">
-                    <label for="countInToggle" style="cursor:pointer;">4-beat count-in <span style="font-size:10px; color:var(--text-muted);">(4 sec overlay)</span></label>
-                    <input id="countInToggle" type="checkbox" style="width:18px;height:18px;cursor:pointer;accent-color:#22c55e;">
+                <div class="form-field">
+                    <label>Line height</label>
+                    <input id="songLineInput" type="range" min="1.0" max="4.0" step="0.05" value="1.9">
+                    <span id="songLineValue">1.9</span>
+                </div>
+                <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(55,65,81,.6);">
+                    <label style="font-size:11px; color:var(--text-soft); display:block; margin-bottom:4px;">Notes</label>
+                    <textarea id="songNotesInput" style="width:100%; height:100px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;" placeholder="Chords, cues, triggers..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('settingsOverlay')">Close</button>
-                <button class="btn-primary-small" id="saveSettingsToSongBtn">Save to song</button>
+                <button onclick="closeSongSettings()">Cancel</button>
+                <button class="btn-primary-small" id="saveSongSettingsBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="overlay hidden" id="notesOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Song Notes</div>
+                <button class="modal-close" data-close-notes>✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:11px; color:var(--text-muted); margin:0 0 6px 0;">Chords, triggers, cues — saved with this song.</p>
+                <textarea id="notesEditor"
+                    style="width:100%; height:160px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;"
+                    placeholder="e.g. Verse 1: Capo 3, G D Em C&#10;Chorus: watch for cue light&#10;Bridge: half tempo"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button data-close-notes>Cancel</button>
+                <button class="btn-primary-small" id="saveNotesBtn">Save Notes</button>
             </div>
         </div>
     </div>
 
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-    const notesStagBtn        = document.getElementById('notesStagBtn');
-    const notesStageOverlay   = document.getElementById('notesStageOverlay');
-    const notesStageSongTitle = document.getElementById('notesStageSongTitle');
-    const notesStageContent   = document.getElementById('notesStageContent');
-    const viewerContent  = document.getElementById('viewerContent');
-    const viewerCard     = document.getElementById('viewerCard');
-    const statusText     = document.getElementById('statusText');
-    const timeDisplay    = document.getElementById('timeDisplay');
-    const startBtn       = document.getElementById('start');
-    const pauseBtn       = document.getElementById('pause');
-    const resetBtn       = document.getElementById('resetBtn');
-    const prevSongBtn    = document.getElementById('prevSongBtn');
-    const nextSongBtn    = document.getElementById('nextSongBtn');
-    const playlistPillText  = document.getElementById('playlistPillText');
-    const playlistPillIndex = document.getElementById('playlistPillIndex');
+        const qs = id => document.getElementById(id);
 
-    const scrollSpeedInput  = document.getElementById('scrollSpeedInput');
-    const scrollSpeedValue  = document.getElementById('scrollSpeedValue');
-    const fontSizeInput     = document.getElementById('fontSizeInput');
-    const fontSizeValue     = document.getElementById('fontSizeValue');
-    const lineHeightInput   = document.getElementById('lineHeightInput');
-    const lineHeightValue   = document.getElementById('lineHeightValue');
+        const editor = qs('editor');
+        const statusText = qs('statusText');
+        const editorInfoBtn = qs('editorInfoBtn');
+        const editInfoOverlay = qs('editInfoOverlay');
+        const saveSongBtn = qs('saveSongBtn');
+        const loadSongBtn = qs('loadSongBtn');
+        const editPlaylistBtn = qs('editPlaylistBtn');
+        const notesBtn        = qs('notesBtn');
+        const notesOverlay    = qs('notesOverlay');
+        const notesEditor     = qs('notesEditor');
+        const saveNotesBtn    = qs('saveNotesBtn');
+        const clearEditorBtn = qs('clearEditorBtn');
+        const saveOverlay = qs('saveOverlay');
+        const songTitleInput = qs('songTitleInput');
+        const playlistInput = qs('playlistInput');
+        const saveConfirmBtn = qs('saveConfirmBtn');
+        const loadOverlay = qs('loadOverlay');
+        const playlistSelect = qs('playlistSelect');
+        const loadSongList = qs('loadSongList');
+        const loadPagination = qs('loadPagination');
+        const editPlaylistOverlay = qs('editPlaylistOverlay');
+        const editPlaylistSelect = qs('editPlaylistSelect');
+        const playlistEditList = qs('playlistEditList');
+        const editPagination = qs('editPagination');
+        const playlistEditDetails = qs('playlistEditDetails');
 
-    // ─── STATE ────────────────────────────────────────────────────────────
-    const STORAGE_KEY = 'lyricflow_v3_songs';
+        let savedSongs = [];
+        let currentSong = null;
+        let hasUnsavedChanges = false;
+        const SONGS_PER_PAGE = 10;
+        let currentLoadPage = 0;
+        let currentEditPage = 0;
 
-    let isPlaying   = false;
-    let rafId       = null;
-    let lastFrameTs = null;   // for delta-time scroll (bulletproof)
-    let elapsedMs   = 0;
+        function markDirty() {
+            if (!currentSong) return;
+            hasUnsavedChanges = true;
+            statusText.textContent = `${currentSong.name} · unsaved changes`;
+            if (saveSongBtn) saveSongBtn.textContent = 'Save';
+        }
 
-    let baseContentY         = 0;
-    let canonicalBaseContentY= 0;
-    let songStartBaseContentY= 0;
+        function markClean(name) {
+            hasUnsavedChanges = false;
+            statusText.textContent = `Saved: ${name}`;
+            if (saveSongBtn) saveSongBtn.textContent = 'Save';
+        }
 
-    let isDragging       = false;
-    let dragStartY       = 0;
-    let dragStartBaseY   = 0;
-    let wasPlayingBeforeDrag = false;
-
-    let songs            = [];
-    let currentPlaylist  = 'Set 1';
-    let currentSongIndex = 0;
-    let currentSongId    = localStorage.getItem('lyricflow_currentSongId') || null;
-
-    let scrollSpeed = 0.4;
-    let fontSize    = 20;
-    let lineHeight  = 1.9;
-    let countInEnabled = false;
-
-    // ─── LOAD SETTINGS ───────────────────────────────────────────────────
-    const saved = JSON.parse(localStorage.getItem('lyricflow_stage_settings') || '{}');
-    scrollSpeed      = saved.scrollSpeed      || 0.4;
-    fontSize         = saved.fontSize         || 20;
-    lineHeight       = saved.lineHeight       || 1.9;
-    countInEnabled   = saved.countInEnabled   || false;
-
-    const countInToggle = document.getElementById('countInToggle');
-    scrollSpeedInput.value = scrollSpeed;
-    scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
-    fontSizeInput.value  = fontSize;
-    fontSizeValue.textContent = fontSize + 'px';
-    lineHeightInput.value = lineHeight;
-    lineHeightValue.textContent = lineHeight.toFixed(2);
-    if (countInToggle) countInToggle.checked = countInEnabled;
-    viewer.style.fontSize   = fontSize + 'px';
-    viewer.style.lineHeight = lineHeight;
-
-    function saveSettings() {
-        localStorage.setItem('lyricflow_stage_settings', JSON.stringify({ scrollSpeed, fontSize, lineHeight, countInEnabled }));
-    }
-
-    // ─── SONG DATA ───────────────────────────────────────────────────────
-    function loadSongsFromStorage() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            songs = raw ? JSON.parse(raw) : [];
-            if (!Array.isArray(songs)) songs = [];
-        } catch(e) { songs = []; }
-    }
-
-    // ─── CROSS-TAB SONG TRIGGER ──────────────────────────────────────────
-    // BroadcastChannel fires instantly in the same browser, same origin.
-    // The storage-event fallback handles older browsers / same-tab edge cases.
-    let bc = null;
-    try {
-        bc = new BroadcastChannel('lyricflow_stage');
-        bc.onmessage = e => {
-            if (!e.data) return;
-            if (e.data.type === 'loadSong') {
-                loadSongsFromStorage();
-                loadSongIntoUI(e.data.songId);
+        function updateSaveButton() {
+            if (!saveSongBtn) return;
+            if (currentSong) {
+                saveSongBtn.textContent = hasUnsavedChanges ? 'Save' : 'Save';
+                saveSongBtn.className = 'tiny-btn save';
+            } else {
+                saveSongBtn.textContent = 'Save As';
+                saveSongBtn.className = 'tiny-btn save';
             }
-            if (e.data.type === 'showWelcome') {
-                currentSongId = null;
-                showWelcome();
+        }
+
+        // ─── STORAGE KEY matches stage.html ───────────────────────────────
+        const STORAGE_KEY = 'lyricflow_v3_songs';
+
+        // BroadcastChannel for same-origin cross-tab song loading
+        let bc = null;
+        try { bc = new BroadcastChannel('lyricflow_stage'); } catch(e) {}
+
+        function storageAvailable() {
+            try {
+                localStorage.setItem('__test__', '1');
+                localStorage.removeItem('__test__');
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function saveSongsToStorage() {
+            if (!storageAvailable()) return;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSongs));
+        }
+
+        function loadSongsFromStorage() {
+            if (!storageAvailable()) { savedSongs = []; return; }
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) { savedSongs = []; return; }
+                const parsed = JSON.parse(raw);
+                if (!Array.isArray(parsed)) { savedSongs = []; return; }
+                // ─── Field names match stage.html schema: name / content ───
+                savedSongs = parsed.map(s => ({
+                    id:          s.id || ('song_' + Math.random().toString(36).slice(2)),
+                    name:        s.name || s.title || 'Untitled',
+                    playlist:    s.playlist || 'Set 1',
+                    content:     s.content || s.lyrics || '',
+                    notes:       s.notes || '',
+                    speedPercent: typeof s.speedPercent === 'number' ? s.speedPercent : 50,
+                    fontSize:    typeof s.fontSize    === 'number' ? s.fontSize    : 18,
+                    lineHeight:  typeof s.lineHeight  === 'number' ? s.lineHeight  : 1.9,
+                    bpm:         typeof s.bpm         === 'number' ? s.bpm         : null,
+                    linesPerMeasure: typeof s.linesPerMeasure === 'number' ? s.linesPerMeasure : 4,
+                    createdAt:   s.createdAt || new Date().toISOString()
+                }));
+            } catch (e) { savedSongs = []; }
+        }
+
+        // Pagination helpers
+        function getPagesForPlaylist(playlistName) {
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            return Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+        }
+
+        function buildPagination(container, currentPage, totalPages, onPageClick) {
+            if (!container) return;
+            if (totalPages <= 1) { container.style.display = 'none'; return; }
+            container.style.display = 'flex';
+            container.innerHTML = '';
+            for (let i = 0; i < totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'playlist-page-btn' + (i === currentPage ? ' active' : '');
+                btn.textContent = i + 1;
+                btn.onclick = () => onPageClick(i);
+                container.appendChild(btn);
             }
-            if (e.data.type === 'liveEdit' && e.data.songId === currentSongId) {
-                // update lyrics live without resetting scroll position
-                const wasPlaying = isPlaying;
-                const savedY = baseContentY;
-                viewerContent.innerHTML = (e.data.content || '').split('\n')
-                    .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
-                    .join('');
-                baseContentY = savedY;
-                viewerContent.style.transform = `translateY(${savedY}px)`;
+        }
+
+        function buildPlaylistSelect() {
+            const playlists = Array.from(new Set(savedSongs.map(s => s.playlist || 'Set 1'))).sort();
+            [playlistSelect, editPlaylistSelect].forEach(sel => {
+                if (!sel) return;
+                sel.innerHTML = playlists.length
+                    ? playlists.map(p => `<option value="${p}">${p}</option>`).join('')
+                    : '<option value="Set 1">Set 1</option>';
+            });
+        }
+
+        function buildLoadSongList() {
+            const playlistName = playlistSelect ? playlistSelect.value : 'Set 1';
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+            currentLoadPage = Math.min(currentLoadPage, totalPages - 1);
+            const startIdx = currentLoadPage * SONGS_PER_PAGE;
+            const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
+
+            loadSongList.innerHTML = pageSongs.length
+                ? pageSongs.map((s, i) =>
+                    `<div class="track-item" data-id="${s.id}">
+                        <span>${startIdx + i + 1}. ${s.name}</span>
+                    </div>`
+                ).join('')
+                : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+
+            loadSongList.querySelectorAll('.track-item').forEach(item => {
+                item.onclick = () => loadSongIntoEditor(item.dataset.id);
+            });
+
+            buildPagination(loadPagination, currentLoadPage, totalPages, page => {
+                currentLoadPage = page;
+                buildLoadSongList();
+            });
+        }
+
+        function buildPlaylistEditList() {
+            const playlistName = editPlaylistSelect ? editPlaylistSelect.value : 'Set 1';
+            const songs = savedSongs.filter(s => s.playlist === playlistName);
+            const totalPages = Math.max(1, Math.ceil(songs.length / SONGS_PER_PAGE));
+            currentEditPage = Math.min(currentEditPage, totalPages - 1);
+            const startIdx = currentEditPage * SONGS_PER_PAGE;
+            const pageSongs = songs.slice(startIdx, startIdx + SONGS_PER_PAGE);
+
+            playlistEditList.innerHTML = pageSongs.length
+                ? pageSongs.map((s, i) => {
+                    const globalIdx = savedSongs.findIndex(x => x.id === s.id);
+                    return `
+                        <div class="playlist-edit-item">
+                            <span class="playlist-edit-name">${startIdx + i + 1}. ${s.name}</span>
+                            <div class="playlist-edit-controls">
+                                <button data-info="${s.id}" title="Song settings">ℹ</button>
+                                <button data-move="${globalIdx}" data-dir="-1" title="Move up">↑</button>
+                                <button data-move="${globalIdx}" data-dir="1"  title="Move down">↓</button>
+                                <button data-delete="${s.id}" title="Delete">✕</button>
+                            </div>
+                        </div>`;
+                }).join('')
+                : '<p style="color: var(--text-muted); text-align: center; padding: 40px 20px; font-style: italic;">No songs in this playlist</p>';
+
+            // Attach move / delete listeners safely (no inline onclick globals)
+            playlistEditList.querySelectorAll('[data-move]').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.dataset.move, 10);
+                    const dir = parseInt(btn.dataset.dir, 10);
+                    moveSong(idx, dir);
+                };
+            });
+            playlistEditList.querySelectorAll('[data-delete]').forEach(btn => {
+                btn.onclick = () => deleteSong(btn.dataset.delete);
+            });
+            playlistEditList.querySelectorAll('[data-info]').forEach(btn => {
+                btn.onclick = () => openSongSettings(btn.dataset.info);
+            });
+
+            buildPagination(editPagination, currentEditPage, totalPages, page => {
+                currentEditPage = page;
+                buildPlaylistEditList();
+            });
+        }
+
+        let songSettingsId = null;
+        const songSettingsOverlay = qs('songSettingsOverlay');
+        const songSettingsTitle   = qs('songSettingsTitle');
+        const songNameInput       = qs('songNameInput');
+        const songSpeedInput      = qs('songSpeedInput');
+        const songSpeedValue      = qs('songSpeedValue');
+        const songFontInput       = qs('songFontInput');
+        const songFontValue       = qs('songFontValue');
+        const songLineInput       = qs('songLineInput');
+        const songLineValue       = qs('songLineValue');
+        const songNotesInput      = qs('songNotesInput');
+        const saveSongSettingsBtn = qs('saveSongSettingsBtn');
+        const renamePlaylistBtn   = qs('renamePlaylistBtn');
+
+        // Rename playlist
+        if (renamePlaylistBtn) renamePlaylistBtn.onclick = () => {
+            const current = editPlaylistSelect ? editPlaylistSelect.value : '';
+            if (!current) return;
+            const newName = prompt(`Rename playlist "${current}" to:`, current);
+            if (!newName || !newName.trim() || newName.trim() === current) return;
+            const trimmed = newName.trim();
+            savedSongs = savedSongs.map(s => s.playlist === current ? { ...s, playlist: trimmed } : s);
+            saveSongsToStorage();
+            buildPlaylistSelect();
+            // re-select renamed playlist
+            if (editPlaylistSelect) {
+                editPlaylistSelect.value = trimmed;
+                buildPlaylistEditList();
             }
-            if (e.data.type === 'liveDraft') {
-                currentSongId = null;
-                statusText.textContent = 'Unsaved song';
-                const savedY = baseContentY;
-                viewerContent.innerHTML = (e.data.content || '').split('\n')
-                    .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
-                    .join('');
-                baseContentY = savedY;
-                viewerContent.style.transform = `translateY(${savedY}px)`;
+            statusText.textContent = `Renamed: ${current} → ${trimmed}`;
+        };
+
+        function openSongSettings(songId) {
+            const song = savedSongs.find(s => s.id === songId);
+            if (!song) return;
+            songSettingsId = songId;
+            songSettingsTitle.textContent = song.name;
+            if (songNameInput) songNameInput.value = song.name;
+            songSpeedInput.value = song.scrollSpeed || 0.8;
+            songSpeedValue.textContent = parseFloat(song.scrollSpeed || 0.8).toFixed(2);
+            songFontInput.value  = song.fontSize    || 20;
+            songFontValue.textContent  = (song.fontSize || 20) + 'px';
+            songLineInput.value  = song.lineHeight  || 1.9;
+            songLineValue.textContent  = parseFloat(song.lineHeight || 1.9).toFixed(2);
+            songNotesInput.value = song.notes || '';
+            songSettingsOverlay.classList.remove('hidden');
+        }
+
+        function closeSongSettings() {
+            songSettingsOverlay.classList.add('hidden');
+        }
+
+        songSpeedInput.oninput = () => songSpeedValue.textContent = parseFloat(songSpeedInput.value).toFixed(2);
+        songFontInput.oninput  = () => songFontValue.textContent  = songFontInput.value + 'px';
+        songLineInput.oninput  = () => songLineValue.textContent  = parseFloat(songLineInput.value).toFixed(2);
+
+        if (saveSongSettingsBtn) saveSongSettingsBtn.onclick = () => {
+            const idx = savedSongs.findIndex(s => s.id === songSettingsId);
+            if (idx === -1) return;
+            const newName = songNameInput ? songNameInput.value.trim() : '';
+            if (newName) savedSongs[idx].name = newName;
+            savedSongs[idx].scrollSpeed = parseFloat(songSpeedInput.value);
+            savedSongs[idx].fontSize    = parseInt(songFontInput.value);
+            savedSongs[idx].lineHeight  = parseFloat(songLineInput.value);
+            savedSongs[idx].notes       = songNotesInput.value;
+            if (currentSong && currentSong.id === songSettingsId) {
+                currentSong = savedSongs[idx];
+                editor.value = currentSong.content || '';
+                updatePlaylistDetails();
+            }
+            saveSongsToStorage();
+            buildPlaylistEditList();
+            closeSongSettings();
+            statusText.textContent = `Saved: ${savedSongs[idx].name}`;
+        };
+
+        if (songSettingsOverlay) songSettingsOverlay.onclick = e => { if (e.target === songSettingsOverlay) closeSongSettings(); };
+
+        // Song operations
+        function loadSongIntoEditor(songId) {
+            const song = savedSongs.find(s => s.id === songId);
+            if (!song) return;
+
+            currentSong = song;
+            editor.value = song.content || '';
+            hasUnsavedChanges = false;
+            updatePlaylistDetails();
+            updateSaveButton();
+
+            // Show notes button now that a song is loaded
+            if (notesBtn) notesBtn.classList.remove('hidden');
+            updateNotesBtn();
+
+            // Signal stage via localStorage + BroadcastChannel
+            localStorage.setItem('lyricflow_currentSongId', song.id);
+            if (bc) bc.postMessage({ type: 'loadSong', songId: song.id });
+
+            loadOverlay.classList.add('hidden');
+            statusText.textContent = `Loaded: ${song.name}`;
+        }
+
+        // Show/hide notes button based on editor content
+        function updateNotesBtn() {
+            if (!notesBtn) return;
+            const hasContent = editor && editor.value.trim().length > 0;
+            notesBtn.classList.toggle('hidden', !hasContent);
+        }
+
+        // Mark dirty whenever editor text changes on a known song
+        if (editor) editor.addEventListener('input', () => {
+            if (currentSong) {
+                markDirty();
+                // sync live to stage
+                if (bc) bc.postMessage({ type: 'liveEdit', content: editor.value, songId: currentSong.id });
+            } else {
+                // draft — persist and sync live
+                localStorage.setItem('lyricflow_draft', editor.value);
+                if (bc) bc.postMessage({ type: 'liveDraft', content: editor.value });
+            }
+            updateNotesBtn();
+        });
+
+        function moveSong(idx, direction) {
+            if (idx < 0 || idx >= savedSongs.length) return;
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= savedSongs.length) return;
+            [savedSongs[idx], savedSongs[targetIdx]] = [savedSongs[targetIdx], savedSongs[idx]];
+            saveSongsToStorage();
+            buildPlaylistEditList();
+        }
+
+        function deleteSong(songId) {
+            if (!confirm('Delete this song permanently?')) return;
+            savedSongs = savedSongs.filter(s => s.id !== songId);
+            if (currentSong && currentSong.id === songId) {
+                currentSong = null;
+                editor.value = '';
+                playlistEditDetails.style.display = 'none';
+            }
+            saveSongsToStorage();
+            buildPlaylistEditList();
+            buildPlaylistSelect();
+            buildLoadSongList();
+        }
+
+        function updatePlaylistDetails() {
+            if (!currentSong || !playlistEditDetails) return;
+            const globalIdx = savedSongs.findIndex(s => s.id === currentSong.id);
+            playlistEditDetails.style.display = 'grid';
+            qs('currentSongTitle').textContent  = currentSong.name;
+            qs('currentPlaylist').textContent   = currentSong.playlist;
+            qs('currentSongIndex').textContent  = `${globalIdx + 1}/${savedSongs.length}`;
+        }
+
+        // Save / Save As
+        if (saveConfirmBtn) saveConfirmBtn.onclick = () => {
+            const name = (songTitleInput.value || '').trim() || 'Untitled';
+            const playlistName = (playlistInput.value || '').trim() || 'Set 1';
+            const content = editor.value.trim();
+            if (!content) { alert('Please add some lyrics first'); return; }
+
+            if (currentSong && !saveOverlay.dataset.forceNew) {
+                // ── SAVE — overwrite existing ─────────────────────────────
+                const idx = savedSongs.findIndex(s => s.id === currentSong.id);
+                if (idx !== -1) {
+                    savedSongs[idx].name     = name;
+                    savedSongs[idx].playlist = playlistName;
+                    savedSongs[idx].content  = content;
+                    currentSong = savedSongs[idx];
+                }
+            } else {
+                // ── SAVE AS — create new ──────────────────────────────────
+                const newSong = {
+                    id: 'song_' + Math.random().toString(36).slice(2),
+                    name, playlist: playlistName, content,
+                    notes: '', speedPercent: 50, fontSize: 18, lineHeight: 1.9,
+                    bpm: null, linesPerMeasure: 4,
+                    createdAt: new Date().toISOString()
+                };
+                savedSongs.push(newSong);
+                currentSong = newSong;
+            }
+
+            saveSongsToStorage();
+            updatePlaylistDetails();
+            saveOverlay.classList.add('hidden');
+            saveOverlay.dataset.forceNew = '';
+            markClean(name);
+            updateSaveButton();
+        };
+
+        let draftNotes = '';
+
+        if (notesBtn) notesBtn.onclick = () => {
+            notesEditor.value = currentSong ? (currentSong.notes || '') : draftNotes;
+            notesOverlay.classList.remove('hidden');
+        };
+
+        if (saveNotesBtn) saveNotesBtn.onclick = () => {
+            if (currentSong) {
+                const idx = savedSongs.findIndex(s => s.id === currentSong.id);
+                if (idx !== -1) {
+                    savedSongs[idx].notes = notesEditor.value;
+                    currentSong = savedSongs[idx];
+                    saveSongsToStorage();
+                }
+                statusText.textContent = `Notes saved: ${currentSong.name}`;
+            } else {
+                // draft — hold in memory
+                draftNotes = notesEditor.value;
+                statusText.textContent = 'Notes saved to draft';
+            }
+            // show/hide button based on content
+            if (notesBtn) notesBtn.classList.toggle('hidden', !(currentSong ? currentSong.notes : draftNotes).trim());
+            notesOverlay.classList.add('hidden');
+        };
+
+        // Button wiring
+        if (editorInfoBtn) editorInfoBtn.onclick = () => editInfoOverlay.classList.remove('hidden');
+        if (saveSongBtn)   saveSongBtn.onclick   = () => {
+            const isSaved = !!currentSong;
+            qs('saveModalTitle').textContent = isSaved ? 'Save Song' : 'Save As New Song';
+            qs('saveModalHint').innerHTML    = isSaved
+                ? `Overwrites ${currentSong.name} · rename to save as new`
+                : 'Creates a new song';
+            saveConfirmBtn.textContent       = isSaved ? 'Save' : 'Save New';
+            saveOverlay.dataset.forceNew     = isSaved ? '' : 'yes';
+            songTitleInput.value = currentSong ? currentSong.name : '';
+            playlistInput.value  = currentSong ? currentSong.playlist : 'Set 1';
+            saveOverlay.classList.remove('hidden');
+        };
+        if (loadSongBtn)      loadSongBtn.onclick      = () => {
+            buildPlaylistSelect();
+            currentLoadPage = 0;
+            buildLoadSongList();
+            loadOverlay.classList.remove('hidden');
+        };
+        if (editPlaylistBtn)  editPlaylistBtn.onclick  = () => {
+            buildPlaylistSelect();
+            currentEditPage = 0;
+            buildPlaylistEditList();
+            editPlaylistOverlay.classList.remove('hidden');
+        };
+        if (clearEditorBtn)   clearEditorBtn.onclick   = () => {
+            if (confirm('Clear all lyrics?')) {
+                editor.value = '';
+                currentSong = null;
+                hasUnsavedChanges = false;
+                draftNotes = '';
+                if (notesBtn) notesBtn.classList.add('hidden');
+                updateNotesBtn();
+                playlistEditDetails.style.display = 'none';
+                statusText.textContent = 'Cleared';
+                updateSaveButton();
+                // Signal index.html to return to welcome screen
+                localStorage.removeItem('lyricflow_currentSongId');
+                localStorage.removeItem('lyricflow_draft');
+                if (bc) bc.postMessage({ type: 'showWelcome' });
             }
         };
-    } catch(err) {}
 
-    // storage event fires only in OTHER tabs (not the tab that wrote)
-    window.addEventListener('storage', e => {
-        if (e.key === STORAGE_KEY) {
-            loadSongsFromStorage();
-        }
-        if (e.key === 'lyricflow_currentSongId' && e.newValue) {
-            loadSongsFromStorage();
-            loadSongIntoUI(e.newValue);
-        }
-    });
+        // Modal close handlers
+        document.querySelectorAll(
+            '[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist],[data-close-notes]'
+        ).forEach(btn => {
+            btn.onclick = () => btn.closest('.overlay').classList.add('hidden');
+        });
+        [editInfoOverlay, saveOverlay, loadOverlay, editPlaylistOverlay, notesOverlay].forEach(ov => {
+            if (ov) ov.onclick = e => { if (e.target === ov) ov.classList.add('hidden'); };
+        });
 
-    // Polling fallback – checks every 500 ms if currentSongId changed in another tab
-    let _lastPolledSongId = currentSongId;
-    setInterval(() => {
-        const latest = localStorage.getItem('lyricflow_currentSongId');
-        if (latest && latest !== _lastPolledSongId) {
-            _lastPolledSongId = latest;
-            currentSongId = latest;
-            loadSongsFromStorage();
-            loadSongIntoUI(latest);
-        } else if (!latest && _lastPolledSongId) {
-            _lastPolledSongId = null;
-            currentSongId = null;
-            showWelcome();
-        }
-    }, 500);
+        if (playlistSelect)     playlistSelect.onchange     = () => { currentLoadPage = 0; buildLoadSongList(); };
+        if (editPlaylistSelect) editPlaylistSelect.onchange = () => { currentEditPage = 0; buildPlaylistEditList(); };
 
-    // ─── SNAP FIRST LINE INTO GLOW ───────────────────────────────────────
-    function snapFirstLineIntoGlow() {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                const lines   = viewerContent.querySelectorAll('.viewer-content-line');
-                const glowBand = viewer.querySelector
-                    ? null
-                    : null;
-                const glow    = document.querySelector('.viewer-highlight');
-                if (!lines.length || !glow) return;
+        // About modal — logo click
+        const aboutOverlay = document.getElementById('aboutOverlay');
+        const brandingEl   = document.querySelector('.branding');
+        if (brandingEl && aboutOverlay) brandingEl.onclick = () => aboutOverlay.classList.remove('hidden');
 
-                baseContentY = 0;
-                viewerContent.style.transform = 'translateY(0px)';
-
-                const viewerRect  = viewer.getBoundingClientRect();
-                const glowRect    = glow.getBoundingClientRect();
-                const lineRect    = lines[0].getBoundingClientRect();
-
-                const glowCenter  = glowRect.top  + glowRect.height  / 2 - viewerRect.top;
-                const lineCenter  = lineRect.top  + lineRect.height  / 2 - viewerRect.top;
-                const delta       = glowCenter - lineCenter;
-
-                baseContentY          = delta;
-                canonicalBaseContentY = delta;
-                songStartBaseContentY = delta;
-
-                viewerContent.style.transform = `translateY(${baseContentY}px)`;
+        // Tab switching — scope to aboutOverlay to avoid conflicts
+        if (aboutOverlay) {
+            aboutOverlay.querySelectorAll('.about-tab').forEach(tab => {
+                tab.onclick = () => {
+                    aboutOverlay.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
+                    aboutOverlay.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
+                    tab.classList.add('active');
+                    aboutOverlay.querySelector('#' + tab.dataset.tab + '-tab').classList.remove('hidden');
+                };
             });
-        });
-    }
-
-    // ─── WELCOME TEXT ─────────────────────────────────────────────────────
-    const WELCOME_TEXT = `Welcome to LyricFlow.
-Load a song from the Playlist page to begin.
-
-Or paste lyrics in the editor and tap Stage mode —
-your draft will appear here ready to scroll.
-
-Use Settings to adjust speed, font size and line spacing.`;
-
-    function showWelcome() {
-        statusText.textContent = 'Ready';
-        notesStagBtn.classList.remove('hidden');
-        notesStagBtn.classList.add('no-notes');
-        viewerContent.innerHTML = WELCOME_TEXT.split('\n')
-            .map(line => `<span class="viewer-content-line" style="opacity:0.45;">${line || '\u00A0'}</span>`)
-            .join('');
-        snapFirstLineIntoGlow();
-    }
-
-    // ─── LOAD SONG INTO UI ───────────────────────────────────────────────
-    function loadSongIntoUI(songId) {
-        const song = songs.find(s => s.id === songId);
-        if (!song) return;
-
-        currentSongId = songId;
-        statusText.textContent = song.name || 'Song loaded';
-
-        // ── Apply per-song settings ───────────────────────────────────────
-        if (typeof song.speedPercent === 'number') {
-            // speedPercent was legacy; new schema stores scrollSpeed directly
-            // support both
         }
-        if (typeof song.scrollSpeed === 'number') {
-            scrollSpeed = song.scrollSpeed;
-            scrollSpeedInput.value = scrollSpeed;
-            scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
-        }
-        if (typeof song.fontSize === 'number') {
-            fontSize = song.fontSize;
-            fontSizeInput.value = fontSize;
-            fontSizeValue.textContent = fontSize + 'px';
-            viewer.style.fontSize = fontSize + 'px';
-        }
-        if (typeof song.lineHeight === 'number') {
-            lineHeight = song.lineHeight;
-            lineHeightInput.value = lineHeight;
-            lineHeightValue.textContent = lineHeight.toFixed(2);
-            viewer.style.lineHeight = lineHeight;
-        }
-        if (typeof song.countInEnabled === 'boolean') {
-            countInEnabled = song.countInEnabled;
-            if (countInToggle) countInToggle.checked = countInEnabled;
-        }
+        if (aboutOverlay) aboutOverlay.onclick = e => { if (e.target === aboutOverlay) aboutOverlay.classList.add('hidden'); };
 
-        viewerContent.innerHTML = (song.content || '')
-            .split('\n')
-            .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
-            .join('');
+        // Footer click → about modal
+        const footerEl = document.querySelector('.app-footer');
+        if (footerEl && aboutOverlay) footerEl.onclick = () => aboutOverlay.classList.remove('hidden');
 
-        // Notes — full opacity if notes exist, dimmed if not
-        const hasNotes = !!(song.notes && song.notes.trim());
-        notesStagBtn.classList.remove('hidden', 'no-notes');
-        if (hasNotes) {
-            notesStageSongTitle.textContent = song.name || 'Notes';
-            notesStageContent.textContent   = song.notes;
-        } else {
-            notesStagBtn.classList.add('no-notes');
-        }
-
-        stopScroll();
-        elapsedMs = 0;
-        updateTimeDisplay();
-        updatePlaylistDisplay();
-        snapFirstLineIntoGlow();
-    }
-
-    // ─── PLAYLIST DISPLAY ────────────────────────────────────────────────
-    const playlistNavPill   = document.getElementById('playlistNavPill');
-
-    function updatePlaylistDisplay() {
-        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongId) {
-            currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
-        }
-        playlistPillText.textContent  = currentPlaylist;
-        playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
-        // Show the whole compound pill when there's a playlist, hide when empty
-        const hasPl = playlistSongs.length > 0;
-        if (playlistNavPill) playlistNavPill.classList.toggle('visible', hasPl);
-        // Dim nav arrows at edges (don't hide — keeps pill width stable)
-        if (prevSongBtn) prevSongBtn.style.opacity = (currentSongIndex <= 0 || !hasPl) ? '0.3' : '1';
-        if (nextSongBtn) nextSongBtn.style.opacity = (currentSongIndex >= playlistSongs.length - 1 || !hasPl) ? '0.3' : '1';
-        if (prevSongBtn) prevSongBtn.disabled = currentSongIndex <= 0 || !hasPl;
-        if (nextSongBtn) nextSongBtn.disabled = currentSongIndex >= playlistSongs.length - 1 || !hasPl;
-    }
-
-    // ─── NAVIGATION ──────────────────────────────────────────────────────
-    prevSongBtn.onclick = () => {
-        const pl = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongIndex > 0) {
-            currentSongIndex--;
-            currentSongId = pl[currentSongIndex].id;
-            localStorage.setItem('lyricflow_currentSongId', currentSongId);
-            loadSongIntoUI(currentSongId);
-        }
-    };
-    nextSongBtn.onclick = () => {
-        const pl = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongIndex < pl.length - 1) {
-            currentSongIndex++;
-            currentSongId = pl[currentSongIndex].id;
-            localStorage.setItem('lyricflow_currentSongId', currentSongId);
-            loadSongIntoUI(currentSongId);
-        }
-    };
-
-    // ─── TIME DISPLAY ────────────────────────────────────────────────────
-    function updateTimeDisplay() {
-        const s = Math.floor(elapsedMs / 1000);
-        timeDisplay.textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-    }
-
-    // ─── SCROLL ENGINE (delta-time RAF – matches old working code) ────────
-    function animate(ts) {
-        if (!isPlaying) return;
-
-        if (lastFrameTs === null) { lastFrameTs = ts; }
-        const delta = ts - lastFrameTs;
-        lastFrameTs = ts;
-
-        elapsedMs += delta;
-        updateTimeDisplay();
-
-        // pixels per ms = scrollSpeed * 30 / 1000  (same feel as old code)
-        const pxPerMs = (scrollSpeed * 30) / 1000;
-        baseContentY -= pxPerMs * delta;
-        viewerContent.style.transform = `translateY(${baseContentY}px)`;
-
-        // End-of-song detection
-        const contentRect = viewerContent.getBoundingClientRect();
-        const viewerRect  = viewer.getBoundingClientRect();
-        if (contentRect.bottom < viewerRect.top + viewerRect.height * 0.3) {
-            stopScroll();
-            statusText.textContent = 'End of lyrics';
-            return;
-        }
-
-        rafId = requestAnimationFrame(animate);
-    }
-
-    function startScroll() {
-        if (isPlaying) return;
-        if (countInEnabled) {
-            runCountIn(() => beginScroll());
-        } else {
-            beginScroll();
-        }
-    }
-
-    function beginScroll() {
-        isPlaying   = true;
-        lastFrameTs = null;
-        startBtn.classList.add('hidden');
-        pauseBtn.classList.remove('hidden');
-        statusText.textContent = 'Scrolling';
-        rafId = requestAnimationFrame(animate);
-    }
-
-    function runCountIn(callback) {
-        const overlay = document.getElementById('viewerCountIn');
-        if (!overlay) { callback(); return; }
-        overlay.classList.remove('hidden');
-        const counts = [4, 3, 2, 1];
-        let i = 0;
-        overlay.textContent = counts[i];
-        const tick = setInterval(() => {
-            i++;
-            if (i >= counts.length) {
-                clearInterval(tick);
-                overlay.classList.add('hidden');
-                callback(); // fires on the 5th beat — 4 full bars shown
-            } else {
-                overlay.textContent = counts[i];
-            }
-        }, 1000);
-    }
-
-    function stopScroll() {
-        isPlaying = false;
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-        pauseBtn.classList.add('hidden');
-        startBtn.classList.remove('hidden');
-        lastFrameTs = null;
-    }
-
-    // ─── TRANSPORT BUTTONS ───────────────────────────────────────────────
-    startBtn.onclick  = () => startScroll();
-    pauseBtn.onclick  = () => { stopScroll(); statusText.textContent = 'Paused'; };
-    resetBtn.onclick  = () => {
-        stopScroll();
-        elapsedMs    = 0;
-        baseContentY = songStartBaseContentY || canonicalBaseContentY || 0;
-        viewerContent.style.transform = `translateY(${baseContentY}px)`;
-        updateTimeDisplay();
-        statusText.textContent = 'Ready';
-        snapFirstLineIntoGlow();
-    };
-
-    // ─── KEYBOARD ────────────────────────────────────────────────────────
-    document.addEventListener('keydown', e => {
-        if (e.code === 'Space') { e.preventDefault(); isPlaying ? pauseBtn.click() : startBtn.click(); }
-        if (e.key  === 'r' || e.key === 'R') resetBtn.click();
-    });
-
-    // ─── DRAG (pointerdown on viewerCard – same pattern as old code) ──────
-    function applyScroll() {
-        viewerContent.style.transform = `translateY(${baseContentY}px)`;
-    }
-
-    viewerCard.addEventListener('pointerdown', e => {
-        if (e.target.closest('.viewer-notes-btn')) return; // let button handle its own click
-        e.preventDefault();
-        try { viewerCard.setPointerCapture(e.pointerId); } catch(_) {}
-        wasPlayingBeforeDrag = isPlaying;
-        if (isPlaying) stopScroll();
-        isDragging   = true;
-        dragStartY   = e.clientY;
-        dragStartBaseY = baseContentY;
-        viewer.style.cursor = 'grabbing';
-    });
-
-    viewerCard.addEventListener('pointermove', e => {
-        if (!isDragging) return;
-        const delta    = e.clientY - dragStartY;
-        baseContentY   = dragStartBaseY + delta;
-        applyScroll();
-    });
-
-    const endDrag = () => {
-        if (!isDragging) return;
-        isDragging = false;
-        viewer.style.cursor = 'grab';
-        // Resume if was playing before drag
-        if (wasPlayingBeforeDrag) startScroll();
-    };
-    viewerCard.addEventListener('pointerup',     endDrag);
-    viewerCard.addEventListener('pointercancel', endDrag);
-    viewerCard.addEventListener('mouseleave',    endDrag);
-
-    // Touch fallback
-    viewerCard.addEventListener('touchstart',  e => {
-        wasPlayingBeforeDrag = isPlaying;
-        if (isPlaying) stopScroll();
-        isDragging     = true;
-        dragStartY     = e.touches[0].clientY;
-        dragStartBaseY = baseContentY;
-    }, { passive: true });
-    viewerCard.addEventListener('touchmove', e => {
-        if (!isDragging) return;
-        const delta  = e.touches[0].clientY - dragStartY;
-        baseContentY = dragStartBaseY + delta;
-        applyScroll();
-    }, { passive: true });
-    viewerCard.addEventListener('touchend', endDrag);
-
-    // ─── SETTINGS ────────────────────────────────────────────────────────
-    function markSongDirty() {
-        if (!currentSongId) return;
-        const song = songs.find(s => s.id === currentSongId);
-        if (!song) return;
-        statusText.textContent = `${song.name} · unsaved changes`;
-    }
-
-    function saveSettingsToSong() {
-        if (!currentSongId) return;
-        const idx = songs.findIndex(s => s.id === currentSongId);
-        if (idx === -1) return;
-        songs[idx].scrollSpeed   = scrollSpeed;
-        songs[idx].fontSize      = fontSize;
-        songs[idx].lineHeight    = lineHeight;
-        songs[idx].countInEnabled = countInEnabled;
-        try { localStorage.setItem('lyricflow_v3_songs', JSON.stringify(songs)); } catch(e) {}
-        statusText.textContent = `${songs[idx].name} · settings saved`;
-    }
-
-    scrollSpeedInput.oninput = e => {
-        scrollSpeed = parseFloat(e.target.value);
-        scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
-        saveSettings();
-        markSongDirty();
-    };
-    fontSizeInput.oninput = e => {
-        fontSize = parseInt(e.target.value);
-        fontSizeValue.textContent = fontSize + 'px';
-        viewer.style.fontSize = fontSize + 'px';
-        snapFirstLineIntoGlow();
-        saveSettings();
-        markSongDirty();
-    };
-    lineHeightInput.oninput = e => {
-        lineHeight = parseFloat(e.target.value);
-        lineHeightValue.textContent = lineHeight.toFixed(2);
-        viewer.style.lineHeight = lineHeight;
-        snapFirstLineIntoGlow();
-        saveSettings();
-        markSongDirty();
-    };
-    if (countInToggle) countInToggle.onchange = e => {
-        countInEnabled = e.target.checked;
-        saveSettings();
-    };
-
-    document.getElementById('stageInfoBtn').onclick      = () => openModal('stageInfoOverlay');
-    document.getElementById('infoMainTrigger').onclick   = () => openModal('aboutOverlay');
-    document.getElementById('settingsBtnBottom').onclick = () => openModal('settingsOverlay');
-    document.getElementById('saveSettingsToSongBtn').onclick = () => { saveSettingsToSong(); closeModal('settingsOverlay'); };
-    notesStagBtn.onclick = () => openModal('notesStageOverlay');
-
-    // About modal tab switching — scoped to avoid conflicts
-    const aboutOverlayEl = document.getElementById('aboutOverlay');
-    if (aboutOverlayEl) {
-        aboutOverlayEl.querySelectorAll('.about-tab').forEach(tab => {
-            tab.onclick = () => {
-                aboutOverlayEl.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
-                aboutOverlayEl.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
-                tab.classList.add('active');
-                aboutOverlayEl.querySelector('#' + tab.dataset.tab + '-tab').classList.remove('hidden');
+        // Import / Export
+        const exportBtn  = document.getElementById('exportBtn');
+        const importFile = document.getElementById('importFile');
+        if (exportBtn) exportBtn.onclick = () => {
+            const data = JSON.stringify(savedSongs, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = 'lyricflow-backup.json'; a.click();
+            URL.revokeObjectURL(url);
+        };
+        if (importFile) importFile.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (!Array.isArray(imported)) { alert('Invalid backup file.'); return; }
+                    // merge — skip duplicates by id
+                    const existingIds = new Set(savedSongs.map(s => s.id));
+                    let added = 0;
+                    imported.forEach(s => {
+                        if (!existingIds.has(s.id)) { savedSongs.push(s); added++; }
+                    });
+                    saveSongsToStorage();
+                    buildPlaylistSelect();
+                    buildPlaylistEditList();
+                    statusText.textContent = `Imported ${added} song${added !== 1 ? 's' : ''}`;
+                } catch(err) { alert('Could not read backup file.'); }
             };
-        });
-    }
+            reader.readAsText(file);
+            importFile.value = '';
+        };
 
-    // Footer click → about modal
-    const footerEl = document.querySelector('.app-footer');
-    if (footerEl) footerEl.style.cursor = 'pointer';
-    if (footerEl) footerEl.onclick = () => openModal('aboutOverlay');
+        // Boot
+        loadSongsFromStorage();
+        buildPlaylistSelect();
 
-    function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-    // Close on backdrop click
-    document.querySelectorAll('.overlay').forEach(ov => {
-        ov.addEventListener('click', e => { if (e.target === ov) ov.classList.add('hidden'); });
-    });
-
-    // ─── DRAFT: load unsaved lyrics from playlist editor ─────────────────
-    function loadDraft(text) {
-        currentSongId = null;
-        statusText.textContent = 'Unsaved song';
-        const draftNotes = localStorage.getItem('lyricflow_draft_notes') || '';
-        localStorage.removeItem('lyricflow_draft_notes');
-        const hasNotes = !!draftNotes.trim();
-        notesStagBtn.classList.remove('hidden', 'no-notes');
-        if (hasNotes) {
-            notesStageSongTitle.textContent = 'Draft Notes';
-            notesStageContent.textContent   = draftNotes;
+        // ─── RESTORE state if returning from stage ────────────────────────
+        const persistedSongId = localStorage.getItem('lyricflow_currentSongId');
+        const persistedDraft  = localStorage.getItem('lyricflow_draft');
+        if (persistedSongId) {
+            const song = savedSongs.find(s => s.id === persistedSongId);
+            if (song) {
+                currentSong = song;
+                editor.value = song.content || '';
+                draftNotes = song.notes || '';
+                updatePlaylistDetails();
+                updateSaveButton();
+                updateNotesBtn();
+                statusText.textContent = `Loaded: ${song.name}`;
+            }
+        } else if (persistedDraft) {
+            editor.value = persistedDraft;
+            draftNotes = localStorage.getItem('lyricflow_draft_notes') || '';
+            updateNotesBtn();
+            statusText.textContent = 'Draft restored';
         } else {
-            notesStagBtn.classList.add('no-notes');
+            statusText.textContent = 'Playlist Editor – Ready';
         }
-        viewerContent.innerHTML = text.split('\n')
-            .map(line => `<span class="viewer-content-line">${line || '\u00A0'}</span>`)
-            .join('');
-        stopScroll();
-        elapsedMs = 0;
-        updateTimeDisplay();
-        updatePlaylistDisplay();
-        snapFirstLineIntoGlow();
-    }
 
-    // ─── BOOT ────────────────────────────────────────────────────────────
-    loadSongsFromStorage();
-    updatePlaylistDisplay();
-
-    const draft = localStorage.getItem('lyricflow_draft');
-    if (draft && draft.trim()) {
-        loadD
+        // ─── DRAFT: carry unsaved editor text to stage ────────────────────
+        function goToStage() {
+            const text = editor ? editor.value.trim() : '';
+            if (text && !currentSong) {
+                // draft — persist for return trip
+                l
