@@ -96,14 +96,25 @@
         .app-title { font-size:18px; font-weight:620; letter-spacing:.02em; color:#e5e7eb; text-shadow:0 0 18px rgba(34,197,94,.5),0 0 35px rgba(34,197,94,.4); }
         .app-subtitle { font-size:11px; color:var(--text-soft); }
 
-        .top-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .top-row { display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:nowrap; }
 
-        .status-line { font-size:11px; color:var(--text-soft); display:flex; align-items:center; gap:6px; padding:0 2px; }
-        .status-label { padding:2px 7px; border-radius:999px; background:rgba(15,23,42,.96); border:1px solid rgba(55,65,81,.9); display:inline-flex; align-items:center; gap:6px; }
-        .status-pill-dot { width:5px; height:5px; border-radius:999px; background:radial-gradient(circle at 30% 0%,#f9fafb,#22c55e); box-shadow:0 0 8px rgba(34,197,94,.9); }
-        .status-time { opacity:.8; }
+        .status-line { font-size:11px; color:var(--text-soft); display:flex; align-items:center; min-width:0; flex:1; overflow:hidden; }
+        .status-label { padding:4px 8px; border-radius:999px; background:rgba(15,23,42,.96); border:1px solid rgba(55,65,81,.9); display:inline-flex; align-items:center; gap:5px; min-width:0; max-width:100%; overflow:hidden; }
+        .status-label #statusText { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; max-width:120px; }
+        .status-pill-dot { width:5px; height:5px; flex-shrink:0; border-radius:999px; background:radial-gradient(circle at 30% 0%,#f9fafb,#22c55e); box-shadow:0 0 8px rgba(34,197,94,.9); }
+        .status-time { opacity:.8; white-space:nowrap; flex-shrink:0; }
 
-        .header-right { display:inline-flex; align-items:center; gap:6px; }
+        .header-right { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; }
+
+        /* Compound playlist nav pill: ⏮  Set 1 · 3/9  ⏭ */
+        .playlist-nav-pill { display:none; align-items:center; gap:0; border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); overflow:hidden; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
+        .playlist-nav-pill.visible { display:inline-flex; }
+        .playlist-nav-pill .nav-arrow { padding:5px 9px; font-size:11px; color:var(--text-soft); cursor:pointer; background:transparent; border:none; display:flex; align-items:center; }
+        .playlist-nav-pill .nav-arrow:hover { color:#e5e7eb; }
+        .playlist-nav-pill .nav-divider { width:1px; background:rgba(75,85,99,.6); align-self:stretch; }
+        .playlist-nav-pill .nav-info { padding:4px 8px; font-size:10px; color:var(--text-soft); display:flex; flex-direction:column; align-items:center; line-height:1.3; white-space:nowrap; }
+        .playlist-nav-pill .nav-info .nav-set { font-size:9px; color:var(--text-muted); }
+        .playlist-nav-pill .nav-info .nav-index { font-size:11px; color:var(--text-soft); }
 
         .pill-label { font-size:10px; color:var(--text-soft); padding:4px 10px; border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); display:inline-flex; align-items:center; gap:4px; cursor:pointer; }
 
@@ -235,12 +246,17 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <button id="prevSongBtn" class="icon-btn hidden" title="Previous song">⏮</button>
-                    <button id="nextSongBtn" class="icon-btn hidden" title="Next song">⏭</button>
-                    <span id="playlistPill" class="pill-label hidden">
-                        <span id="playlistPillText">Set 1</span>
-                        <span id="playlistPillIndex">1/1</span>
-                    </span>
+                    <!-- Compound playlist nav pill: prev · Set 1 · 3/9 · next -->
+                    <div class="playlist-nav-pill" id="playlistNavPill">
+                        <button class="nav-arrow" id="prevSongBtn" title="Previous song">⏮</button>
+                        <div class="nav-divider"></div>
+                        <div class="nav-info">
+                            <span class="nav-set" id="playlistPillText">Set 1</span>
+                            <span class="nav-index" id="playlistPillIndex">1/1</span>
+                        </div>
+                        <div class="nav-divider"></div>
+                        <button class="nav-arrow" id="nextSongBtn" title="Next song">⏭</button>
+                    </div>
                     <button class="pill-btn" id="stageInfoBtn">Stage tips</button>
                 </div>
             </div>
@@ -304,7 +320,7 @@
                 <div id="contact-tab" class="about-panel hidden" style="padding:0 4px;">
                     <p style="color:var(--accent-bright); font-weight:600;">Get in touch</p>
                     <p>Have a feature request, bug report or just want to say hello?</p>
-                    <p>📧 hello@lyricflow.app</p>
+                    <p>📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="eb838e878784ab87929982888d87849cc58a9b9b">[email&#160;protected]</a></p>
                     <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">We read every message and try to respond within a few days.</p>
                 </div>
                 <div id="donate-tab" class="about-panel hidden" style="padding:0 4px;">
@@ -400,7 +416,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     const notesStagBtn        = document.getElementById('notesStagBtn');
     const notesStageOverlay   = document.getElementById('notesStageOverlay');
     const notesStageSongTitle = document.getElementById('notesStageSongTitle');
@@ -414,7 +430,6 @@
     const resetBtn       = document.getElementById('resetBtn');
     const prevSongBtn    = document.getElementById('prevSongBtn');
     const nextSongBtn    = document.getElementById('nextSongBtn');
-    const playlistPill   = document.getElementById('playlistPill');
     const playlistPillText  = document.getElementById('playlistPillText');
     const playlistPillIndex = document.getElementById('playlistPillIndex');
 
@@ -657,6 +672,8 @@ Use Settings to adjust speed, font size and line spacing.`;
     }
 
     // ─── PLAYLIST DISPLAY ────────────────────────────────────────────────
+    const playlistNavPill   = document.getElementById('playlistNavPill');
+
     function updatePlaylistDisplay() {
         const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
         if (currentSongId) {
@@ -664,9 +681,14 @@ Use Settings to adjust speed, font size and line spacing.`;
         }
         playlistPillText.textContent  = currentPlaylist;
         playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
-        playlistPill.classList.toggle('hidden',    playlistSongs.length === 0);
-        prevSongBtn.classList.toggle('hidden',     currentSongIndex <= 0 || playlistSongs.length === 0);
-        nextSongBtn.classList.toggle('hidden',     currentSongIndex >= playlistSongs.length - 1 || playlistSongs.length === 0);
+        // Show the whole compound pill when there's a playlist, hide when empty
+        const hasPl = playlistSongs.length > 0;
+        if (playlistNavPill) playlistNavPill.classList.toggle('visible', hasPl);
+        // Dim nav arrows at edges (don't hide — keeps pill width stable)
+        if (prevSongBtn) prevSongBtn.style.opacity = (currentSongIndex <= 0 || !hasPl) ? '0.3' : '1';
+        if (nextSongBtn) nextSongBtn.style.opacity = (currentSongIndex >= playlistSongs.length - 1 || !hasPl) ? '0.3' : '1';
+        if (prevSongBtn) prevSongBtn.disabled = currentSongIndex <= 0 || !hasPl;
+        if (nextSongBtn) nextSongBtn.disabled = currentSongIndex >= playlistSongs.length - 1 || !hasPl;
     }
 
     // ─── NAVIGATION ──────────────────────────────────────────────────────
@@ -745,16 +767,17 @@ Use Settings to adjust speed, font size and line spacing.`;
         const overlay = document.getElementById('viewerCountIn');
         if (!overlay) { callback(); return; }
         overlay.classList.remove('hidden');
-        let count = 4;
-        overlay.textContent = count;
+        const counts = [4, 3, 2, 1];
+        let i = 0;
+        overlay.textContent = counts[i];
         const tick = setInterval(() => {
-            count--;
-            if (count <= 0) {
+            i++;
+            if (i >= counts.length) {
                 clearInterval(tick);
                 overlay.classList.add('hidden');
-                callback();
+                callback(); // fires on the 5th beat — 4 full bars shown
             } else {
-                overlay.textContent = count;
+                overlay.textContent = counts[i];
             }
         }, 1000);
     }
@@ -890,15 +913,23 @@ Use Settings to adjust speed, font size and line spacing.`;
     document.getElementById('saveSettingsToSongBtn').onclick = () => { saveSettingsToSong(); closeModal('settingsOverlay'); };
     notesStagBtn.onclick = () => openModal('notesStageOverlay');
 
-    // About modal tab switching
-    document.querySelectorAll('.about-tab').forEach(tab => {
-        tab.onclick = () => {
-            document.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
-            tab.classList.add('active');
-            document.getElementById(tab.dataset.tab + '-tab').classList.remove('hidden');
-        };
-    });
+    // About modal tab switching — scoped to avoid conflicts
+    const aboutOverlayEl = document.getElementById('aboutOverlay');
+    if (aboutOverlayEl) {
+        aboutOverlayEl.querySelectorAll('.about-tab').forEach(tab => {
+            tab.onclick = () => {
+                aboutOverlayEl.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
+                aboutOverlayEl.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
+                tab.classList.add('active');
+                aboutOverlayEl.querySelector('#' + tab.dataset.tab + '-tab').classList.remove('hidden');
+            };
+        });
+    }
+
+    // Footer click → about modal
+    const footerEl = document.querySelector('.app-footer');
+    if (footerEl) footerEl.style.cursor = 'pointer';
+    if (footerEl) footerEl.onclick = () => openModal('aboutOverlay');
 
     function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -938,13 +969,4 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     const draft = localStorage.getItem('lyricflow_draft');
     if (draft && draft.trim()) {
-        loadDraft(draft);
-        // don't remove — persists so playlist can restore it on return
-    } else if (currentSongId) {
-        loadSongIntoUI(currentSongId);
-    } else {
-        showWelcome();
-    }
-    </script>
-</body>
-</html>
+        loadD
