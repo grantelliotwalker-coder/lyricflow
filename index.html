@@ -120,9 +120,6 @@
 
         .viewer-card { flex:1; min-height:0; border-radius:22px; background:radial-gradient(circle at 0 0,rgba(15,23,42,1),rgba(15,23,42,.99)),radial-gradient(circle at 100% 100%,rgba(15,23,42,.99),rgba(15,23,42,1)); border:1px solid rgba(55,65,81,.95); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.95); padding:10px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
 
-    .viewer-notes-btn         { position:absolute; top:16px; right:16px; z-index:10; border-radius:999px; padding:4px 10px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
-    .viewer-notes-btn.no-notes { opacity:0.35; cursor:default; pointer-events:none; }
-
         .viewer-viewport { flex:1; min-height:0; position:relative; overflow:hidden; border-radius:18px; background:radial-gradient(circle at 0 -25%,rgba(34,197,94,.28),transparent 60%),radial-gradient(circle at 100% 120%,rgba(59,130,246,.28),transparent 60%),linear-gradient(#020617,#020617); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.85); }
 
         .viewer-halo-top,.viewer-halo-bottom,.viewer-highlight,.viewer-subtle-layer { pointer-events:none; }
@@ -184,24 +181,9 @@
         .viewer::-webkit-scrollbar-thumb { background:rgba(75,85,99,.9); border-radius:999px; }
         .viewer::-webkit-scrollbar-track { background:transparent; }
 
-        .viewer-notes-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 10;
-        border-radius: 999px;
-        padding: 4px 10px;
-        border: 1px solid rgba(75,85,99,.95);
-        background: rgba(15,23,42,.92);
-        color: var(--text-soft);
-        font-size: 10px;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,.8);
-        backdrop-filter: blur(4px);
-    }
-    .viewer-notes-btn:hover { opacity: .85; }
-
-    .viewer-card { position: relative; }
+        .viewer-notes-btn         { position:absolute; top:16px; right:16px; z-index:20; border-radius:999px; padding:6px 14px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,.98); color:var(--text-soft); font-size:10px; display:inline-flex; align-items:center; gap:4px; cursor:pointer; box-shadow:0 6px 12px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); touch-action:manipulation; }
+    .viewer-notes-btn.no-notes { opacity:0.35; cursor:default; pointer-events:none; }
+    .viewer-notes-btn:not(.no-notes):hover { opacity:.85; }
 
         @media (max-width:768px) { body{padding:10px;} .app-shell{padding:12px 10px 8px;border-radius:26px;} .viewer{font-size:18px;} .bottom-bar{padding:6px 8px;} .btn{padding:7px 14px;} }
         @media (max-width:480px) { body{padding:8px 6px;} .app-shell{border-radius:22px;} .viewer{font-size:17px;} .branding{max-width:62%;} .btn{padding:6px 12px;} }
@@ -217,6 +199,10 @@
         body.high-contrast-stage .viewer-highlight { box-shadow:0 0 0 1px rgba(15,23,42,1),0 0 0 3px rgba(34,197,94,.7),0 0 55px rgba(34,197,94,.9); }
 
         .app-footer { margin-top:4px; font-size:10px; color:var(--text-muted); text-align:center; opacity:.85; }
+
+    .about-tab { flex:1; padding:8px; background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid transparent; }
+    .about-tab.active { color:var(--accent-bright); border-bottom-color:var(--accent-bright); }
+    .about-panel p { margin:6px 0; font-size:12px; line-height:1.6; }
     </style>
 </head>
 
@@ -296,6 +282,44 @@
         </div>
     </div>
 
+    <!-- Logo / About modal -->
+    <div class="overlay hidden" id="aboutOverlay">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header">
+                <div class="modal-title">LyricFlow</div>
+                <button class="modal-close" onclick="closeModal('aboutOverlay')">✕</button>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div style="display:flex; border-bottom:1px solid rgba(55,65,81,.6); margin-bottom:10px;">
+                    <button class="about-tab active" data-tab="about">About</button>
+                    <button class="about-tab" data-tab="contact">Contact</button>
+                    <button class="about-tab" data-tab="donate">Donate</button>
+                </div>
+                <div id="about-tab" class="about-panel" style="padding:0 4px;">
+                    <p style="color:var(--accent-bright); font-weight:600;">LyricFlow v1.0</p>
+                    <p>A lightweight teleprompter built for live performance. No accounts, no internet required — everything lives on your device.</p>
+                    <p>Built for musicians, presenters and performers who need their words to flow.</p>
+                    <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">© 2026 LyricFlow. All rights reserved.</p>
+                </div>
+                <div id="contact-tab" class="about-panel hidden" style="padding:0 4px;">
+                    <p style="color:var(--accent-bright); font-weight:600;">Get in touch</p>
+                    <p>Have a feature request, bug report or just want to say hello?</p>
+                    <p>📧 hello@lyricflow.app</p>
+                    <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">We read every message and try to respond within a few days.</p>
+                </div>
+                <div id="donate-tab" class="about-panel hidden" style="padding:0 4px;">
+                    <p style="color:var(--accent-bright); font-weight:600;">Support LyricFlow</p>
+                    <p>LyricFlow is free and always will be. If it's helped your performances, a small donation keeps the lights on.</p>
+                    <p>☕ buymeacoffee.com/lyricflow</p>
+                    <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">Every contribution is genuinely appreciated. Thank you.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('aboutOverlay')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Notes modal (read-only on stage) -->
     <div class="overlay hidden" id="notesStageOverlay">
         <div class="modal">
@@ -314,17 +338,29 @@
 
     <!-- Stage info modal -->
     <div class="overlay hidden" id="stageInfoOverlay">
-        <div class="modal">
+        <div class="modal" style="max-width:420px;">
             <div class="modal-header">
-                <div class="modal-title">Stage Mode</div>
+                <div class="modal-title">How to use Stage Mode</div>
                 <button class="modal-close" onclick="closeModal('stageInfoOverlay')">✕</button>
             </div>
-            <div class="modal-body">
-                <p>• Load songs from the Playlist page first</p>
-                <p>• Set scroll speed, press Start</p>
-                <p>• Drag lyrics up/down during song to adjust</p>
-                <p>• Space = Start/Pause, R = Reset</p>
-                <p>• Prev/Next buttons navigate the playlist</p>
+            <div class="modal-body" style="font-size:12px; line-height:1.7;">
+                <p style="color:var(--accent-bright); font-weight:600; margin-bottom:2px;">Getting started</p>
+                <p>• Go to Playlist (top right) to add or load your songs first.</p>
+                <p>• Once loaded, your lyrics appear here ready to scroll.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Playback</p>
+                <p>• Tap <strong>Start</strong> to begin scrolling. Tap <strong>Pause</strong> to stop mid-song.</p>
+                <p>• Tap <strong>Reset</strong> to snap back to the first line instantly.</p>
+                <p>• On a keyboard: <strong>Space</strong> = Start / Pause, <strong>R</strong> = Reset.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Adjusting on the fly</p>
+                <p>• <strong>Drag</strong> the lyric window up or down at any time to reposition.</p>
+                <p>• Dragging while playing pauses scroll, then resumes when you release.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Settings</p>
+                <p>• Use <strong>Settings</strong> to adjust scroll speed, font size and line spacing.</p>
+                <p>• Tap <strong>Save to song</strong> in Settings to remember these values per song.</p>
+                <p>• Enable <strong>4-beat count-in</strong> for a 4-second countdown overlay before scrolling starts.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Navigation</p>
+                <p>• Use <strong>⏮ ⏭</strong> buttons to jump between songs in your playlist.</p>
+                <p>• The <strong>Notes</strong> button shows chords or cues saved for the current song.</p>
             </div>
             <div class="modal-footer">
                 <button onclick="closeModal('stageInfoOverlay')">Got it</button>
@@ -341,19 +377,20 @@
             </div>
             <div class="modal-body">
                 <div class="form-field">
-                    <label for="scrollSpeedInput">Scroll speed</label>
-                    <input id="scrollSpeedInput" type="range" min="0.05" max="2" step="0.01" value="0.8">
-                    <span id="scrollSpeedValue">0.8</span>
+                    <label for="scrollSpeedInput">Scroll speed <span id="scrollSpeedValue" style="color:var(--accent-bright);">0.40</span></label>
+                    <input id="scrollSpeedInput" type="range" min="0.05" max="2" step="0.01" value="0.4" style="width:100%;height:28px;cursor:pointer;accent-color:#22c55e;touch-action:none;">
                 </div>
                 <div class="form-field">
-                    <label for="fontSizeInput">Font size</label>
-                    <input id="fontSizeInput" type="range" min="12" max="72" step="1" value="20">
-                    <span id="fontSizeValue">20px</span>
+                    <label for="fontSizeInput">Font size <span id="fontSizeValue" style="color:var(--accent-bright);">20px</span></label>
+                    <input id="fontSizeInput" type="range" min="12" max="72" step="1" value="20" style="width:100%;height:28px;cursor:pointer;accent-color:#22c55e;touch-action:none;">
                 </div>
                 <div class="form-field">
-                    <label for="lineHeightInput">Line height</label>
-                    <input id="lineHeightInput" type="range" min="1.0" max="4.0" step="0.05" value="1.9">
-                    <span id="lineHeightValue">1.9</span>
+                    <label for="lineHeightInput">Line height <span id="lineHeightValue" style="color:var(--accent-bright);">1.90</span></label>
+                    <input id="lineHeightInput" type="range" min="1.0" max="4.0" step="0.05" value="1.9" style="width:100%;height:28px;cursor:pointer;accent-color:#22c55e;touch-action:none;">
+                </div>
+                <div class="form-field" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(55,65,81,.6); flex-direction:row; align-items:center; justify-content:space-between;">
+                    <label for="countInToggle" style="cursor:pointer;">4-beat count-in <span style="font-size:10px; color:var(--text-muted);">(4 sec overlay)</span></label>
+                    <input id="countInToggle" type="checkbox" style="width:18px;height:18px;cursor:pointer;accent-color:#22c55e;">
                 </div>
             </div>
             <div class="modal-footer">
@@ -389,12 +426,7 @@
     const lineHeightValue   = document.getElementById('lineHeightValue');
 
     // ─── STATE ────────────────────────────────────────────────────────────
-    // ── Matches playlist.html storage key exactly ──
     const STORAGE_KEY = 'lyricflow_v3_songs';
-
-    let scrollSpeed = 0.8;   // multiplier (same meaning as old code)
-    let fontSize    = 20;
-    let lineHeight  = 1.9;
 
     let isPlaying   = false;
     let rafId       = null;
@@ -415,23 +447,31 @@
     let currentSongIndex = 0;
     let currentSongId    = localStorage.getItem('lyricflow_currentSongId') || null;
 
+    let scrollSpeed = 0.4;
+    let fontSize    = 20;
+    let lineHeight  = 1.9;
+    let countInEnabled = false;
+
     // ─── LOAD SETTINGS ───────────────────────────────────────────────────
     const saved = JSON.parse(localStorage.getItem('lyricflow_stage_settings') || '{}');
-    scrollSpeed = saved.scrollSpeed || 0.8;
-    fontSize    = saved.fontSize    || 20;
-    lineHeight  = saved.lineHeight  || 1.9;
+    scrollSpeed      = saved.scrollSpeed      || 0.4;
+    fontSize         = saved.fontSize         || 20;
+    lineHeight       = saved.lineHeight       || 1.9;
+    countInEnabled   = saved.countInEnabled   || false;
 
+    const countInToggle = document.getElementById('countInToggle');
     scrollSpeedInput.value = scrollSpeed;
-    scrollSpeedValue.textContent = scrollSpeed;
+    scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
     fontSizeInput.value  = fontSize;
     fontSizeValue.textContent = fontSize + 'px';
     lineHeightInput.value = lineHeight;
-    lineHeightValue.textContent = lineHeight;
+    lineHeightValue.textContent = lineHeight.toFixed(2);
+    if (countInToggle) countInToggle.checked = countInEnabled;
     viewer.style.fontSize   = fontSize + 'px';
     viewer.style.lineHeight = lineHeight;
 
     function saveSettings() {
-        localStorage.setItem('lyricflow_stage_settings', JSON.stringify({ scrollSpeed, fontSize, lineHeight }));
+        localStorage.setItem('lyricflow_stage_settings', JSON.stringify({ scrollSpeed, fontSize, lineHeight, countInEnabled }));
     }
 
     // ─── SONG DATA ───────────────────────────────────────────────────────
@@ -586,8 +626,12 @@ Use Settings to adjust speed, font size and line spacing.`;
         if (typeof song.lineHeight === 'number') {
             lineHeight = song.lineHeight;
             lineHeightInput.value = lineHeight;
-            lineHeightValue.textContent = lineHeight.toFixed(1);
+            lineHeightValue.textContent = lineHeight.toFixed(2);
             viewer.style.lineHeight = lineHeight;
+        }
+        if (typeof song.countInEnabled === 'boolean') {
+            countInEnabled = song.countInEnabled;
+            if (countInToggle) countInToggle.checked = countInEnabled;
         }
 
         viewerContent.innerHTML = (song.content || '')
@@ -681,12 +725,38 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     function startScroll() {
         if (isPlaying) return;
+        if (countInEnabled) {
+            runCountIn(() => beginScroll());
+        } else {
+            beginScroll();
+        }
+    }
+
+    function beginScroll() {
         isPlaying   = true;
         lastFrameTs = null;
         startBtn.classList.add('hidden');
         pauseBtn.classList.remove('hidden');
         statusText.textContent = 'Scrolling';
         rafId = requestAnimationFrame(animate);
+    }
+
+    function runCountIn(callback) {
+        const overlay = document.getElementById('viewerCountIn');
+        if (!overlay) { callback(); return; }
+        overlay.classList.remove('hidden');
+        let count = 4;
+        overlay.textContent = count;
+        const tick = setInterval(() => {
+            count--;
+            if (count <= 0) {
+                clearInterval(tick);
+                overlay.classList.add('hidden');
+                callback();
+            } else {
+                overlay.textContent = count;
+            }
+        }, 1000);
     }
 
     function stopScroll() {
@@ -722,6 +792,7 @@ Use Settings to adjust speed, font size and line spacing.`;
     }
 
     viewerCard.addEventListener('pointerdown', e => {
+        if (e.target.closest('.viewer-notes-btn')) return; // let button handle its own click
         e.preventDefault();
         try { viewerCard.setPointerCapture(e.pointerId); } catch(_) {}
         wasPlayingBeforeDrag = isPlaying;
@@ -778,17 +849,17 @@ Use Settings to adjust speed, font size and line spacing.`;
         if (!currentSongId) return;
         const idx = songs.findIndex(s => s.id === currentSongId);
         if (idx === -1) return;
-        songs[idx].scrollSpeed = scrollSpeed;
-        songs[idx].fontSize    = fontSize;
-        songs[idx].lineHeight  = lineHeight;
+        songs[idx].scrollSpeed   = scrollSpeed;
+        songs[idx].fontSize      = fontSize;
+        songs[idx].lineHeight    = lineHeight;
+        songs[idx].countInEnabled = countInEnabled;
         try { localStorage.setItem('lyricflow_v3_songs', JSON.stringify(songs)); } catch(e) {}
-        const song = songs[idx];
-        statusText.textContent = `${song.name} · settings saved`;
+        statusText.textContent = `${songs[idx].name} · settings saved`;
     }
 
     scrollSpeedInput.oninput = e => {
         scrollSpeed = parseFloat(e.target.value);
-        scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
+        scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
         saveSettings();
         markSongDirty();
     };
@@ -802,18 +873,32 @@ Use Settings to adjust speed, font size and line spacing.`;
     };
     lineHeightInput.oninput = e => {
         lineHeight = parseFloat(e.target.value);
-        lineHeightValue.textContent = lineHeight.toFixed(1);
+        lineHeightValue.textContent = lineHeight.toFixed(2);
         viewer.style.lineHeight = lineHeight;
         snapFirstLineIntoGlow();
         saveSettings();
         markSongDirty();
     };
+    if (countInToggle) countInToggle.onchange = e => {
+        countInEnabled = e.target.checked;
+        saveSettings();
+    };
 
     document.getElementById('stageInfoBtn').onclick      = () => openModal('stageInfoOverlay');
-    document.getElementById('infoMainTrigger').onclick   = () => openModal('stageInfoOverlay');
+    document.getElementById('infoMainTrigger').onclick   = () => openModal('aboutOverlay');
     document.getElementById('settingsBtnBottom').onclick = () => openModal('settingsOverlay');
     document.getElementById('saveSettingsToSongBtn').onclick = () => { saveSettingsToSong(); closeModal('settingsOverlay'); };
     notesStagBtn.onclick = () => openModal('notesStageOverlay');
+
+    // About modal tab switching
+    document.querySelectorAll('.about-tab').forEach(tab => {
+        tab.onclick = () => {
+            document.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab + '-tab').classList.remove('hidden');
+        };
+    });
 
     function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
