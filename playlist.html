@@ -577,6 +577,10 @@
             opacity: 0.85;
         }
 
+        .about-tab { flex:1; padding:8px; background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid transparent; }
+        .about-tab.active { color:var(--accent-bright); border-bottom-color:var(--accent-bright); }
+        .about-panel p { margin:6px 0; font-size:12px; line-height:1.6; }
+
         @media (max-width: 768px) {
             body { padding: 10px; }
             .app-shell { padding: 12px 10px 8px; border-radius: 26px; }
@@ -653,19 +657,70 @@
         </div>
     </div>
 
+    <!-- About modal -->
+    <div class="overlay hidden" id="aboutOverlay">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header">
+                <div class="modal-title">LyricFlow</div>
+                <button class="modal-close" onclick="this.closest('.overlay').classList.add('hidden')">✕</button>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div style="display:flex; border-bottom:1px solid rgba(55,65,81,.6); margin-bottom:10px;">
+                    <button class="about-tab active" data-tab="about">About</button>
+                    <button class="about-tab" data-tab="contact">Contact</button>
+                    <button class="about-tab" data-tab="donate">Donate</button>
+                </div>
+                <div id="about-tab" class="about-panel" style="padding:0 4px;">
+                    <p style="color:var(--accent-bright); font-weight:600;">LyricFlow v1.0</p>
+                    <p>A lightweight teleprompter built for live performance. No accounts, no internet required — everything lives on your device.</p>
+                    <p>Built for musicians, presenters and performers who need their words to flow.</p>
+                    <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">© 2026 LyricFlow. All rights reserved.</p>
+                </div>
+                <div id="contact-tab" class="about-panel hidden" style="padding:0 4px;">
+                    <p style="color:var(--accent-bright); font-weight:600;">Get in touch</p>
+                    <p>Have a feature request, bug report or just want to say hello?</p>
+                    <p>📧 hello@lyricflow.app</p>
+                    <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">We read every message and try to respond within a few days.</p>
+                </div>
+                <div id="donate-tab" class="about-panel hidden" style="padding:0 4px;">
+                    <p style="color:var(--accent-bright); font-weight:600;">Support LyricFlow</p>
+                    <p>LyricFlow is free and always will be. If it's helped your performances, a small donation keeps the lights on.</p>
+                    <p>☕ buymeacoffee.com/lyricflow</p>
+                    <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">Every contribution is genuinely appreciated. Thank you.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="this.closest('.overlay').classList.add('hidden')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit info -->
     <div class="overlay hidden" id="editInfoOverlay">
-        <div class="modal">
+        <div class="modal" style="max-width:420px;">
             <div class="modal-header">
-                <div class="modal-title">Playlist Editor</div>
+                <div class="modal-title">How to use the Editor</div>
                 <button class="modal-close" data-close-edit-info>✕</button>
             </div>
-            <div class="modal-body">
-                <p>• <strong>Save As</strong> always creates new song (never overwrites)</p>
-                <p>• <strong>Load</strong> sends lyrics to stage window automatically</p>
-                <p>• Unlimited songs per playlist with pagination</p>
-                <p>• Reorder with ↑↓, delete with ✕ in Edit Playlist</p>
-                <p>• Tap "Playlist mode" (top right) to return to stage</p>
+            <div class="modal-body" style="font-size:12px; line-height:1.7;">
+                <p style="color:var(--accent-bright); font-weight:600; margin-bottom:2px;">Adding lyrics</p>
+                <p>• Paste or type your lyrics into the editor below.</p>
+                <p>• Each line becomes one scrolling line on stage — keep them short enough to read at a glance.</p>
+                <p>• Use blank lines to create breathing space between verse, chorus and bridge.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Saving songs</p>
+                <p>• Tap <strong>Save As</strong> to name your song and add it to a playlist. This always creates a new song.</p>
+                <p>• Once a song is loaded, the button changes to <strong>Save</strong> and overwrites it directly.</p>
+                <p>• To duplicate a song, change its name before saving.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Loading & editing</p>
+                <p>• Tap <strong>Load</strong> to pick a saved song. It loads into the editor and onto the stage simultaneously.</p>
+                <p>• Edits you make are reflected live on stage — no need to reload.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Notes & settings</p>
+                <p>• The <strong>Notes</strong> button (top-right of editor) lets you store chords, cues or triggers with the song.</p>
+                <p>• In <strong>Edit Playlist</strong>, tap ℹ next to any song to set its scroll speed, font size and line height individually.</p>
+                <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Playlists</p>
+                <p>• Songs are grouped by playlist name. Create a new playlist by typing a new name when saving.</p>
+                <p>• Use <strong>Edit Playlist</strong> to reorder or delete songs, rename songs, or rename the playlist.</p>
+                <p>• Use <strong>Export</strong> to save a backup file. Use <strong>Import</strong> to restore it on any device.</p>
             </div>
             <div class="modal-footer">
                 <button data-close-edit-info>Got it</button>
@@ -737,13 +792,16 @@
                 <div class="playlist-edit-list" id="playlistEditList"></div>
                 <div class="playlist-pagination" id="editPagination"></div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="justify-content:space-between;">
+                <div style="display:flex;gap:6px;">
+                    <button id="exportBtn">Export</button>
+                    <label style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:11px; padding:4px 10px; cursor:pointer; display:inline-flex; align-items:center;">
+                        Import
+                        <input type="file" id="importFile" accept=".json" style="display:none;">
+                    </label>
+                </div>
                 <button data-close-edit-playlist>Close</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Song settings modal (from ℹ in edit playlist) -->
     <div class="overlay hidden" id="songSettingsOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -1280,6 +1338,55 @@
 
         if (playlistSelect)     playlistSelect.onchange     = () => { currentLoadPage = 0; buildLoadSongList(); };
         if (editPlaylistSelect) editPlaylistSelect.onchange = () => { currentEditPage = 0; buildPlaylistEditList(); };
+
+        // About modal — logo click
+        const aboutOverlay = document.getElementById('aboutOverlay');
+        const brandingEl   = document.querySelector('.branding');
+        if (brandingEl && aboutOverlay) brandingEl.onclick = () => aboutOverlay.classList.remove('hidden');
+        document.querySelectorAll('.about-tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + '-tab').classList.remove('hidden');
+            };
+        });
+        if (aboutOverlay) aboutOverlay.onclick = e => { if (e.target === aboutOverlay) aboutOverlay.classList.add('hidden'); };
+
+        // Import / Export
+        const exportBtn  = document.getElementById('exportBtn');
+        const importFile = document.getElementById('importFile');
+        if (exportBtn) exportBtn.onclick = () => {
+            const data = JSON.stringify(savedSongs, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = 'lyricflow-backup.json'; a.click();
+            URL.revokeObjectURL(url);
+        };
+        if (importFile) importFile.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (!Array.isArray(imported)) { alert('Invalid backup file.'); return; }
+                    // merge — skip duplicates by id
+                    const existingIds = new Set(savedSongs.map(s => s.id));
+                    let added = 0;
+                    imported.forEach(s => {
+                        if (!existingIds.has(s.id)) { savedSongs.push(s); added++; }
+                    });
+                    saveSongsToStorage();
+                    buildPlaylistSelect();
+                    buildPlaylistEditList();
+                    statusText.textContent = `Imported ${added} song${added !== 1 ? 's' : ''}`;
+                } catch(err) { alert('Could not read backup file.'); }
+            };
+            reader.readAsText(file);
+            importFile.value = '';
+        };
 
         // Boot
         loadSongsFromStorage();
