@@ -487,15 +487,16 @@
             const song=savedSongs.find(s=>s.id===songId);if(!song)return;
             currentSong=song;editor.value=song.content||'';hasUnsavedChanges=false;
             updatePlaylistDetails();updateSaveButton();
-            // FIX #6: Show Notes button based on saved notes OR editor content, not just editor content.
             updateNotesBtn();
+            // FIX: Clear stale draft so index.html doesn't pick it up over this saved song
+            localStorage.removeItem('lyricflow_draft');
+            localStorage.removeItem('lyricflow_draft_notes');
             localStorage.setItem('lyricflow_currentSongId',song.id);
             if(bc)bc.postMessage({type:'loadSong',songId:song.id});
             loadOverlay.classList.add('hidden');
             statusText.textContent=`Loaded: ${song.name}`;
         }
 
-        // FIX #6: Notes button visibility accounts for saved song notes even when editor content is cleared.
         function updateNotesBtn(){
             if(!notesBtn)return;
             const hasSavedNotes = currentSong && currentSong.notes && currentSong.notes.trim().length > 0;
@@ -531,8 +532,6 @@
             qs('currentSongIndex').textContent=`${gi+1}/${savedSongs.length}`;
         }
 
-        // FIX #5: Save vs Save As — use a clear boolean flag instead of dataset string to avoid confusion.
-        // savingAsNew=true means always create a new song. savingAsNew=false means overwrite current.
         let savingAsNew = false;
 
         if(saveConfirmBtn)saveConfirmBtn.onclick=()=>{
@@ -541,11 +540,9 @@
             const content=editor.value.trim();
             if(!content){alert('Please add some lyrics first');return;}
             if(currentSong && !savingAsNew){
-                // Overwrite existing song
                 const idx=savedSongs.findIndex(s=>s.id===currentSong.id);
                 if(idx!==-1){savedSongs[idx].name=name;savedSongs[idx].playlist=pln;savedSongs[idx].content=content;currentSong=savedSongs[idx];}
             }else{
-                // Create new song
                 const ns={id:'song_'+Math.random().toString(36).slice(2),name,playlist:pln,content,notes:'',scrollSpeed:0.4,fontSize:20,lineHeight:1.9,countInEnabled:false,createdAt:new Date().toISOString()};
                 savedSongs.push(ns);currentSong=ns;
             }
@@ -560,7 +557,6 @@
                 if(idx!==-1){savedSongs[idx].notes=notesEditor.value;currentSong=savedSongs[idx];saveSongsToStorage();}
                 statusText.textContent=`Notes saved: ${currentSong.name}`;
             }else{draftNotes=notesEditor.value;statusText.textContent='Notes saved to draft';}
-            // FIX #6: Re-evaluate notes button after saving notes.
             updateNotesBtn();
             notesOverlay.classList.add('hidden');
         };
@@ -568,7 +564,6 @@
         if(editorInfoBtn)editorInfoBtn.onclick=()=>editInfoOverlay.classList.remove('hidden');
         if(saveSongBtn)saveSongBtn.onclick=()=>{
             const isSaved=!!currentSong;
-            // FIX #5: Set boolean flag clearly.
             savingAsNew = !isSaved;
             qs('saveModalTitle').textContent=isSaved?'Save Song':'Save As New Song';
             qs('saveModalHint').innerHTML=isSaved?`Overwrites ${currentSong.name} · rename to save as new`:'Creates a new song';
@@ -612,7 +607,6 @@
 
         const exportBtn=qs('exportBtn'),importFile=qs('importFile');
 
-        // FIX #7: Append anchor to document body before clicking (required in Firefox).
         if(exportBtn)exportBtn.onclick=()=>{
             const blob=new Blob([JSON.stringify(savedSongs,null,2)],{type:'application/json'});
             const url=URL.createObjectURL(blob);
@@ -652,7 +646,15 @@
 
         function goToStage(){
             const text=editor?editor.value.trim():'';
-            if(text&&!currentSong){localStorage.setItem('lyricflow_draft',text);localStorage.setItem('lyricflow_draft_notes',draftNotes||'');}
+            if(text&&!currentSong){
+                // Unsaved draft — persist it for stage
+                localStorage.setItem('lyricflow_draft',text);
+                localStorage.setItem('lyricflow_draft_notes',draftNotes||'');
+            } else {
+                // Saved song is active — clear any stale draft so stage loads the song correctly
+                localStorage.removeItem('lyricflow_draft');
+                localStorage.removeItem('lyricflow_draft_notes');
+            }
             window.location.href='index.html';
         }
     </script>
