@@ -158,6 +158,10 @@
 
         .viewer-content-line { display:block; padding:1px 0; }
 
+        .viewer-reticle-dash { position:absolute; top:50%; transform:translateY(-50%); pointer-events:none; z-index:4; height:1px; width:2ch; background:rgba(229,231,235,.2); }
+        .viewer-reticle-dash-left  { left:0; }
+        .viewer-reticle-dash-right { right:0; }
+
         .viewer-countin { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.5),rgba(15,23,42,.5)); color:rgba(226,232,240,.9); font-size:26px; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 0 18px rgba(0,0,0,.85); z-index:5; }
         .viewer-countin.hidden { display:none; }
 
@@ -267,6 +271,8 @@
                         <div class="viewer-halo-bottom"></div>
                         <div class="viewer-subtle-layer"></div>
                         <div class="viewer-highlight"></div>
+                        <div class="viewer-reticle-dash viewer-reticle-dash-left"></div>
+                        <div class="viewer-reticle-dash viewer-reticle-dash-right"></div>
                         <div class="viewer-text-rail">
                             <div class="viewer-overlay-top"></div>
                             <div class="viewer-overlay-bottom"></div>
@@ -729,9 +735,10 @@ Use Settings to adjust speed, font size and line spacing.`;
 
         const contentRect = viewerContent.getBoundingClientRect();
         const viewerRect  = viewer.getBoundingClientRect();
-        if (contentRect.bottom < viewerRect.top + viewerRect.height * 0.3) {
+        if (contentRect.bottom < viewerRect.top) {
             stopScroll();
             statusText.textContent = 'End of lyrics';
+            setTimeout(() => resetBtn.click(), 1200);
             return;
         }
 
