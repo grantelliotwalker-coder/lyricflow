@@ -498,7 +498,6 @@
     }
 
     // ─── CROSS-TAB SONG TRIGGER ──────────────────────────────────────────
-    // FIX #1: BroadcastChannel declared once only.
     let bc = null;
     try {
         bc = new BroadcastChannel('lyricflow_stage');
@@ -533,7 +532,7 @@
         };
     } catch(err) {}
 
-    // FIX #2: Single storage event listener (removed the duplicate at the bottom).
+    // FIX: Single storage event listener — no duplicate at the bottom
     window.addEventListener('storage', e => {
         if (e.key === STORAGE_KEY) {
             loadSongsFromStorage();
@@ -549,11 +548,12 @@
         }
     });
 
-    // FIX #1 cont: Single polling interval declared once only.
+    // FIX: Polling interval guards against re-loading the same song that's already loaded,
+    // preventing a race with the storage event listener above.
     let _lastPolledSongId = currentSongId;
     setInterval(() => {
         const latest = localStorage.getItem('lyricflow_currentSongId');
-        if (latest && latest !== _lastPolledSongId) {
+        if (latest && latest !== _lastPolledSongId && latest !== currentSongId) {
             _lastPolledSongId = latest;
             currentSongId = latest;
             loadSongsFromStorage();
@@ -563,10 +563,10 @@
             currentSongId = null;
             showWelcome();
         }
+        if (latest) _lastPolledSongId = latest;
     }, 500);
 
     // ─── SNAP FIRST LINE INTO GLOW ───────────────────────────────────────
-    // FIX #3: Removed dead-code glowBand assignment.
     function snapFirstLineIntoGlow() {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
@@ -576,6 +576,10 @@
 
                 baseContentY = 0;
                 viewerContent.style.transform = 'translateY(0px)';
+
+                // FIX: Force a reflow before measuring so font/lineHeight changes
+                // are fully applied before we calculate positions.
+                void viewer.offsetHeight;
 
                 const viewerRect = viewer.getBoundingClientRect();
                 const glowRect   = glow.getBoundingClientRect();
@@ -803,8 +807,6 @@ Use Settings to adjust speed, font size and line spacing.`;
         viewerContent.style.transform = `translateY(${baseContentY}px)`;
     }
 
-    // FIX #4: wasPlayingBeforeDrag is shared between pointer and touch handlers
-    // so both paths read/write the same variable correctly.
     viewerCard.addEventListener('pointerdown', e => {
         if (e.target.closest('.viewer-notes-btn')) return;
         e.preventDefault();
@@ -834,7 +836,6 @@ Use Settings to adjust speed, font size and line spacing.`;
     viewerCard.addEventListener('pointercancel', endDrag);
     viewerCard.addEventListener('mouseleave',    endDrag);
 
-    // Touch fallback — uses the same wasPlayingBeforeDrag variable
     viewerCard.addEventListener('touchstart', e => {
         wasPlayingBeforeDrag = isPlaying;
         if (isPlaying) stopScroll();
