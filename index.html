@@ -162,7 +162,7 @@
         .viewer-reticle-dash-left  { left:0; }
         .viewer-reticle-dash-right { right:0; }
 
-        .viewer-countin { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.5),rgba(15,23,42,.5)); color:rgba(226,232,240,.9); font-size:26px; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 0 18px rgba(0,0,0,.85); z-index:5; }
+        .viewer-countin { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 50%,rgba(15,23,42,.5),rgba(15,23,42,.5)); color:rgba(226,232,240,.9); font-size:78px; letter-spacing:.08em; text-transform:uppercase; text-shadow:0 0 18px rgba(0,0,0,.85); z-index:5; }
         .viewer-countin.hidden { display:none; }
 
         .bottom-bar { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 10px; border-radius:999px; background:rgba(15,23,42,.97); border:1px solid rgba(55,65,81,.9); box-shadow:0 -6px 20px rgba(0,0,0,.9),0 0 0 1px rgba(15,23,42,1); }
@@ -449,6 +449,7 @@
     const STORAGE_KEY = 'lyricflow_v3_songs';
 
     let isPlaying   = false;
+    let isCountingIn = false;
     let rafId       = null;
     let lastFrameTs = null;
     let elapsedMs   = 0;
@@ -746,7 +747,7 @@ Use Settings to adjust speed, font size and line spacing.`;
     }
 
     function startScroll() {
-        if (isPlaying) return;
+        if (isPlaying || isCountingIn) return;
         if (countInEnabled) {
             runCountIn(() => beginScroll());
         } else {
@@ -755,6 +756,7 @@ Use Settings to adjust speed, font size and line spacing.`;
     }
 
     function beginScroll() {
+        isCountingIn = false;
         isPlaying   = true;
         lastFrameTs = null;
         startBtn.classList.add('hidden');
@@ -766,6 +768,7 @@ Use Settings to adjust speed, font size and line spacing.`;
     function runCountIn(callback) {
         const overlay = document.getElementById('viewerCountIn');
         if (!overlay) { callback(); return; }
+        isCountingIn = true;
         overlay.classList.remove('hidden');
         const counts = [4, 3, 2, 1];
         let i = 0;
@@ -784,10 +787,13 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     function stopScroll() {
         isPlaying = false;
+        isCountingIn = false;
         if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
         pauseBtn.classList.add('hidden');
         startBtn.classList.remove('hidden');
         lastFrameTs = null;
+        const overlay = document.getElementById('viewerCountIn');
+        if (overlay) overlay.classList.add('hidden');
     }
 
     // ─── TRANSPORT BUTTONS ───────────────────────────────────────────────
