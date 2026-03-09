@@ -85,6 +85,7 @@
         .about-tab { flex:1; padding:8px; background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; letter-spacing:.06em; text-transform:uppercase; border-bottom:2px solid transparent; }
         .about-tab.active { color:var(--accent-bright); border-bottom-color:var(--accent-bright); }
         .about-panel p { margin:6px 0; font-size:12px; line-height:1.6; }
+        .hidden { display:none !important; }
         @media (max-width:768px) { body { padding:10px; } .app-shell { padding:12px 10px 8px; border-radius:26px; } .playlist-edit-list,.track-list { max-height:250px; } }
     </style>
 </head>
@@ -124,7 +125,7 @@
                                 <div class="editor-buttons">
                                     <button class="tiny-btn save" id="saveSongBtn">Save As</button>
                                     <button class="tiny-btn" id="loadSongBtn">Load</button>
-                                    <button class="tiny-btn tiny-btn-danger icon-only" id="clearEditorBtn" title="Clear lyrics">🗑</button>
+                                    <button class="tiny-btn tiny-btn-danger" id="clearEditorBtn">Clear</button>
                                 </div>
                                 <div class="editor-buttons">
                                     <button class="tiny-btn" id="editPlaylistBtn">Edit Playlist</button>
@@ -327,6 +328,11 @@
             </div>
             <div class="modal-body">
                 <p style="font-size:11px; color:var(--text-muted); margin:0 0 6px 0;">Chords, triggers, cues — saved with this song.</p>
+                <div style="display:flex; gap:6px; margin-bottom:6px;">
+                    <button id="notesBtnSharp" style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:12px; font-weight:600; padding:4px 12px; cursor:pointer;">#</button>
+                    <button id="notesBtnFlat"  style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:12px; font-weight:600; padding:4px 12px; cursor:pointer;">b</button>
+                    <button id="notesBtnCaps"  style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:11px; font-weight:600; padding:4px 12px; cursor:pointer; letter-spacing:.06em;">CAPS</button>
+                </div>
                 <textarea id="notesEditor" style="width:100%; height:160px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;" placeholder="e.g. Verse 1: Capo 3, G D Em C&#10;Chorus: watch for cue light&#10;Bridge: half tempo"></textarea>
             </div>
             <div class="modal-footer">
@@ -550,6 +556,34 @@
         };
 
         let draftNotes='';
+        let notesCapsOn = false;
+
+        function notesInsert(char) {
+            const ta = notesEditor;
+            const start = ta.selectionStart;
+            const end   = ta.selectionEnd;
+            const insert = notesCapsOn ? char.toUpperCase() : char;
+            ta.setRangeText(insert, start, end, 'end');
+            ta.focus();
+        }
+
+        const notesBtnSharp = qs('notesBtnSharp');
+        const notesBtnFlat  = qs('notesBtnFlat');
+        const notesBtnCaps  = qs('notesBtnCaps');
+
+        if (notesBtnSharp) notesBtnSharp.onclick = () => notesInsert('#');
+        if (notesBtnFlat)  notesBtnFlat.onclick  = () => notesInsert('b');
+        if (notesBtnCaps)  notesBtnCaps.onclick  = () => {
+            notesCapsOn = !notesCapsOn;
+            notesBtnCaps.style.background = notesCapsOn
+                ? 'radial-gradient(circle at 0 0,#22c55e,#16a34a)'
+                : 'rgba(15,23,42,1)';
+            notesBtnCaps.style.borderColor = notesCapsOn
+                ? 'rgba(74,222,128,.7)'
+                : 'rgba(75,85,99,.95)';
+            notesBtnCaps.style.color = notesCapsOn ? '#020617' : 'var(--text-soft)';
+        };
+
         if(notesBtn)notesBtn.onclick=()=>{notesEditor.value=currentSong?(currentSong.notes||''):draftNotes;notesOverlay.classList.remove('hidden');};
         if(saveNotesBtn)saveNotesBtn.onclick=()=>{
             if(currentSong){
@@ -558,6 +592,8 @@
                 statusText.textContent=`Notes saved: ${currentSong.name}`;
             }else{draftNotes=notesEditor.value;statusText.textContent='Notes saved to draft';}
             updateNotesBtn();
+            notesCapsOn = false;
+            if (notesBtnCaps) { notesBtnCaps.style.background='rgba(15,23,42,1)'; notesBtnCaps.style.borderColor='rgba(75,85,99,.95)'; notesBtnCaps.style.color='var(--text-soft)'; }
             notesOverlay.classList.add('hidden');
         };
 
@@ -585,7 +621,12 @@
         };
 
         document.querySelectorAll('[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist],[data-close-notes]').forEach(btn=>{btn.onclick=()=>btn.closest('.overlay').classList.add('hidden');});
-        [editInfoOverlay,saveOverlay,loadOverlay,editPlaylistOverlay,notesOverlay].forEach(ov=>{if(ov)ov.onclick=e=>{if(e.target===ov)ov.classList.add('hidden');};});
+        [editInfoOverlay,saveOverlay,loadOverlay,editPlaylistOverlay,notesOverlay].forEach(ov=>{if(ov)ov.onclick=e=>{
+            if(e.target===ov){
+                if(ov===notesOverlay){ notesCapsOn=false; if(notesBtnCaps){notesBtnCaps.style.background='rgba(15,23,42,1)';notesBtnCaps.style.borderColor='rgba(75,85,99,.95)';notesBtnCaps.style.color='var(--text-soft)';} }
+                ov.classList.add('hidden');
+            }
+        };});
         if(playlistSelect)playlistSelect.onchange=()=>{currentLoadPage=0;buildLoadSongList();};
         if(editPlaylistSelect)editPlaylistSelect.onchange=()=>{currentEditPage=0;buildPlaylistEditList();};
 
