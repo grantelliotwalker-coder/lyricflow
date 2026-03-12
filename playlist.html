@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>LyricFlow - Playlist Editor</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
     <style>
@@ -309,6 +310,11 @@
                 </div>
                 <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(55,65,81,.6);">
                     <label style="font-size:11px; color:var(--text-soft); display:block; margin-bottom:4px;">Notes</label>
+                    <div style="display:flex; gap:6px; margin-bottom:6px;">
+                        <button id="songNotesBtnSharp" style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:12px; font-weight:600; padding:4px 12px; cursor:pointer;">#</button>
+                        <button id="songNotesBtnFlat"  style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:12px; font-weight:600; padding:4px 12px; cursor:pointer;">b</button>
+                        <button id="songNotesBtnCaps"  style="border-radius:999px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-soft); font-size:11px; font-weight:600; padding:4px 12px; cursor:pointer; letter-spacing:.06em;">CAPS</button>
+                    </div>
                     <textarea id="songNotesInput" style="width:100%; height:100px; border-radius:12px; border:1px solid rgba(75,85,99,.95); background:rgba(15,23,42,1); color:var(--text-main); padding:8px 10px; font-size:13px; line-height:1.6; resize:none; outline:none; font-family:system-ui,-apple-system,sans-serif;" placeholder="Chords, cues, triggers..."></textarea>
                 </div>
             </div>
@@ -344,6 +350,10 @@
 
     <script>
         const qs = id => document.getElementById(id);
+
+        // Security: sanitise any string before injecting into innerHTML
+        function esc(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
         const editor=qs('editor'),statusText=qs('statusText'),editorInfoBtn=qs('editorInfoBtn'),editInfoOverlay=qs('editInfoOverlay');
         const saveSongBtn=qs('saveSongBtn'),loadSongBtn=qs('loadSongBtn'),editPlaylistBtn=qs('editPlaylistBtn');
         const notesBtn=qs('notesBtn'),notesOverlay=qs('notesOverlay'),notesEditor=qs('notesEditor'),saveNotesBtn=qs('saveNotesBtn');
@@ -415,7 +425,7 @@
             currentLoadPage=Math.min(currentLoadPage,tp-1);
             const si=currentLoadPage*SONGS_PER_PAGE;
             const ps=songs.slice(si,si+SONGS_PER_PAGE);
-            loadSongList.innerHTML=ps.length?ps.map((s,i)=>`<div class="track-item" data-id="${s.id}"><span>${si+i+1}. ${s.name}</span></div>`).join(''):'<p style="color:var(--text-muted);text-align:center;padding:40px 20px;font-style:italic;">No songs in this playlist</p>';
+            loadSongList.innerHTML=ps.length?ps.map((s,i)=>`<div class="track-item" data-id="${esc(s.id)}"><span>${si+i+1}. ${esc(s.name)}</span></div>`).join(''):'<p style="color:var(--text-muted);text-align:center;padding:40px 20px;font-style:italic;">No songs in this playlist</p>';
             loadSongList.querySelectorAll('.track-item').forEach(item=>{item.onclick=()=>loadSongIntoEditor(item.dataset.id);});
             buildPagination(loadPagination,currentLoadPage,tp,page=>{currentLoadPage=page;buildLoadSongList();});
         }
@@ -429,7 +439,7 @@
             const ps=songs.slice(si,si+SONGS_PER_PAGE);
             playlistEditList.innerHTML=ps.length?ps.map((s,i)=>{
                 const gi=savedSongs.findIndex(x=>x.id===s.id);
-                return `<div class="playlist-edit-item"><span class="playlist-edit-name">${si+i+1}. ${s.name}</span><div class="playlist-edit-controls"><button data-info="${s.id}" title="Song settings">ℹ</button><button data-move="${gi}" data-dir="-1" title="Move up">↑</button><button data-move="${gi}" data-dir="1" title="Move down">↓</button><button data-delete="${s.id}" title="Delete">✕</button></div></div>`;
+                return `<div class="playlist-edit-item"><span class="playlist-edit-name">${si+i+1}. ${esc(s.name)}</span><div class="playlist-edit-controls"><button data-info="${esc(s.id)}" title="Song settings">ℹ</button><button data-move="${gi}" data-dir="-1" title="Move up">↑</button><button data-move="${gi}" data-dir="1" title="Move down">↓</button><button data-delete="${esc(s.id)}" title="Delete">✕</button></div></div>`;
             }).join(''):'<p style="color:var(--text-muted);text-align:center;padding:40px 20px;font-style:italic;">No songs in this playlist</p>';
             playlistEditList.querySelectorAll('[data-move]').forEach(btn=>{btn.onclick=()=>moveSong(parseInt(btn.dataset.move,10),parseInt(btn.dataset.dir,10));});
             playlistEditList.querySelectorAll('[data-delete]').forEach(btn=>{btn.onclick=()=>deleteSong(btn.dataset.delete);});
@@ -488,6 +498,32 @@
             statusText.textContent=`Saved: ${savedSongs[idx].name}`;
         };
         if(songSettingsOverlay)songSettingsOverlay.onclick=e=>{if(e.target===songSettingsOverlay)closeSongSettings();};
+
+        // Song settings notes helper buttons
+        let songNotesCapsOn = false;
+        const songNotesBtnSharp = qs('songNotesBtnSharp');
+        const songNotesBtnFlat  = qs('songNotesBtnFlat');
+        const songNotesBtnCaps  = qs('songNotesBtnCaps');
+
+        function songNotesInsert(char){
+            const ta=songNotesInput;if(!ta)return;
+            const start=ta.selectionStart,end=ta.selectionEnd;
+            ta.setRangeText(songNotesCapsOn?char.toUpperCase():char,start,end,'end');
+            ta.focus();
+        }
+        function resetSongNotesCaps(){ songNotesCapsOn=false; if(songNotesBtnCaps){songNotesBtnCaps.style.background='rgba(15,23,42,1)';songNotesBtnCaps.style.borderColor='rgba(75,85,99,.95)';songNotesBtnCaps.style.color='var(--text-soft)';} }
+
+        if(songNotesBtnSharp) songNotesBtnSharp.onclick=()=>songNotesInsert('#');
+        if(songNotesBtnFlat)  songNotesBtnFlat.onclick =()=>songNotesInsert('b');
+        if(songNotesBtnCaps)  songNotesBtnCaps.onclick =()=>{
+            songNotesCapsOn=!songNotesCapsOn;
+            songNotesBtnCaps.style.background=songNotesCapsOn?'radial-gradient(circle at 0 0,#22c55e,#16a34a)':'rgba(15,23,42,1)';
+            songNotesBtnCaps.style.borderColor=songNotesCapsOn?'rgba(74,222,128,.7)':'rgba(75,85,99,.95)';
+            songNotesBtnCaps.style.color=songNotesCapsOn?'#020617':'var(--text-soft)';
+        };
+
+        const _origCloseSongSettings = closeSongSettings;
+        closeSongSettings = () => { resetSongNotesCaps(); _origCloseSongSettings(); };
 
         function loadSongIntoEditor(songId){
             const song=savedSongs.find(s=>s.id===songId);if(!song)return;
@@ -592,8 +628,7 @@
                 statusText.textContent=`Notes saved: ${currentSong.name}`;
             }else{draftNotes=notesEditor.value;statusText.textContent='Notes saved to draft';}
             updateNotesBtn();
-            notesCapsOn = false;
-            if (notesBtnCaps) { notesBtnCaps.style.background='rgba(15,23,42,1)'; notesBtnCaps.style.borderColor='rgba(75,85,99,.95)'; notesBtnCaps.style.color='var(--text-soft)'; }
+            resetCaps();
             notesOverlay.classList.add('hidden');
         };
 
@@ -602,7 +637,7 @@
             const isSaved=!!currentSong;
             savingAsNew = !isSaved;
             qs('saveModalTitle').textContent=isSaved?'Save Song':'Save As New Song';
-            qs('saveModalHint').innerHTML=isSaved?`Overwrites ${currentSong.name} · rename to save as new`:'Creates a new song';
+            qs('saveModalHint').innerHTML=isSaved?`Overwrites ${esc(currentSong.name)} · rename to save as new`:'Creates a new song';
             saveConfirmBtn.textContent=isSaved?'Save':'Save New';
             songTitleInput.value=currentSong?currentSong.name:'';
             playlistInput.value=currentSong?currentSong.playlist:'Set 1';
@@ -620,10 +655,12 @@
             }
         };
 
-        document.querySelectorAll('[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist],[data-close-notes]').forEach(btn=>{btn.onclick=()=>btn.closest('.overlay').classList.add('hidden');});
+        function resetCaps(){ notesCapsOn=false; if(notesBtnCaps){notesBtnCaps.style.background='rgba(15,23,42,1)';notesBtnCaps.style.borderColor='rgba(75,85,99,.95)';notesBtnCaps.style.color='var(--text-soft)';} }
+
+        document.querySelectorAll('[data-close-edit-info],[data-close-save],[data-close-load],[data-close-edit-playlist],[data-close-notes]').forEach(btn=>{btn.onclick=()=>{if(btn.hasAttribute('data-close-notes'))resetCaps();btn.closest('.overlay').classList.add('hidden');};});
         [editInfoOverlay,saveOverlay,loadOverlay,editPlaylistOverlay,notesOverlay].forEach(ov=>{if(ov)ov.onclick=e=>{
             if(e.target===ov){
-                if(ov===notesOverlay){ notesCapsOn=false; if(notesBtnCaps){notesBtnCaps.style.background='rgba(15,23,42,1)';notesBtnCaps.style.borderColor='rgba(75,85,99,.95)';notesBtnCaps.style.color='var(--text-soft)';} }
+                if(ov===notesOverlay)resetCaps();
                 ov.classList.add('hidden');
             }
         };});
@@ -666,10 +703,34 @@
                 try{
                     const imported=JSON.parse(ev.target.result);
                     if(!Array.isArray(imported)){alert('Invalid backup file.');return;}
-                    const existing=new Set(savedSongs.map(s=>s.id));let added=0;
-                    imported.forEach(s=>{if(!existing.has(s.id)){savedSongs.push(s);added++;}});
+                    const existing=new Set(savedSongs.map(s=>s.id));
+                    let added=0, skipped=0;
+                    imported.forEach(s=>{
+                        if(!s||typeof s!=='object'){skipped++;return;}
+                        if(!s.id||typeof s.id!=='string'){skipped++;return;}
+                        if(existing.has(s.id)){skipped++;return;}
+                        // Validate and clamp all fields
+                        const clean={
+                            id: s.id.replace(/[^a-zA-Z0-9_\-]/g,'').slice(0,64) || ('song_'+Math.random().toString(36).slice(2)),
+                            name: String(s.name||s.title||'Untitled').slice(0,200),
+                            playlist: String(s.playlist||'Set 1').slice(0,100),
+                            content: String(s.content||s.lyrics||'').slice(0,100000),
+                            notes: String(s.notes||'').slice(0,10000),
+                            scrollSpeed: Math.min(2,Math.max(0.05,parseFloat(s.scrollSpeed)||0.4)),
+                            fontSize: Math.min(72,Math.max(12,parseInt(s.fontSize)||20)),
+                            lineHeight: Math.min(4,Math.max(1,parseFloat(s.lineHeight)||1.9)),
+                            countInEnabled: !!s.countInEnabled,
+                            createdAt: typeof s.createdAt==='string'?s.createdAt:new Date().toISOString()
+                        };
+                        savedSongs.push(clean);
+                        existing.add(clean.id);
+                        added++;
+                    });
                     saveSongsToStorage();buildPlaylistSelect();buildPlaylistEditList();
-                    statusText.textContent=`Imported ${added} song${added!==1?'s':''}`;
+                    const msg = skipped>0
+                        ? `Imported ${added} song${added!==1?'s':''} · ${skipped} skipped (duplicates or invalid)`
+                        : `Imported ${added} song${added!==1?'s':''}`;
+                    statusText.textContent=msg;
                 }catch(err){alert('Could not read backup file.');}
             };
             reader.readAsText(file);importFile.value='';
