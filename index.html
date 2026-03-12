@@ -618,4 +618,366 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     function showWelcome() {
         statusText.textContent = 'Ready';
-        notesStagBt
+        notesStagBtn.classList.remove('hidden');
+        notesStagBtn.classList.add('no-notes');
+        viewerContent.innerHTML = WELCOME_TEXT.split('\n')
+            .map(line => `<span class="viewer-content-line" style="opacity:0.45;">${line || '\u00A0'}</span>`)
+            .join('');
+        snapFirstLineIntoGlow();
+    }
+
+    // ─── LOAD SONG INTO UI ───────────────────────────────────────────────
+    function loadSongIntoUI(songId) {
+        const song = songs.find(s => s.id === songId);
+        if (!song) return;
+
+        currentSongId = songId;
+        statusText.textContent = song.name || 'Song loaded';
+
+        if (typeof song.scrollSpeed === 'number') {
+            scrollSpeed = song.scrollSpeed;
+            scrollSpeedInput.value = scrollSpeed;
+            scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
+        }
+        if (typeof song.fontSize === 'number') {
+            fontSize = song.fontSize;
+            fontSizeInput.value = fontSize;
+            fontSizeValue.textContent = fontSize + 'px';
+            viewer.style.fontSize = fontSize + 'px';
+        }
+        if (typeof song.lineHeight === 'number') {
+            lineHeight = song.lineHeight;
+            lineHeightInput.value = lineHeight;
+            lineHeightValue.textContent = lineHeight.toFixed(2);
+            viewer.style.lineHeight = lineHeight;
+        }
+        if (typeof song.countInEnabled === 'boolean') {
+            countInEnabled = song.countInEnabled;
+            if (countInToggle) countInToggle.checked = countInEnabled;
+        }
+
+        viewerContent.innerHTML = (song.content || '')
+            .split('\n')
+            .map(line => `<span class="viewer-content-line">${esc(line) || '\u00A0'}</span>`)
+            .join('');
+
+        const hasNotes = !!(song.notes && song.notes.trim());
+        notesStagBtn.classList.remove('hidden', 'no-notes');
+        if (hasNotes) {
+            notesStageSongTitle.textContent = song.name || 'Notes';
+            notesStageContent.textContent   = song.notes;
+        } else {
+            notesStagBtn.classList.add('no-notes');
+        }
+
+        stopScroll();
+        elapsedMs = 0;
+        updateTimeDisplay();
+        currentPlaylist = song.playlist || 'Set 1';
+        updatePlaylistDisplay();
+        snapFirstLineIntoGlow();
+    }
+    const playlistNavPill = document.getElementById('playlistNavPill');
+
+    function updatePlaylistDisplay() {
+        const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongId) {
+            currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
+        }
+        playlistPillText.textContent  = currentPlaylist;
+        playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
+        const hasPl = playlistSongs.length > 0;
+        if (playlistNavPill) playlistNavPill.classList.toggle('visible', hasPl);
+        if (prevSongBtn) prevSongBtn.style.opacity = (currentSongIndex <= 0 || !hasPl) ? '0.3' : '1';
+        if (nextSongBtn) nextSongBtn.style.opacity = (currentSongIndex >= playlistSongs.length - 1 || !hasPl) ? '0.3' : '1';
+        if (prevSongBtn) prevSongBtn.disabled = currentSongIndex <= 0 || !hasPl;
+        if (nextSongBtn) nextSongBtn.disabled = currentSongIndex >= playlistSongs.length - 1 || !hasPl;
+    }
+
+    // ─── NAVIGATION ──────────────────────────────────────────────────────
+    prevSongBtn.onclick = () => {
+        const pl = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongIndex > 0) {
+            currentSongIndex--;
+            currentSongId = pl[currentSongIndex].id;
+            localStorage.setItem('lyricflow_currentSongId', currentSongId);
+            loadSongIntoUI(currentSongId);
+        }
+    };
+    nextSongBtn.onclick = () => {
+        const pl = songs.filter(s => s.playlist === currentPlaylist);
+        if (currentSongIndex < pl.length - 1) {
+            currentSongIndex++;
+            currentSongId = pl[currentSongIndex].id;
+            localStorage.setItem('lyricflow_currentSongId', currentSongId);
+            loadSongIntoUI(currentSongId);
+        }
+    };
+
+    // ─── TIME DISPLAY ────────────────────────────────────────────────────
+    function updateTimeDisplay() {
+        const s = Math.floor(elapsedMs / 1000);
+        timeDisplay.textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+    }
+
+    // ─── SCROLL ENGINE ────────────────────────────────────────────────────
+    function animate(ts) {
+        if (!isPlaying) return;
+
+        if (lastFrameTs === null) { lastFrameTs = ts; }
+        const delta = ts - lastFrameTs;
+        lastFrameTs = ts;
+
+        elapsedMs += delta;
+        updateTimeDisplay();
+
+        const pxPerMs = (scrollSpeed * 30) / 1000;
+        baseContentY -= pxPerMs * delta;
+        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+
+        const contentRect = viewerContent.getBoundingClientRect();
+        const viewerRect  = viewer.getBoundingClientRect();
+        if (contentRect.bottom < viewerRect.top) {
+            stopScroll();
+            statusText.textContent = 'End of lyrics';
+            setTimeout(() => resetBtn.click(), 1200);
+            return;
+        }
+
+        rafId = requestAnimationFrame(animate);
+    }
+
+    function startScroll() {
+        if (isPlaying || isCountingIn) return;
+        if (countInEnabled) {
+            runCountIn(() => beginScroll());
+        } else {
+            beginScroll();
+        }
+    }
+
+    function beginScroll() {
+        isCountingIn = false;
+        isPlaying   = true;
+        lastFrameTs = null;
+        startBtn.classList.add('hidden');
+        pauseBtn.classList.remove('hidden');
+        statusText.textContent = 'Scrolling';
+        rafId = requestAnimationFrame(animate);
+    }
+
+    function runCountIn(callback) {
+        const overlay = document.getElementById('viewerCountIn');
+        if (!overlay) { callback(); return; }
+        isCountingIn = true;
+        overlay.classList.remove('hidden');
+        const counts = [4, 3, 2, 1];
+        let i = 0;
+        overlay.textContent = counts[i];
+        const tick = setInterval(() => {
+            i++;
+            if (i >= counts.length) {
+                clearInterval(tick);
+                overlay.classList.add('hidden');
+                callback();
+            } else {
+                overlay.textContent = counts[i];
+            }
+        }, 1000);
+    }
+
+    function stopScroll() {
+        isPlaying = false;
+        isCountingIn = false;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        pauseBtn.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+        lastFrameTs = null;
+        const overlay = document.getElementById('viewerCountIn');
+        if (overlay) overlay.classList.add('hidden');
+    }
+
+    // ─── TRANSPORT BUTTONS ───────────────────────────────────────────────
+    startBtn.onclick  = () => startScroll();
+    pauseBtn.onclick  = () => { stopScroll(); statusText.textContent = 'Paused'; };
+    resetBtn.onclick  = () => {
+        stopScroll();
+        elapsedMs    = 0;
+        baseContentY = songStartBaseContentY || canonicalBaseContentY || 0;
+        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+        updateTimeDisplay();
+        statusText.textContent = 'Ready';
+        snapFirstLineIntoGlow();
+    };
+
+    // ─── KEYBOARD ────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+        if (e.code === 'Space') { e.preventDefault(); isPlaying ? pauseBtn.click() : startBtn.click(); }
+        if (e.key  === 'r' || e.key === 'R') resetBtn.click();
+    });
+
+    // ─── DRAG ─────────────────────────────────────────────────────────────
+    function applyScroll() {
+        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+    }
+
+    viewerCard.addEventListener('pointerdown', e => {
+        if (e.target.closest('.viewer-notes-btn')) return;
+        e.preventDefault();
+        try { viewerCard.setPointerCapture(e.pointerId); } catch(_) {}
+        wasPlayingBeforeDrag = isPlaying;
+        if (isPlaying) stopScroll();
+        isDragging     = true;
+        dragStartY     = e.clientY;
+        dragStartBaseY = baseContentY;
+        viewer.style.cursor = 'grabbing';
+    });
+
+    viewerCard.addEventListener('pointermove', e => {
+        if (!isDragging) return;
+        const delta  = e.clientY - dragStartY;
+        baseContentY = dragStartBaseY + delta;
+        applyScroll();
+    });
+
+    const endDrag = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        viewer.style.cursor = 'grab';
+        if (wasPlayingBeforeDrag) startScroll();
+    };
+    viewerCard.addEventListener('pointerup',     endDrag);
+    viewerCard.addEventListener('pointercancel', endDrag);
+    viewerCard.addEventListener('mouseleave',    endDrag);
+
+    viewerCard.addEventListener('touchstart', e => {
+        wasPlayingBeforeDrag = isPlaying;
+        if (isPlaying) stopScroll();
+        isDragging     = true;
+        dragStartY     = e.touches[0].clientY;
+        dragStartBaseY = baseContentY;
+    }, { passive: true });
+    viewerCard.addEventListener('touchmove', e => {
+        if (!isDragging) return;
+        const delta  = e.touches[0].clientY - dragStartY;
+        baseContentY = dragStartBaseY + delta;
+        applyScroll();
+    }, { passive: true });
+    viewerCard.addEventListener('touchend',    endDrag);
+    viewerCard.addEventListener('touchcancel', endDrag);
+
+    // ─── SETTINGS ────────────────────────────────────────────────────────
+    function markSongDirty() {
+        if (!currentSongId) return;
+        const song = songs.find(s => s.id === currentSongId);
+        if (!song) return;
+        statusText.textContent = `${song.name} · unsaved changes`;
+    }
+
+    function saveSettingsToSong() {
+        if (!currentSongId) return;
+        const idx = songs.findIndex(s => s.id === currentSongId);
+        if (idx === -1) return;
+        songs[idx].scrollSpeed    = scrollSpeed;
+        songs[idx].fontSize       = fontSize;
+        songs[idx].lineHeight     = lineHeight;
+        songs[idx].countInEnabled = countInEnabled;
+        try { localStorage.setItem('lyricflow_v3_songs', JSON.stringify(songs)); } catch(e) {}
+        statusText.textContent = `${songs[idx].name} · settings saved`;
+    }
+
+    scrollSpeedInput.oninput = e => {
+        scrollSpeed = parseFloat(e.target.value);
+        scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
+        saveSettings();
+        markSongDirty();
+    };
+    fontSizeInput.oninput = e => {
+        fontSize = parseInt(e.target.value);
+        fontSizeValue.textContent = fontSize + 'px';
+        viewer.style.fontSize = fontSize + 'px';
+        snapFirstLineIntoGlow();
+        saveSettings();
+        markSongDirty();
+    };
+    lineHeightInput.oninput = e => {
+        lineHeight = parseFloat(e.target.value);
+        lineHeightValue.textContent = lineHeight.toFixed(2);
+        viewer.style.lineHeight = lineHeight;
+        snapFirstLineIntoGlow();
+        saveSettings();
+        markSongDirty();
+    };
+    if (countInToggle) countInToggle.onchange = e => {
+        countInEnabled = e.target.checked;
+        saveSettings();
+    };
+
+    document.getElementById('stageInfoBtn').onclick      = () => openModal('stageInfoOverlay');
+    document.getElementById('infoMainTrigger').onclick   = () => openModal('aboutOverlay');
+    document.getElementById('settingsBtnBottom').onclick = () => openModal('settingsOverlay');
+    document.getElementById('saveSettingsToSongBtn').onclick = () => { saveSettingsToSong(); closeModal('settingsOverlay'); };
+    notesStagBtn.onclick = () => openModal('notesStageOverlay');
+
+    const aboutOverlayEl = document.getElementById('aboutOverlay');
+    if (aboutOverlayEl) {
+        aboutOverlayEl.querySelectorAll('.about-tab').forEach(tab => {
+            tab.onclick = () => {
+                aboutOverlayEl.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
+                aboutOverlayEl.querySelectorAll('.about-panel').forEach(p => p.classList.add('hidden'));
+                tab.classList.add('active');
+                aboutOverlayEl.querySelector('#' + tab.dataset.tab + '-tab').classList.remove('hidden');
+            };
+        });
+    }
+
+    const footerEl = document.querySelector('.app-footer');
+    if (footerEl) footerEl.style.cursor = 'pointer';
+    if (footerEl) footerEl.onclick = () => openModal('aboutOverlay');
+
+    function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    document.querySelectorAll('.overlay').forEach(ov => {
+        ov.addEventListener('click', e => { if (e.target === ov) ov.classList.add('hidden'); });
+    });
+
+    // ─── DRAFT ────────────────────────────────────────────────────────────
+    function loadDraft(text) {
+        currentSongId = null;
+        statusText.textContent = 'Unsaved song';
+        const draftNotes = localStorage.getItem('lyricflow_draft_notes') || '';
+        localStorage.removeItem('lyricflow_draft_notes');
+        const hasNotes = !!draftNotes.trim();
+        notesStagBtn.classList.remove('hidden', 'no-notes');
+        if (hasNotes) {
+            notesStageSongTitle.textContent = 'Draft Notes';
+            notesStageContent.textContent   = draftNotes;
+        } else {
+            notesStagBtn.classList.add('no-notes');
+        }
+        viewerContent.innerHTML = text.split('\n')
+            .map(line => `<span class="viewer-content-line">${esc(line) || '\u00A0'}</span>`)
+            .join('');
+        stopScroll();
+        elapsedMs = 0;
+        updateTimeDisplay();
+        updatePlaylistDisplay();
+        snapFirstLineIntoGlow();
+    }
+
+    // ─── BOOT ────────────────────────────────────────────────────────────
+    loadSongsFromStorage();
+    updatePlaylistDisplay();
+
+    const draft = localStorage.getItem('lyricflow_draft');
+    if (draft && draft.trim()) {
+        loadDraft(draft);
+    } else if (currentSongId) {
+        loadSongIntoUI(currentSongId);
+    } else {
+        showWelcome();
+    }
+    </script>
+</body>
+</html>
