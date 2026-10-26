@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <title>LyricFlow</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
     <style>
@@ -129,7 +135,7 @@
 
         .main-stack { flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; }
 
-        .viewer-card { flex:1; min-height:0; border-radius:22px; background:radial-gradient(circle at 0 0,rgba(15,23,42,1),rgba(15,23,42,.99)),radial-gradient(circle at 100% 100%,rgba(15,23,42,.99),rgba(15,23,42,1)); border:1px solid rgba(55,65,81,.95); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.95); padding:10px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
+        .viewer-card { touch-action:none; flex:1; min-height:0; border-radius:22px; background:radial-gradient(circle at 0 0,rgba(15,23,42,1),rgba(15,23,42,.99)),radial-gradient(circle at 100% 100%,rgba(15,23,42,.99),rgba(15,23,42,1)); border:1px solid rgba(55,65,81,.95); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.95); padding:10px; display:flex; flex-direction:column; position:relative; overflow:hidden; }
 
         .viewer-viewport { flex:1; min-height:0; position:relative; overflow:hidden; border-radius:18px; background:radial-gradient(circle at 0 -25%,rgba(34,197,94,.28),transparent 60%),radial-gradient(circle at 100% 120%,rgba(59,130,246,.28),transparent 60%),linear-gradient(#020617,#020617); box-shadow:inset 0 0 0 1px rgba(15,23,42,.95),0 18px 30px rgba(0,0,0,.85); }
 
@@ -317,7 +323,7 @@
                     <button class="about-tab" data-tab="donate">Donate</button>
                 </div>
                 <div id="about-tab" class="about-panel" style="padding:0 4px;">
-                    <p style="color:var(--accent-bright); font-weight:600;">LyricFlow v1.0</p>
+                    <p style="color:var(--accent-bright); font-weight:600;">LyricFlow v1.1</p>
                     <p>A lightweight teleprompter built for live performance. No accounts, no internet required — everything lives on your device.</p>
                     <p>Built for musicians, presenters and performers who need their words to flow.</p>
                     <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">© 2026 LyricFlow. All rights reserved.</p>
@@ -377,6 +383,7 @@
                 <p>• Dragging while playing pauses scroll, then resumes when you release.</p>
                 <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Settings</p>
                 <p>• Use <strong>Settings</strong> to adjust scroll speed, font size and line spacing.</p>
+                <p>• With no saved song loaded, changes become your defaults for new songs.</p>
                 <p>• Tap <strong>Save to song</strong> in Settings to remember these values per song.</p>
                 <p>• Enable <strong>4-beat count-in</strong> for a 4-second countdown overlay before scrolling starts.</p>
                 <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Navigation</p>
@@ -454,6 +461,8 @@
 
     let isPlaying   = false;
     let isCountingIn = false;
+    let countInTimer = null;   // FIX v1.1: kept so Pause/Reset can cancel a running count-in
+    let endResetTimer = null;  // FIX v1.1: kept so the end-of-song reset can be cancelled
     let rafId       = null;
     let lastFrameTs = null;
     let elapsedMs   = 0;
@@ -478,25 +487,46 @@
     let countInEnabled = false;
 
     // ─── LOAD SETTINGS ───────────────────────────────────────────────────
-    const saved = JSON.parse(localStorage.getItem('lyricflow_stage_settings') || '{}');
-    scrollSpeed    = saved.scrollSpeed    || 0.4;
-    fontSize       = saved.fontSize       || 20;
-    lineHeight     = saved.lineHeight     || 1.9;
-    countInEnabled = saved.countInEnabled || false;
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('lyricflow_stage_settings') || '{}') || {}; } catch(e) { saved = {}; }
+    // Global defaults — used for drafts and inherited by new songs
+    const defaults = {
+        scrollSpeed:    saved.scrollSpeed    || 0.4,
+        fontSize:       saved.fontSize       || 20,
+        lineHeight:     saved.lineHeight     || 1.9,
+        countInEnabled: !!saved.countInEnabled
+    };
 
     const countInToggle = document.getElementById('countInToggle');
-    scrollSpeedInput.value = scrollSpeed;
-    scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
-    fontSizeInput.value  = fontSize;
-    fontSizeValue.textContent = fontSize + 'px';
-    lineHeightInput.value = lineHeight;
-    lineHeightValue.textContent = lineHeight.toFixed(2);
-    if (countInToggle) countInToggle.checked = countInEnabled;
-    viewer.style.fontSize   = fontSize + 'px';
-    viewer.style.lineHeight = lineHeight;
 
+    function applySettingsToUI() {
+        scrollSpeedInput.value = scrollSpeed;
+        scrollSpeedValue.textContent = scrollSpeed.toFixed(2);
+        fontSizeInput.value  = fontSize;
+        fontSizeValue.textContent = fontSize + 'px';
+        lineHeightInput.value = lineHeight;
+        lineHeightValue.textContent = lineHeight.toFixed(2);
+        if (countInToggle) countInToggle.checked = countInEnabled;
+        viewer.style.fontSize   = fontSize + 'px';
+        viewer.style.lineHeight = lineHeight;
+    }
+
+    function useDefaultSettings() {
+        scrollSpeed    = defaults.scrollSpeed;
+        fontSize       = defaults.fontSize;
+        lineHeight     = defaults.lineHeight;
+        countInEnabled = defaults.countInEnabled;
+        applySettingsToUI();
+    }
+    useDefaultSettings();
+
+    // FIX v1.1: slider changes only become the global defaults when no saved song is loaded.
+    // Previously, tweaking a song's sliders silently overwrote the defaults for every draft.
     function saveSettings() {
-        localStorage.setItem('lyricflow_stage_settings', JSON.stringify({ scrollSpeed, fontSize, lineHeight, countInEnabled }));
+        if (currentSongId) return;
+        defaults.scrollSpeed = scrollSpeed; defaults.fontSize = fontSize;
+        defaults.lineHeight = lineHeight;   defaults.countInEnabled = countInEnabled;
+        try { localStorage.setItem('lyricflow_stage_settings', JSON.stringify(defaults)); } catch(e) {}
     }
 
     // ─── SONG DATA ───────────────────────────────────────────────────────
@@ -506,6 +536,42 @@
             songs = raw ? JSON.parse(raw) : [];
             if (!Array.isArray(songs)) songs = [];
         } catch(e) { songs = []; }
+    }
+
+    function renderLines(text) {
+        viewerContent.innerHTML = (text || '').split('\n')
+            .map(line => `<span class="viewer-content-line">${esc(line) || ' '}</span>`)
+            .join('');
+    }
+
+    // Re-render text but keep the current scroll position (live edits)
+    function renderLinesKeepPosition(text) {
+        const savedY = baseContentY;
+        renderLines(text);
+        baseContentY = savedY;
+        applyScroll();
+    }
+
+    // FIX v1.1: refresh notes / title of the loaded song when it changes in the editor
+    function refreshCurrentSongMeta() {
+        if (!currentSongId) return;
+        const song = songs.find(s => s.id === currentSongId);
+        if (!song) { currentSongId = null; showWelcome(); return; }
+        setNotes(song.name || 'Notes', song.notes);
+        currentPlaylist = song.playlist || 'Set 1';
+        if (!isPlaying) statusText.textContent = song.name || 'Song loaded';
+        updatePlaylistDisplay();
+    }
+
+    function setNotes(title, notes) {
+        const hasNotes = !!(notes && notes.trim());
+        notesStagBtn.classList.remove('hidden', 'no-notes');
+        if (hasNotes) {
+            notesStageSongTitle.textContent = title;
+            notesStageContent.textContent   = notes;
+        } else {
+            notesStagBtn.classList.add('no-notes');
+        }
     }
 
     // ─── CROSS-TAB SONG TRIGGER ──────────────────────────────────────────
@@ -522,29 +588,28 @@
                 currentSongId = null;
                 showWelcome();
             }
+            if (e.data.type === 'songUpdated') {
+                loadSongsFromStorage();
+                if (e.data.songId === currentSongId) {
+                    const song = songs.find(s => s.id === currentSongId);
+                    if (song && e.data.content) renderLinesKeepPosition(song.content);
+                    refreshCurrentSongMeta();
+                }
+            }
             if (e.data.type === 'liveEdit' && e.data.songId === currentSongId) {
-                const savedY = baseContentY;
-                viewerContent.innerHTML = (e.data.content || '').split('\n')
-                    .map(line => `<span class="viewer-content-line">${esc(line) || '\u00A0'}</span>`)
-                    .join('');
-                baseContentY = savedY;
-                viewerContent.style.transform = `translateY(${savedY}px)`;
+                renderLinesKeepPosition(e.data.content);
             }
             if (e.data.type === 'liveDraft') {
                 currentSongId = null;
                 statusText.textContent = 'Unsaved song';
-                const savedY = baseContentY;
-                viewerContent.innerHTML = (e.data.content || '').split('\n')
-                    .map(line => `<span class="viewer-content-line">${esc(line) || '\u00A0'}</span>`)
-                    .join('');
-                baseContentY = savedY;
-                viewerContent.style.transform = `translateY(${savedY}px)`;
+                renderLinesKeepPosition(e.data.content);
             }
         };
     } catch(err) {}
     window.addEventListener('storage', e => {
         if (e.key === STORAGE_KEY) {
             loadSongsFromStorage();
+            refreshCurrentSongMeta();
         }
         if (e.key === 'lyricflow_currentSongId') {
             if (e.newValue) {
@@ -557,55 +622,81 @@
         }
     });
 
-    // FIX: Polling interval guards against re-loading the same song that's already loaded,
+    // Polling interval guards against re-loading the same song that's already loaded,
     // preventing a race with the storage event listener above.
     let _lastPolledSongId = currentSongId;
     setInterval(() => {
         const latest = localStorage.getItem('lyricflow_currentSongId');
         if (latest && latest !== _lastPolledSongId && latest !== currentSongId) {
             _lastPolledSongId = latest;
-            currentSongId = latest;
             loadSongsFromStorage();
             loadSongIntoUI(latest);
         } else if (!latest && _lastPolledSongId) {
             _lastPolledSongId = null;
-            currentSongId = null;
-            showWelcome();
+            if (currentSongId) { currentSongId = null; showWelcome(); }
         }
         if (latest) _lastPolledSongId = latest;
     }, 500);
 
-    // ─── SNAP FIRST LINE INTO GLOW ───────────────────────────────────────
+    // ─── GLOW ALIGNMENT ──────────────────────────────────────────────────
+    // Returns the translateY that puts the first line in the centre of the glow band.
+    // Measures with the current transform and subtracts it, so no reset is needed.
+    function measureFirstLineOffset() {
+        const lines = viewerContent.querySelectorAll('.viewer-content-line');
+        const glow  = document.querySelector('.viewer-highlight');
+        if (!lines.length || !glow) return null;
+        void viewer.offsetHeight; // force reflow so font/lineHeight changes are applied
+        const viewerRect = viewer.getBoundingClientRect();
+        const glowRect   = glow.getBoundingClientRect();
+        const lineRect   = lines[0].getBoundingClientRect();
+        const glowCenter = glowRect.top + glowRect.height / 2 - viewerRect.top;
+        const lineCenter = lineRect.top + lineRect.height / 2 - viewerRect.top - baseContentY;
+        return glowCenter - lineCenter;
+    }
+
+    // Distance from the first line's centre to the last line's centre (for drag limits)
+    function contentSpan() {
+        const lines = viewerContent.querySelectorAll('.viewer-content-line');
+        if (lines.length < 2) return 0;
+        const first = lines[0], last = lines[lines.length - 1];
+        return (last.offsetTop + last.offsetHeight / 2) - (first.offsetTop + first.offsetHeight / 2);
+    }
+
+    // FIX v1.1: drag is clamped between "first line in glow" and "last line in glow"
+    function clampY(y) {
+        // Never jump: if the drag started outside the limits (e.g. near the end), allow that point
+        const max = Math.max(canonicalBaseContentY, dragStartBaseY);
+        const min = Math.min(canonicalBaseContentY - contentSpan(), dragStartBaseY);
+        return Math.min(max, Math.max(min, y));
+    }
+
     function snapFirstLineIntoGlow() {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                const lines = viewerContent.querySelectorAll('.viewer-content-line');
-                const glow  = document.querySelector('.viewer-highlight');
-                if (!lines.length || !glow) return;
-
-                baseContentY = 0;
-                viewerContent.style.transform = 'translateY(0px)';
-
-                // FIX: Force a reflow before measuring so font/lineHeight changes
-                // are fully applied before we calculate positions.
-                void viewer.offsetHeight;
-
-                const viewerRect = viewer.getBoundingClientRect();
-                const glowRect   = glow.getBoundingClientRect();
-                const lineRect   = lines[0].getBoundingClientRect();
-
-                const glowCenter = glowRect.top  + glowRect.height  / 2 - viewerRect.top;
-                const lineCenter = lineRect.top  + lineRect.height  / 2 - viewerRect.top;
-                const delta      = glowCenter - lineCenter;
-
+                const delta = measureFirstLineOffset();
+                if (delta === null) return;
                 baseContentY          = delta;
                 canonicalBaseContentY = delta;
                 songStartBaseContentY = delta;
-
-                viewerContent.style.transform = `translateY(${baseContentY}px)`;
+                applyScroll();
             });
         });
     }
+
+    // FIX v1.1: keep alignment when the window resizes or the device rotates
+    let resizeRaf = null;
+    window.addEventListener('resize', () => {
+        if (resizeRaf) cancelAnimationFrame(resizeRaf);
+        resizeRaf = requestAnimationFrame(() => {
+            const offsetFromStart = baseContentY - canonicalBaseContentY;
+            const delta = measureFirstLineOffset();
+            if (delta === null) return;
+            canonicalBaseContentY = delta;
+            songStartBaseContentY = delta;
+            baseContentY = delta + offsetFromStart;
+            applyScroll();
+        });
+    });
 
     // ─── WELCOME TEXT ─────────────────────────────────────────────────────
     const WELCOME_TEXT = `Welcome to LyricFlow.
@@ -617,102 +708,74 @@ your draft will appear here ready to scroll.
 Use Settings to adjust speed, font size and line spacing.`;
 
     function showWelcome() {
+        stopScroll();
         statusText.textContent = 'Ready';
         notesStagBtn.classList.remove('hidden');
         notesStagBtn.classList.add('no-notes');
         viewerContent.innerHTML = WELCOME_TEXT.split('\n')
-            .map(line => `<span class="viewer-content-line" style="opacity:0.45;">${line || '\u00A0'}</span>`)
+            .map(line => `<span class="viewer-content-line" style="opacity:0.45;">${line || ' '}</span>`)
             .join('');
+        elapsedMs = 0;
+        updateTimeDisplay();
+        updatePlaylistDisplay();
         snapFirstLineIntoGlow();
     }
 
     // ─── LOAD SONG INTO UI ───────────────────────────────────────────────
     function loadSongIntoUI(songId) {
         const song = songs.find(s => s.id === songId);
-        if (!song) return;
+        if (!song) return false;
 
+        stopScroll();
         currentSongId = songId;
         statusText.textContent = song.name || 'Song loaded';
 
-        if (typeof song.scrollSpeed === 'number') {
-            scrollSpeed = song.scrollSpeed;
-            scrollSpeedInput.value = scrollSpeed;
-            scrollSpeedValue.textContent = scrollSpeed.toFixed(1);
-        }
-        if (typeof song.fontSize === 'number') {
-            fontSize = song.fontSize;
-            fontSizeInput.value = fontSize;
-            fontSizeValue.textContent = fontSize + 'px';
-            viewer.style.fontSize = fontSize + 'px';
-        }
-        if (typeof song.lineHeight === 'number') {
-            lineHeight = song.lineHeight;
-            lineHeightInput.value = lineHeight;
-            lineHeightValue.textContent = lineHeight.toFixed(2);
-            viewer.style.lineHeight = lineHeight;
-        }
-        if (typeof song.countInEnabled === 'boolean') {
-            countInEnabled = song.countInEnabled;
-            if (countInToggle) countInToggle.checked = countInEnabled;
-        }
+        // Per-song values win; anything missing falls back to the global defaults
+        scrollSpeed    = typeof song.scrollSpeed    === 'number'  ? song.scrollSpeed    : defaults.scrollSpeed;
+        fontSize       = typeof song.fontSize       === 'number'  ? song.fontSize       : defaults.fontSize;
+        lineHeight     = typeof song.lineHeight     === 'number'  ? song.lineHeight     : defaults.lineHeight;
+        countInEnabled = typeof song.countInEnabled === 'boolean' ? song.countInEnabled : defaults.countInEnabled;
+        applySettingsToUI();
 
-        viewerContent.innerHTML = (song.content || '')
-            .split('\n')
-            .map(line => `<span class="viewer-content-line">${esc(line) || '\u00A0'}</span>`)
-            .join('');
+        renderLines(song.content);
+        setNotes(song.name || 'Notes', song.notes);
 
-        const hasNotes = !!(song.notes && song.notes.trim());
-        notesStagBtn.classList.remove('hidden', 'no-notes');
-        if (hasNotes) {
-            notesStageSongTitle.textContent = song.name || 'Notes';
-            notesStageContent.textContent   = song.notes;
-        } else {
-            notesStagBtn.classList.add('no-notes');
-        }
-
-        stopScroll();
         elapsedMs = 0;
         updateTimeDisplay();
         currentPlaylist = song.playlist || 'Set 1';
         updatePlaylistDisplay();
         snapFirstLineIntoGlow();
+        return true;
     }
     const playlistNavPill = document.getElementById('playlistNavPill');
 
     function updatePlaylistDisplay() {
         const playlistSongs = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongId) {
-            currentSongIndex = playlistSongs.findIndex(s => s.id === currentSongId);
-        }
+        currentSongIndex = currentSongId ? playlistSongs.findIndex(s => s.id === currentSongId) : -1;
         playlistPillText.textContent  = currentPlaylist;
-        playlistPillIndex.textContent = `${Math.max(0, currentSongIndex + 1)}/${playlistSongs.length}`;
-        const hasPl = playlistSongs.length > 0;
+        playlistPillIndex.textContent = currentSongIndex >= 0
+            ? `${currentSongIndex + 1}/${playlistSongs.length}`
+            : `–/${playlistSongs.length}`;
+        const hasPl = playlistSongs.length > 0 && currentSongIndex >= 0;
         if (playlistNavPill) playlistNavPill.classList.toggle('visible', hasPl);
-        if (prevSongBtn) prevSongBtn.style.opacity = (currentSongIndex <= 0 || !hasPl) ? '0.3' : '1';
-        if (nextSongBtn) nextSongBtn.style.opacity = (currentSongIndex >= playlistSongs.length - 1 || !hasPl) ? '0.3' : '1';
-        if (prevSongBtn) prevSongBtn.disabled = currentSongIndex <= 0 || !hasPl;
-        if (nextSongBtn) nextSongBtn.disabled = currentSongIndex >= playlistSongs.length - 1 || !hasPl;
+        const prevOff = currentSongIndex <= 0 || !hasPl;
+        const nextOff = currentSongIndex >= playlistSongs.length - 1 || !hasPl;
+        prevSongBtn.style.opacity = prevOff ? '0.3' : '1';
+        nextSongBtn.style.opacity = nextOff ? '0.3' : '1';
+        prevSongBtn.disabled = prevOff;
+        nextSongBtn.disabled = nextOff;
     }
 
     // ─── NAVIGATION ──────────────────────────────────────────────────────
-    prevSongBtn.onclick = () => {
+    function goToSong(offset) {
         const pl = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongIndex > 0) {
-            currentSongIndex--;
-            currentSongId = pl[currentSongIndex].id;
-            localStorage.setItem('lyricflow_currentSongId', currentSongId);
-            loadSongIntoUI(currentSongId);
-        }
-    };
-    nextSongBtn.onclick = () => {
-        const pl = songs.filter(s => s.playlist === currentPlaylist);
-        if (currentSongIndex < pl.length - 1) {
-            currentSongIndex++;
-            currentSongId = pl[currentSongIndex].id;
-            localStorage.setItem('lyricflow_currentSongId', currentSongId);
-            loadSongIntoUI(currentSongId);
-        }
-    };
+        const target = pl[currentSongIndex + offset];
+        if (!target) return;
+        localStorage.setItem('lyricflow_currentSongId', target.id);
+        loadSongIntoUI(target.id);
+    }
+    prevSongBtn.onclick = () => goToSong(-1);
+    nextSongBtn.onclick = () => goToSong(1);
 
     // ─── TIME DISPLAY ────────────────────────────────────────────────────
     function updateTimeDisplay() {
@@ -720,7 +783,26 @@ Use Settings to adjust speed, font size and line spacing.`;
         timeDisplay.textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
     }
 
+    // ─── SCREEN WAKE LOCK ────────────────────────────────────────────────
+    // NEW v1.1: keep phones/tablets from dimming while on stage
+    let wakeLock = null;
+    async function requestWakeLock() {
+        if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+        if (wakeLock && !wakeLock.released) return;
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } catch(e) { /* not allowed yet (e.g. needs a tap) — retried on next interaction */ }
+    }
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWakeLock(); });
+    document.addEventListener('pointerdown', requestWakeLock, { passive: true });
+    requestWakeLock();
+
     // ─── SCROLL ENGINE ────────────────────────────────────────────────────
+    function cancelEndReset() {
+        if (endResetTimer) { clearTimeout(endResetTimer); endResetTimer = null; }
+    }
+
     function animate(ts) {
         if (!isPlaying) return;
 
@@ -733,22 +815,37 @@ Use Settings to adjust speed, font size and line spacing.`;
 
         const pxPerMs = (scrollSpeed * 30) / 1000;
         baseContentY -= pxPerMs * delta;
-        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+        applyScroll();
 
         const contentRect = viewerContent.getBoundingClientRect();
         const viewerRect  = viewer.getBoundingClientRect();
         if (contentRect.bottom < viewerRect.top) {
             stopScroll();
             statusText.textContent = 'End of lyrics';
-            setTimeout(() => resetBtn.click(), 1200);
+            // FIX v1.1: cancellable, so it can't reset a song you've already moved on to
+            endResetTimer = setTimeout(() => { endResetTimer = null; resetBtn.click(); }, 1200);
             return;
         }
 
         rafId = requestAnimationFrame(animate);
     }
 
+    function showPauseButton(show) {
+        startBtn.classList.toggle('hidden', show);
+        pauseBtn.classList.toggle('hidden', !show);
+    }
+
     function startScroll() {
         if (isPlaying || isCountingIn) return;
+        cancelEndReset();
+        requestWakeLock();
+        // If the lyrics have already scrolled off the end, start again from the top
+        if (viewerContent.getBoundingClientRect().bottom < viewer.getBoundingClientRect().top) {
+            baseContentY = songStartBaseContentY || canonicalBaseContentY || 0;
+            elapsedMs = 0;
+            updateTimeDisplay();
+            applyScroll();
+        }
         if (countInEnabled) {
             runCountIn(() => beginScroll());
         } else {
@@ -760,8 +857,7 @@ Use Settings to adjust speed, font size and line spacing.`;
         isCountingIn = false;
         isPlaying   = true;
         lastFrameTs = null;
-        startBtn.classList.add('hidden');
-        pauseBtn.classList.remove('hidden');
+        showPauseButton(true);
         statusText.textContent = 'Scrolling';
         rafId = requestAnimationFrame(animate);
     }
@@ -770,14 +866,17 @@ Use Settings to adjust speed, font size and line spacing.`;
         const overlay = document.getElementById('viewerCountIn');
         if (!overlay) { callback(); return; }
         isCountingIn = true;
+        showPauseButton(true); // Pause now cancels the count-in
+        statusText.textContent = 'Count-in';
         overlay.classList.remove('hidden');
         const counts = [4, 3, 2, 1];
         let i = 0;
         overlay.textContent = counts[i];
-        const tick = setInterval(() => {
+        countInTimer = setInterval(() => {
             i++;
             if (i >= counts.length) {
-                clearInterval(tick);
+                clearInterval(countInTimer);
+                countInTimer = null;
                 overlay.classList.add('hidden');
                 callback();
             } else {
@@ -789,9 +888,10 @@ Use Settings to adjust speed, font size and line spacing.`;
     function stopScroll() {
         isPlaying = false;
         isCountingIn = false;
+        // FIX v1.1: a running count-in used to keep ticking and start scrolling after Pause/Reset
+        if (countInTimer) { clearInterval(countInTimer); countInTimer = null; }
         if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-        pauseBtn.classList.add('hidden');
-        startBtn.classList.remove('hidden');
+        showPauseButton(false);
         lastFrameTs = null;
         const overlay = document.getElementById('viewerCountIn');
         if (overlay) overlay.classList.add('hidden');
@@ -802,9 +902,10 @@ Use Settings to adjust speed, font size and line spacing.`;
     pauseBtn.onclick  = () => { stopScroll(); statusText.textContent = 'Paused'; };
     resetBtn.onclick  = () => {
         stopScroll();
+        cancelEndReset();
         elapsedMs    = 0;
         baseContentY = songStartBaseContentY || canonicalBaseContentY || 0;
-        viewerContent.style.transform = `translateY(${baseContentY}px)`;
+        applyScroll();
         updateTimeDisplay();
         statusText.textContent = 'Ready';
         snapFirstLineIntoGlow();
@@ -812,7 +913,9 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     // ─── KEYBOARD ────────────────────────────────────────────────────────
     document.addEventListener('keydown', e => {
-        if (e.code === 'Space') { e.preventDefault(); isPlaying ? pauseBtn.click() : startBtn.click(); }
+        // Don't hijack keys while a form control in a modal has focus
+        if (e.target.closest && e.target.closest('input, textarea, select')) return;
+        if (e.code === 'Space') { e.preventDefault(); (isPlaying || isCountingIn) ? pauseBtn.click() : startBtn.click(); }
         if (e.key  === 'r' || e.key === 'R') resetBtn.click();
     });
 
@@ -821,12 +924,16 @@ Use Settings to adjust speed, font size and line spacing.`;
         viewerContent.style.transform = `translateY(${baseContentY}px)`;
     }
 
+    // FIX v1.1: pointer events only. Touch handlers used to fire as well and wipe the
+    // "was playing" flag, so scrolling never resumed after a drag on phones/tablets.
     viewerCard.addEventListener('pointerdown', e => {
         if (e.target.closest('.viewer-notes-btn')) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
         e.preventDefault();
         try { viewerCard.setPointerCapture(e.pointerId); } catch(_) {}
         wasPlayingBeforeDrag = isPlaying;
         if (isPlaying) stopScroll();
+        cancelEndReset();
         isDragging     = true;
         dragStartY     = e.clientY;
         dragStartBaseY = baseContentY;
@@ -835,8 +942,7 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     viewerCard.addEventListener('pointermove', e => {
         if (!isDragging) return;
-        const delta  = e.clientY - dragStartY;
-        baseContentY = dragStartBaseY + delta;
+        baseContentY = clampY(dragStartBaseY + (e.clientY - dragStartY));
         applyScroll();
     });
 
@@ -844,27 +950,13 @@ Use Settings to adjust speed, font size and line spacing.`;
         if (!isDragging) return;
         isDragging = false;
         viewer.style.cursor = 'grab';
-        if (wasPlayingBeforeDrag) startScroll();
+        // FIX v1.1: resume directly — going through startScroll() replayed the 4-beat count-in
+        if (wasPlayingBeforeDrag) beginScroll();
+        wasPlayingBeforeDrag = false;
     };
     viewerCard.addEventListener('pointerup',     endDrag);
     viewerCard.addEventListener('pointercancel', endDrag);
-    viewerCard.addEventListener('mouseleave',    endDrag);
-
-    viewerCard.addEventListener('touchstart', e => {
-        wasPlayingBeforeDrag = isPlaying;
-        if (isPlaying) stopScroll();
-        isDragging     = true;
-        dragStartY     = e.touches[0].clientY;
-        dragStartBaseY = baseContentY;
-    }, { passive: true });
-    viewerCard.addEventListener('touchmove', e => {
-        if (!isDragging) return;
-        const delta  = e.touches[0].clientY - dragStartY;
-        baseContentY = dragStartBaseY + delta;
-        applyScroll();
-    }, { passive: true });
-    viewerCard.addEventListener('touchend',    endDrag);
-    viewerCard.addEventListener('touchcancel', endDrag);
+    viewerCard.addEventListener('lostpointercapture', endDrag);
 
     // ─── SETTINGS ────────────────────────────────────────────────────────
     function markSongDirty() {
@@ -875,14 +967,18 @@ Use Settings to adjust speed, font size and line spacing.`;
     }
 
     function saveSettingsToSong() {
-        if (!currentSongId) return;
+        if (!currentSongId) {
+            statusText.textContent = 'No saved song loaded · saved as defaults';
+            return;
+        }
+        loadSongsFromStorage(); // FIX v1.1: don't overwrite newer edits from the editor with a stale copy
         const idx = songs.findIndex(s => s.id === currentSongId);
         if (idx === -1) return;
         songs[idx].scrollSpeed    = scrollSpeed;
         songs[idx].fontSize       = fontSize;
         songs[idx].lineHeight     = lineHeight;
         songs[idx].countInEnabled = countInEnabled;
-        try { localStorage.setItem('lyricflow_v3_songs', JSON.stringify(songs)); } catch(e) {}
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(songs)); } catch(e) {}
         statusText.textContent = `${songs[idx].name} · settings saved`;
     }
 
@@ -893,7 +989,7 @@ Use Settings to adjust speed, font size and line spacing.`;
         markSongDirty();
     };
     fontSizeInput.oninput = e => {
-        fontSize = parseInt(e.target.value);
+        fontSize = parseInt(e.target.value, 10);
         fontSizeValue.textContent = fontSize + 'px';
         viewer.style.fontSize = fontSize + 'px';
         snapFirstLineIntoGlow();
@@ -911,6 +1007,7 @@ Use Settings to adjust speed, font size and line spacing.`;
     if (countInToggle) countInToggle.onchange = e => {
         countInEnabled = e.target.checked;
         saveSettings();
+        markSongDirty();
     };
 
     document.getElementById('stageInfoBtn').onclick      = () => openModal('stageInfoOverlay');
@@ -944,26 +1041,25 @@ Use Settings to adjust speed, font size and line spacing.`;
 
     // ─── DRAFT ────────────────────────────────────────────────────────────
     function loadDraft(text) {
-        currentSongId = null;
-        statusText.textContent = 'Unsaved song';
-        const draftNotes = localStorage.getItem('lyricflow_draft_notes') || '';
-        localStorage.removeItem('lyricflow_draft_notes');
-        const hasNotes = !!draftNotes.trim();
-        notesStagBtn.classList.remove('hidden', 'no-notes');
-        if (hasNotes) {
-            notesStageSongTitle.textContent = 'Draft Notes';
-            notesStageContent.textContent   = draftNotes;
-        } else {
-            notesStagBtn.classList.add('no-notes');
-        }
-        viewerContent.innerHTML = text.split('\n')
-            .map(line => `<span class="viewer-content-line">${esc(line) || '\u00A0'}</span>`)
-            .join('');
         stopScroll();
+        currentSongId = null;
+        useDefaultSettings();
+        statusText.textContent = 'Unsaved song';
+        // Kept in storage (not removed) so a refresh of the stage still shows the draft notes
+        const draftNotes = localStorage.getItem('lyricflow_draft_notes') || '';
+        setNotes('Draft Notes', draftNotes);
+        renderLines(text);
         elapsedMs = 0;
         updateTimeDisplay();
         updatePlaylistDisplay();
         snapFirstLineIntoGlow();
+    }
+
+    // ─── STORAGE / OFFLINE ───────────────────────────────────────────────
+    // NEW v1.1: ask the browser not to evict saved songs, and cache the app for offline use
+    if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(() => {}); }
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
     }
 
     // ─── BOOT ────────────────────────────────────────────────────────────
@@ -973,9 +1069,9 @@ Use Settings to adjust speed, font size and line spacing.`;
     const draft = localStorage.getItem('lyricflow_draft');
     if (draft && draft.trim()) {
         loadDraft(draft);
-    } else if (currentSongId) {
-        loadSongIntoUI(currentSongId);
-    } else {
+    } else if (!(currentSongId && loadSongIntoUI(currentSongId))) {
+        // FIX v1.1: a missing/deleted song id now falls back to the welcome screen
+        currentSongId = null;
         showWelcome();
     }
     </script>

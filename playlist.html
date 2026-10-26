@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <title>LyricFlow - Playlist Editor</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
     <style>
@@ -101,7 +107,7 @@
                         <div class="app-subtitle">Playlist Editor</div>
                     </div>
                 </div>
-                <div class="mode-toggle" id="modeToggle" onclick="goToStage()">
+                <div class="mode-toggle" id="modeToggle" role="button" tabindex="0" onclick="goToStage()">
                     <div class="mode-dot"></div>
                     <span><strong>Playlist mode</strong><small> · tap for stage</small></span>
                 </div>
@@ -163,7 +169,7 @@
                     <button class="about-tab" data-tab="donate">Donate</button>
                 </div>
                 <div id="about-tab" class="about-panel" style="padding:0 4px;">
-                    <p style="color:var(--accent-bright); font-weight:600;">LyricFlow v1.0</p>
+                    <p style="color:var(--accent-bright); font-weight:600;">LyricFlow v1.1</p>
                     <p>A lightweight teleprompter built for live performance. No accounts, no internet required — everything lives on your device.</p>
                     <p>Built for musicians, presenters and performers who need their words to flow.</p>
                     <p style="color:var(--text-muted); font-size:11px; margin-top:8px;">© 2026 LyricFlow. All rights reserved.</p>
@@ -201,18 +207,20 @@
                 <p>• Use blank lines to create breathing space between verse, chorus and bridge.</p>
                 <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Saving songs</p>
                 <p>• Tap <strong>Save As</strong> to name your song and add it to a playlist. This always creates a new song.</p>
-                <p>• Once a song is loaded, the button changes to <strong>Save</strong> and overwrites it directly.</p>
-                <p>• To duplicate a song, change its name before saving.</p>
+                <p>• Once a song is loaded, the button changes to <strong>Save</strong>. Keep the title to overwrite the song.</p>
+                <p>• To duplicate a song, change its title before saving — the original is kept.</p>
+                <p>• To rename a song, use the ℹ button in <strong>Edit Playlist</strong>.</p>
                 <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Loading &amp; editing</p>
                 <p>• Tap <strong>Load</strong> to pick a saved song. It loads into the editor and onto the stage simultaneously.</p>
-                <p>• Edits you make are reflected live on stage — no need to reload.</p>
+                <p>• Edits you make are reflected live on stage — no need to reload. Save them to keep them; you'll be asked before leaving with unsaved changes.</p>
                 <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Notes &amp; settings</p>
                 <p>• The <strong>Notes</strong> button (top-right of editor) lets you store chords, cues or triggers with the song.</p>
                 <p>• In <strong>Edit Playlist</strong>, tap ℹ next to any song to set its scroll speed, font size and line height individually.</p>
                 <p style="color:var(--accent-bright); font-weight:600; margin:8px 0 2px;">Playlists</p>
                 <p>• Songs are grouped by playlist name. Create a new playlist by typing a new name when saving.</p>
                 <p>• Use <strong>Edit Playlist</strong> to reorder or delete songs, rename songs, or rename the playlist.</p>
-                <p>• Use <strong>Export</strong> to save a backup file. Use <strong>Import</strong> to restore it on any device.</p>
+                <p>• Use <strong>Export</strong> to save a backup file. Use <strong>Import</strong> to restore it on any device — you can choose to replace songs that already exist.</p>
+                <p>• Songs are stored in this browser only. Export a backup regularly, and on iPhone/iPad add LyricFlow to your Home Screen so Safari doesn't clear it.</p>
             </div>
             <div class="modal-footer"><button data-close-edit-info>Got it</button></div>
         </div>
@@ -352,7 +360,7 @@
         const qs = id => document.getElementById(id);
 
         // Security: sanitise any string before injecting into innerHTML
-        function esc(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        function esc(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
         const editor=qs('editor'),statusText=qs('statusText'),editorInfoBtn=qs('editorInfoBtn'),editInfoOverlay=qs('editInfoOverlay');
         const saveSongBtn=qs('saveSongBtn'),loadSongBtn=qs('loadSongBtn'),editPlaylistBtn=qs('editPlaylistBtn');
@@ -362,21 +370,42 @@
         const playlistSelect=qs('playlistSelect'),loadSongList=qs('loadSongList'),loadPagination=qs('loadPagination');
         const editPlaylistOverlay=qs('editPlaylistOverlay'),editPlaylistSelect=qs('editPlaylistSelect');
         const playlistEditList=qs('playlistEditList'),editPagination=qs('editPagination'),playlistEditDetails=qs('playlistEditDetails');
+        const saveModalHint=qs('saveModalHint');
 
         let savedSongs=[],currentSong=null,hasUnsavedChanges=false;
         const SONGS_PER_PAGE=10;
         let currentLoadPage=0,currentEditPage=0;
 
-        function markDirty(){if(!currentSong)return;hasUnsavedChanges=true;statusText.textContent=`${currentSong.name} · unsaved changes`;if(saveSongBtn)saveSongBtn.textContent='Save';}
-        function markClean(name){hasUnsavedChanges=false;statusText.textContent=`Saved: ${name}`;if(saveSongBtn)saveSongBtn.textContent='Save';}
+        function markDirty(){if(!currentSong)return;hasUnsavedChanges=true;statusText.textContent=`${currentSong.name} · unsaved changes`;}
+        function markClean(name){hasUnsavedChanges=false;statusText.textContent=`Saved: ${name}`;}
         function updateSaveButton(){if(!saveSongBtn)return;saveSongBtn.textContent=currentSong?'Save':'Save As';saveSongBtn.className='tiny-btn save';}
 
         const STORAGE_KEY='lyricflow_v3_songs';
         let bc=null;
         try{bc=new BroadcastChannel('lyricflow_stage');}catch(e){}
+        function broadcast(msg){ if(bc){ try{bc.postMessage(msg);}catch(e){} } }
+
+        function newId(){ return 'song_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+        // Global stage defaults (set on the stage page with no song loaded).
+        // FIX v1.1: new songs inherit these instead of hard-coded 0.4 / 20px / 1.9.
+        function getDefaults(){
+            let d={};
+            try{d=JSON.parse(localStorage.getItem('lyricflow_stage_settings')||'{}')||{};}catch(e){d={};}
+            return {
+                scrollSpeed: typeof d.scrollSpeed==='number'?d.scrollSpeed:0.4,
+                fontSize: typeof d.fontSize==='number'?d.fontSize:20,
+                lineHeight: typeof d.lineHeight==='number'?d.lineHeight:1.9,
+                countInEnabled: !!d.countInEnabled
+            };
+        }
 
         function storageAvailable(){try{localStorage.setItem('__t__','1');localStorage.removeItem('__t__');return true;}catch(e){return false;}}
-        function saveSongsToStorage(){if(!storageAvailable())return;localStorage.setItem(STORAGE_KEY,JSON.stringify(savedSongs));}
+        function saveSongsToStorage(){
+            if(!storageAvailable()){statusText.textContent='⚠ Storage unavailable — songs not saved';return false;}
+            try{localStorage.setItem(STORAGE_KEY,JSON.stringify(savedSongs));return true;}
+            catch(e){statusText.textContent='⚠ Storage full — export a backup';alert('Could not save: browser storage is full. Export a backup and delete some songs.');return false;}
+        }
         function loadSongsFromStorage(){
             if(!storageAvailable()){savedSongs=[];return;}
             try{
@@ -384,18 +413,25 @@
                 if(!raw){savedSongs=[];return;}
                 const parsed=JSON.parse(raw);
                 if(!Array.isArray(parsed)){savedSongs=[];return;}
-                savedSongs=parsed.map(s=>({
-                    id:s.id||('song_'+Math.random().toString(36).slice(2)),
-                    name:s.name||s.title||'Untitled',
-                    playlist:s.playlist||'Set 1',
-                    content:s.content||s.lyrics||'',
-                    notes:s.notes||'',
-                    scrollSpeed:typeof s.scrollSpeed==='number'?s.scrollSpeed:0.4,
-                    fontSize:typeof s.fontSize==='number'?s.fontSize:20,
-                    lineHeight:typeof s.lineHeight==='number'?s.lineHeight:1.9,
-                    countInEnabled:typeof s.countInEnabled==='boolean'?s.countInEnabled:false,
-                    createdAt:s.createdAt||new Date().toISOString()
-                }));
+                const d=getDefaults();
+                let repaired=false;
+                savedSongs=parsed.filter(s=>s&&typeof s==='object').map(s=>{
+                    if(!s.id)repaired=true;
+                    return {
+                        id:s.id||newId(),
+                        name:s.name||s.title||'Untitled',
+                        playlist:s.playlist||'Set 1',
+                        content:s.content||s.lyrics||'',
+                        notes:s.notes||'',
+                        scrollSpeed:typeof s.scrollSpeed==='number'?s.scrollSpeed:d.scrollSpeed,
+                        fontSize:typeof s.fontSize==='number'?s.fontSize:d.fontSize,
+                        lineHeight:typeof s.lineHeight==='number'?s.lineHeight:d.lineHeight,
+                        countInEnabled:typeof s.countInEnabled==='boolean'?s.countInEnabled:d.countInEnabled,
+                        createdAt:s.createdAt||new Date().toISOString()
+                    };
+                });
+                // FIX v1.1: songs without an id got a new random id on every load; persist it once
+                if(repaired)saveSongsToStorage();
             }catch(e){savedSongs=[];}
         }
 
@@ -410,11 +446,18 @@
             }
         }
 
-        function buildPlaylistSelect(){
-            const playlists=Array.from(new Set(savedSongs.map(s=>s.playlist||'Set 1'))).sort();
+        function getPlaylists(){ return Array.from(new Set(savedSongs.map(s=>s.playlist||'Set 1'))).sort((a,b)=>a.localeCompare(b)); }
+
+        // FIX v1.1: options are built with the DOM, not innerHTML, so playlist names with
+        // quotes or HTML (e.g. from an imported backup) can't break the list or run script.
+        function buildPlaylistSelect(preferred){
+            const playlists=getPlaylists();
+            if(!playlists.length)playlists.push('Set 1');
             [playlistSelect,editPlaylistSelect].forEach(sel=>{
                 if(!sel)return;
-                sel.innerHTML=playlists.length?playlists.map(p=>`<option value="${p}">${p}</option>`).join(''): '<option value="Set 1">Set 1</option>';
+                const keep=preferred||sel.value||(currentSong&&currentSong.playlist);
+                sel.replaceChildren(...playlists.map(p=>new Option(p,p)));
+                if(keep&&playlists.includes(keep))sel.value=keep;
             });
         }
 
@@ -438,10 +481,12 @@
             const si=currentEditPage*SONGS_PER_PAGE;
             const ps=songs.slice(si,si+SONGS_PER_PAGE);
             playlistEditList.innerHTML=ps.length?ps.map((s,i)=>{
-                const gi=savedSongs.findIndex(x=>x.id===s.id);
-                return `<div class="playlist-edit-item"><span class="playlist-edit-name">${si+i+1}. ${esc(s.name)}</span><div class="playlist-edit-controls"><button data-info="${esc(s.id)}" title="Song settings">ℹ</button><button data-move="${gi}" data-dir="-1" title="Move up">↑</button><button data-move="${gi}" data-dir="1" title="Move down">↓</button><button data-delete="${esc(s.id)}" title="Delete">✕</button></div></div>`;
+                const pos=si+i;
+                const upOff=pos===0?' disabled style="opacity:.3"':'';
+                const downOff=pos===songs.length-1?' disabled style="opacity:.3"':'';
+                return `<div class="playlist-edit-item"><span class="playlist-edit-name">${pos+1}. ${esc(s.name)}</span><div class="playlist-edit-controls"><button data-info="${esc(s.id)}" title="Song settings">ℹ</button><button data-move="${esc(s.id)}" data-dir="-1" title="Move up"${upOff}>↑</button><button data-move="${esc(s.id)}" data-dir="1" title="Move down"${downOff}>↓</button><button data-delete="${esc(s.id)}" title="Delete">✕</button></div></div>`;
             }).join(''):'<p style="color:var(--text-muted);text-align:center;padding:40px 20px;font-style:italic;">No songs in this playlist</p>';
-            playlistEditList.querySelectorAll('[data-move]').forEach(btn=>{btn.onclick=()=>moveSong(parseInt(btn.dataset.move,10),parseInt(btn.dataset.dir,10));});
+            playlistEditList.querySelectorAll('[data-move]').forEach(btn=>{btn.onclick=()=>moveSong(btn.dataset.move,parseInt(btn.dataset.dir,10));});
             playlistEditList.querySelectorAll('[data-delete]').forEach(btn=>{btn.onclick=()=>deleteSong(btn.dataset.delete);});
             playlistEditList.querySelectorAll('[data-info]').forEach(btn=>{btn.onclick=()=>openSongSettings(btn.dataset.info);});
             buildPagination(editPagination,currentEditPage,tp,page=>{currentEditPage=page;buildPlaylistEditList();});
@@ -460,10 +505,13 @@
             if(!current)return;
             const newName=prompt(`Rename playlist "${current}" to:`,current);
             if(!newName||!newName.trim()||newName.trim()===current)return;
-            const trimmed=newName.trim();
+            const trimmed=newName.trim().slice(0,100);
+            // FIX v1.1: renaming onto an existing playlist used to merge them silently
+            if(getPlaylists().includes(trimmed)&&!confirm(`A playlist called "${trimmed}" already exists. Merge "${current}" into it?`))return;
             savedSongs=savedSongs.map(s=>s.playlist===current?{...s,playlist:trimmed}:s);
-            saveSongsToStorage();buildPlaylistSelect();
-            if(editPlaylistSelect){editPlaylistSelect.value=trimmed;buildPlaylistEditList();}
+            if(currentSong)currentSong=savedSongs.find(s=>s.id===currentSong.id)||null;
+            saveSongsToStorage();buildPlaylistSelect(trimmed);buildPlaylistEditList();updatePlaylistDetails();
+            if(currentSong)broadcast({type:'songUpdated',songId:currentSong.id});
             statusText.textContent=`Renamed: ${current} → ${trimmed}`;
         };
 
@@ -471,14 +519,13 @@
             const song=savedSongs.find(s=>s.id===songId);if(!song)return;
             songSettingsId=songId;songSettingsTitle.textContent=song.name;
             if(songNameInput)songNameInput.value=song.name;
-            songSpeedInput.value=song.scrollSpeed||0.4;songSpeedValue.textContent=parseFloat(song.scrollSpeed||0.4).toFixed(2);
-            songFontInput.value=song.fontSize||20;songFontValue.textContent=(song.fontSize||20)+'px';
-            songLineInput.value=song.lineHeight||1.9;songLineValue.textContent=parseFloat(song.lineHeight||1.9).toFixed(2);
+            songSpeedInput.value=song.scrollSpeed;songSpeedValue.textContent=parseFloat(song.scrollSpeed).toFixed(2);
+            songFontInput.value=song.fontSize;songFontValue.textContent=song.fontSize+'px';
+            songLineInput.value=song.lineHeight;songLineValue.textContent=parseFloat(song.lineHeight).toFixed(2);
             if(songCountInToggle)songCountInToggle.checked=!!song.countInEnabled;
             songNotesInput.value=song.notes||'';
             songSettingsOverlay.classList.remove('hidden');
         }
-        function closeSongSettings(){songSettingsOverlay.classList.add('hidden');}
 
         songSpeedInput.oninput=()=>songSpeedValue.textContent=parseFloat(songSpeedInput.value).toFixed(2);
         songFontInput.oninput=()=>songFontValue.textContent=songFontInput.value+'px';
@@ -487,14 +534,16 @@
         if(saveSongSettingsBtn)saveSongSettingsBtn.onclick=()=>{
             const idx=savedSongs.findIndex(s=>s.id===songSettingsId);if(idx===-1)return;
             const newName=songNameInput?songNameInput.value.trim():'';
-            if(newName)savedSongs[idx].name=newName;
+            if(newName)savedSongs[idx].name=newName.slice(0,200);
             savedSongs[idx].scrollSpeed=parseFloat(songSpeedInput.value);
-            savedSongs[idx].fontSize=parseInt(songFontInput.value);
+            savedSongs[idx].fontSize=parseInt(songFontInput.value,10);
             savedSongs[idx].lineHeight=parseFloat(songLineInput.value);
             savedSongs[idx].countInEnabled=songCountInToggle?songCountInToggle.checked:false;
             savedSongs[idx].notes=songNotesInput.value;
-            if(currentSong&&currentSong.id===songSettingsId){currentSong=savedSongs[idx];updatePlaylistDetails();}
+            if(currentSong&&currentSong.id===songSettingsId){currentSong=savedSongs[idx];updatePlaylistDetails();updateNotesBtn();}
             saveSongsToStorage();buildPlaylistEditList();closeSongSettings();
+            // FIX v1.1: tell the stage so notes/name update without a reload
+            broadcast({type:'songUpdated',songId:savedSongs[idx].id});
             statusText.textContent=`Saved: ${savedSongs[idx].name}`;
         };
         if(songSettingsOverlay)songSettingsOverlay.onclick=e=>{if(e.target===songSettingsOverlay)closeSongSettings();};
@@ -522,19 +571,20 @@
             songNotesBtnCaps.style.color=songNotesCapsOn?'#020617':'var(--text-soft)';
         };
 
-        const _origCloseSongSettings = closeSongSettings;
-        closeSongSettings = () => { resetSongNotesCaps(); _origCloseSongSettings(); };
+        function closeSongSettings(){ resetSongNotesCaps(); songSettingsOverlay.classList.add('hidden'); }
 
         function loadSongIntoEditor(songId){
             const song=savedSongs.find(s=>s.id===songId);if(!song)return;
-            currentSong=song;editor.value=song.content||'';hasUnsavedChanges=false;
+            // FIX v1.1: don't silently throw away unsaved edits to the current song
+            if(hasUnsavedChanges&&currentSong&&currentSong.id!==songId&&!confirm(`Discard unsaved changes to "${currentSong.name}"?`))return;
+            currentSong=song;editor.value=song.content||'';hasUnsavedChanges=false;draftNotes='';
             updatePlaylistDetails();updateSaveButton();
             updateNotesBtn();
-            // FIX: Clear stale draft so index.html doesn't pick it up over this saved song
+            // Clear stale draft so index.html doesn't pick it up over this saved song
             localStorage.removeItem('lyricflow_draft');
             localStorage.removeItem('lyricflow_draft_notes');
             localStorage.setItem('lyricflow_currentSongId',song.id);
-            if(bc)bc.postMessage({type:'loadSong',songId:song.id});
+            broadcast({type:'loadSong',songId:song.id});
             loadOverlay.classList.add('hidden');
             statusText.textContent=`Loaded: ${song.name}`;
         }
@@ -547,48 +597,102 @@
         }
 
         if(editor)editor.addEventListener('input',()=>{
-            if(currentSong){markDirty();if(bc)bc.postMessage({type:'liveEdit',content:editor.value,songId:currentSong.id});}
-            else{localStorage.setItem('lyricflow_draft',editor.value);if(bc)bc.postMessage({type:'liveDraft',content:editor.value});}
+            if(currentSong){markDirty();broadcast({type:'liveEdit',content:editor.value,songId:currentSong.id});}
+            else{localStorage.setItem('lyricflow_draft',editor.value);broadcast({type:'liveDraft',content:editor.value});}
             updateNotesBtn();
         });
 
-        function moveSong(idx,direction){
-            const ti=idx+direction;if(ti<0||ti>=savedSongs.length)return;
-            [savedSongs[idx],savedSongs[ti]]=[savedSongs[ti],savedSongs[idx]];
-            saveSongsToStorage();buildPlaylistEditList();
+        // FIX v1.1: moves within the playlist. It used to swap with the next song in the whole
+        // library, so with songs from different playlists mixed together ↑/↓ seemed to do nothing.
+        function moveSong(songId,direction){
+            const song=savedSongs.find(s=>s.id===songId);if(!song)return;
+            const idxs=savedSongs.map((s,i)=>s.playlist===song.playlist?i:-1).filter(i=>i!==-1);
+            const pos=idxs.indexOf(savedSongs.indexOf(song));
+            const targetPos=pos+direction;
+            if(targetPos<0||targetPos>=idxs.length)return;
+            const a=idxs[pos],b=idxs[targetPos];
+            [savedSongs[a],savedSongs[b]]=[savedSongs[b],savedSongs[a]];
+            // keep the moved song visible if it crosses a page boundary
+            currentEditPage=Math.floor(targetPos/SONGS_PER_PAGE);
+            saveSongsToStorage();buildPlaylistEditList();updatePlaylistDetails();
+            broadcast({type:'songUpdated',songId});
         }
 
         function deleteSong(songId){
             if(!confirm('Delete this song permanently?'))return;
             savedSongs=savedSongs.filter(s=>s.id!==songId);
-            if(currentSong&&currentSong.id===songId){currentSong=null;editor.value='';playlistEditDetails.style.display='none';}
-            saveSongsToStorage();buildPlaylistEditList();buildPlaylistSelect();buildLoadSongList();
+            if(currentSong&&currentSong.id===songId){
+                currentSong=null;editor.value='';hasUnsavedChanges=false;playlistEditDetails.style.display='none';
+                updateSaveButton();updateNotesBtn();
+            }
+            // FIX v1.1: stop the stage pointing at a song that no longer exists
+            if(localStorage.getItem('lyricflow_currentSongId')===songId){
+                localStorage.removeItem('lyricflow_currentSongId');
+                broadcast({type:'showWelcome'});
+            }
+            saveSongsToStorage();buildPlaylistSelect();buildPlaylistEditList();buildLoadSongList();
+            statusText.textContent='Song deleted';
         }
 
+        // FIX v1.1: shows the position within the playlist (e.g. 2/8), not across the whole library
         function updatePlaylistDetails(){
             if(!currentSong||!playlistEditDetails)return;
-            const gi=savedSongs.findIndex(s=>s.id===currentSong.id);
+            const pl=savedSongs.filter(s=>s.playlist===currentSong.playlist);
+            const pos=pl.findIndex(s=>s.id===currentSong.id);
             playlistEditDetails.style.display='grid';
             qs('currentSongTitle').textContent=currentSong.name;
             qs('currentPlaylist').textContent=currentSong.playlist;
-            qs('currentSongIndex').textContent=`${gi+1}/${savedSongs.length}`;
+            qs('currentSongIndex').textContent=`${pos+1}/${pl.length}`;
         }
 
-        let savingAsNew = false;
+        // Save modal hint updates as you type, so it's clear whether you'll overwrite or copy
+        function updateSaveHint(){
+            if(!saveModalHint)return;
+            if(!currentSong){saveModalHint.textContent='Creates a new song';saveConfirmBtn.textContent='Save New';return;}
+            const name=(songTitleInput.value||'').trim()||'Untitled';
+            if(name===currentSong.name){saveModalHint.textContent=`Overwrites "${currentSong.name}" · change the title to save a copy`;saveConfirmBtn.textContent='Save';}
+            else{saveModalHint.textContent=`Saves a copy as "${name}" · "${currentSong.name}" is kept`;saveConfirmBtn.textContent='Save Copy';}
+        }
+        if(songTitleInput)songTitleInput.addEventListener('input',updateSaveHint);
+
+        function performSave(name,pln){
+            const content=editor.value.trim();
+            if(!content){alert('Please add some lyrics first');return false;}
+            if(currentSong && name===currentSong.name){
+                // Overwrite the loaded song
+                const idx=savedSongs.findIndex(s=>s.id===currentSong.id);
+                if(idx===-1)return false;
+                savedSongs[idx].playlist=pln;savedSongs[idx].content=content;currentSong=savedSongs[idx];
+                if(!saveSongsToStorage())return false;
+                localStorage.setItem('lyricflow_currentSongId',currentSong.id);
+                broadcast({type:'songUpdated',songId:currentSong.id,content:true});
+            }else{
+                // FIX v1.1: a new title now creates a copy (as the tips say) instead of renaming.
+                // Copies keep the original's notes/settings; brand-new songs keep draft notes
+                // (they used to be discarded) and inherit the global stage defaults.
+                const base=currentSong?{
+                    notes:currentSong.notes,scrollSpeed:currentSong.scrollSpeed,fontSize:currentSong.fontSize,
+                    lineHeight:currentSong.lineHeight,countInEnabled:currentSong.countInEnabled
+                }:{notes:draftNotes||'',...getDefaults()};
+                const ns={id:newId(),name,playlist:pln,content,...base,createdAt:new Date().toISOString()};
+                savedSongs.push(ns);
+                if(!saveSongsToStorage()){savedSongs.pop();return false;}
+                currentSong=ns;draftNotes='';
+                // FIX v1.1: point the stage at the new song. Previously Save As → Stage showed
+                // the Welcome screen because the stage never learned which song was saved.
+                localStorage.removeItem('lyricflow_draft');
+                localStorage.removeItem('lyricflow_draft_notes');
+                localStorage.setItem('lyricflow_currentSongId',ns.id);
+                broadcast({type:'loadSong',songId:ns.id});
+            }
+            updatePlaylistDetails();markClean(currentSong.name);updateSaveButton();updateNotesBtn();
+            return true;
+        }
 
         if(saveConfirmBtn)saveConfirmBtn.onclick=()=>{
-            const name=(songTitleInput.value||'').trim()||'Untitled';
-            const pln=(playlistInput.value||'').trim()||'Set 1';
-            const content=editor.value.trim();
-            if(!content){alert('Please add some lyrics first');return;}
-            if(currentSong && !savingAsNew){
-                const idx=savedSongs.findIndex(s=>s.id===currentSong.id);
-                if(idx!==-1){savedSongs[idx].name=name;savedSongs[idx].playlist=pln;savedSongs[idx].content=content;currentSong=savedSongs[idx];}
-            }else{
-                const ns={id:'song_'+Math.random().toString(36).slice(2),name,playlist:pln,content,notes:'',scrollSpeed:0.4,fontSize:20,lineHeight:1.9,countInEnabled:false,createdAt:new Date().toISOString()};
-                savedSongs.push(ns);currentSong=ns;
-            }
-            saveSongsToStorage();updatePlaylistDetails();saveOverlay.classList.add('hidden');markClean(name);updateSaveButton();
+            const name=((songTitleInput.value||'').trim()||'Untitled').slice(0,200);
+            const pln=((playlistInput.value||'').trim()||'Set 1').slice(0,100);
+            if(performSave(name,pln))saveOverlay.classList.add('hidden');
         };
 
         let draftNotes='';
@@ -625,8 +729,14 @@
             if(currentSong){
                 const idx=savedSongs.findIndex(s=>s.id===currentSong.id);
                 if(idx!==-1){savedSongs[idx].notes=notesEditor.value;currentSong=savedSongs[idx];saveSongsToStorage();}
+                broadcast({type:'songUpdated',songId:currentSong.id});
                 statusText.textContent=`Notes saved: ${currentSong.name}`;
-            }else{draftNotes=notesEditor.value;statusText.textContent='Notes saved to draft';}
+            }else{
+                draftNotes=notesEditor.value;
+                // FIX v1.1: persist draft notes immediately so a reload doesn't lose them
+                localStorage.setItem('lyricflow_draft_notes',draftNotes);
+                statusText.textContent='Notes saved to draft';
+            }
             updateNotesBtn();
             resetCaps();
             notesOverlay.classList.add('hidden');
@@ -635,23 +745,22 @@
         if(editorInfoBtn)editorInfoBtn.onclick=()=>editInfoOverlay.classList.remove('hidden');
         if(saveSongBtn)saveSongBtn.onclick=()=>{
             const isSaved=!!currentSong;
-            savingAsNew = !isSaved;
             qs('saveModalTitle').textContent=isSaved?'Save Song':'Save As New Song';
-            qs('saveModalHint').innerHTML=isSaved?`Overwrites ${esc(currentSong.name)} · rename to save as new`:'Creates a new song';
-            saveConfirmBtn.textContent=isSaved?'Save':'Save New';
             songTitleInput.value=currentSong?currentSong.name:'';
-            playlistInput.value=currentSong?currentSong.playlist:'Set 1';
+            playlistInput.value=currentSong?currentSong.playlist:(getPlaylists()[0]||'Set 1');
+            updateSaveHint();
             saveOverlay.classList.remove('hidden');
+            songTitleInput.focus();
         };
-        if(loadSongBtn)loadSongBtn.onclick=()=>{buildPlaylistSelect();currentLoadPage=0;buildLoadSongList();loadOverlay.classList.remove('hidden');};
-        if(editPlaylistBtn)editPlaylistBtn.onclick=()=>{buildPlaylistSelect();currentEditPage=0;buildPlaylistEditList();editPlaylistOverlay.classList.remove('hidden');};
+        if(loadSongBtn)loadSongBtn.onclick=()=>{buildPlaylistSelect(currentSong&&currentSong.playlist);currentLoadPage=0;buildLoadSongList();loadOverlay.classList.remove('hidden');};
+        if(editPlaylistBtn)editPlaylistBtn.onclick=()=>{buildPlaylistSelect(currentSong&&currentSong.playlist);currentEditPage=0;buildPlaylistEditList();editPlaylistOverlay.classList.remove('hidden');};
         if(clearEditorBtn)clearEditorBtn.onclick=()=>{
-            if(confirm('Clear all lyrics?')){
+            if(confirm(hasUnsavedChanges?'Clear the editor? Unsaved changes will be lost.':'Clear all lyrics?')){
                 editor.value='';currentSong=null;hasUnsavedChanges=false;draftNotes='';
                 if(notesBtn)notesBtn.classList.add('hidden');updateNotesBtn();
                 playlistEditDetails.style.display='none';statusText.textContent='Cleared';updateSaveButton();
-                localStorage.removeItem('lyricflow_currentSongId');localStorage.removeItem('lyricflow_draft');
-                if(bc)bc.postMessage({type:'showWelcome'});
+                localStorage.removeItem('lyricflow_currentSongId');localStorage.removeItem('lyricflow_draft');localStorage.removeItem('lyricflow_draft_notes');
+                broadcast({type:'showWelcome'});
             }
         };
 
@@ -690,63 +799,105 @@
             const url=URL.createObjectURL(blob);
             const a=document.createElement('a');
             a.href=url;
-            a.download='lyricflow-backup.json';
+            // FIX v1.1: dated file names so backups don't overwrite each other
+            a.download=`lyricflow-backup-${new Date().toISOString().slice(0,10)}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            setTimeout(()=>URL.revokeObjectURL(url),1000);
+            localStorage.setItem('lyricflow_lastExport',new Date().toISOString());
+            statusText.textContent=`Exported ${savedSongs.length} song${savedSongs.length!==1?'s':''}`;
         };
         if(importFile)importFile.onchange=e=>{
             const file=e.target.files[0];if(!file)return;
+            if(file.size>20*1024*1024){alert('That file is too large to be a LyricFlow backup.');importFile.value='';return;}
             const reader=new FileReader();
             reader.onload=ev=>{
                 try{
                     const imported=JSON.parse(ev.target.result);
                     if(!Array.isArray(imported)){alert('Invalid backup file.');return;}
-                    const existing=new Set(savedSongs.map(s=>s.id));
-                    let added=0, skipped=0;
+                    // Validate and clamp all fields first (the id is sanitised BEFORE the duplicate check)
+                    const cleaned=[];let invalid=0;
                     imported.forEach(s=>{
-                        if(!s||typeof s!=='object'){skipped++;return;}
-                        if(!s.id||typeof s.id!=='string'){skipped++;return;}
-                        if(existing.has(s.id)){skipped++;return;}
-                        // Validate and clamp all fields
-                        const clean={
-                            id: s.id.replace(/[^a-zA-Z0-9_\-]/g,'').slice(0,64) || ('song_'+Math.random().toString(36).slice(2)),
+                        if(!s||typeof s!=='object'||!s.id||typeof s.id!=='string'){invalid++;return;}
+                        const id=s.id.replace(/[^a-zA-Z0-9_\-]/g,'').slice(0,64);
+                        if(!id){invalid++;return;}
+                        cleaned.push({
+                            id,
                             name: String(s.name||s.title||'Untitled').slice(0,200),
                             playlist: String(s.playlist||'Set 1').slice(0,100),
                             content: String(s.content||s.lyrics||'').slice(0,100000),
                             notes: String(s.notes||'').slice(0,10000),
                             scrollSpeed: Math.min(2,Math.max(0.05,parseFloat(s.scrollSpeed)||0.4)),
-                            fontSize: Math.min(72,Math.max(12,parseInt(s.fontSize)||20)),
+                            fontSize: Math.min(72,Math.max(12,parseInt(s.fontSize,10)||20)),
                             lineHeight: Math.min(4,Math.max(1,parseFloat(s.lineHeight)||1.9)),
                             countInEnabled: !!s.countInEnabled,
-                            createdAt: typeof s.createdAt==='string'?s.createdAt:new Date().toISOString()
-                        };
-                        savedSongs.push(clean);
-                        existing.add(clean.id);
-                        added++;
+                            createdAt: typeof s.createdAt==='string'?s.createdAt.slice(0,40):new Date().toISOString()
+                        });
                     });
-                    saveSongsToStorage();buildPlaylistSelect();buildPlaylistEditList();
-                    const msg = skipped>0
-                        ? `Imported ${added} song${added!==1?'s':''} · ${skipped} skipped (duplicates or invalid)`
-                        : `Imported ${added} song${added!==1?'s':''}`;
-                    statusText.textContent=msg;
+                    const existingIdx=new Map(savedSongs.map((s,i)=>[s.id,i]));
+                    const seen=new Set();
+                    const unique=cleaned.filter(s=>!seen.has(s.id)&&seen.add(s.id));
+                    const dupes=unique.filter(s=>existingIdx.has(s.id));
+                    // FIX v1.1: you can now restore a backup over songs that already exist
+                    let replace=false;
+                    if(dupes.length)replace=confirm(`${dupes.length} song${dupes.length!==1?'s':''} in this backup already exist on this device.\n\nOK = replace them with the backup versions\nCancel = keep the versions on this device`);
+                    let added=0,replaced=0,skipped=0;
+                    unique.forEach(s=>{
+                        if(existingIdx.has(s.id)){
+                            if(replace){savedSongs[existingIdx.get(s.id)]=s;replaced++;}else skipped++;
+                        }else{savedSongs.push(s);added++;}
+                    });
+                    if(currentSong)currentSong=savedSongs.find(s=>s.id===currentSong.id)||null;
+                    if(currentSong&&replace&&!hasUnsavedChanges){editor.value=currentSong.content;}
+                    saveSongsToStorage();buildPlaylistSelect();buildPlaylistEditList();updatePlaylistDetails();
+                    if(currentSong)broadcast({type:'songUpdated',songId:currentSong.id,content:replace});
+                    const parts=[`Imported ${added} new`];
+                    if(replaced)parts.push(`${replaced} replaced`);
+                    if(skipped)parts.push(`${skipped} kept`);
+                    if(invalid)parts.push(`${invalid} invalid`);
+                    statusText.textContent=parts.join(' · ');
                 }catch(err){alert('Could not read backup file.');}
             };
             reader.readAsText(file);importFile.value='';
         };
 
+        // FIX v1.1: pick up changes made on the stage in another tab (e.g. "Save to song"),
+        // so the editor doesn't later overwrite them with a stale copy.
+        window.addEventListener('storage',e=>{
+            if(e.key!==STORAGE_KEY)return;
+            loadSongsFromStorage();
+            if(currentSong)currentSong=savedSongs.find(s=>s.id===currentSong.id)||null;
+            if(!currentSong){updateSaveButton();playlistEditDetails.style.display='none';}
+            else updatePlaylistDetails();
+        });
+
         loadSongsFromStorage();buildPlaylistSelect();
         const persistedSongId=localStorage.getItem('lyricflow_currentSongId');
         const persistedDraft=localStorage.getItem('lyricflow_draft');
-        if(persistedSongId){
-            const song=savedSongs.find(s=>s.id===persistedSongId);
-            if(song){currentSong=song;editor.value=song.content||'';draftNotes=song.notes||'';updatePlaylistDetails();updateSaveButton();updateNotesBtn();statusText.textContent=`Loaded: ${song.name}`;}
+        const persistedSong=persistedSongId?savedSongs.find(s=>s.id===persistedSongId):null;
+        if(persistedSong){
+            currentSong=persistedSong;editor.value=persistedSong.content||'';updatePlaylistDetails();updateSaveButton();updateNotesBtn();statusText.textContent=`Loaded: ${persistedSong.name}`;
         }else if(persistedDraft){
+            if(persistedSongId)localStorage.removeItem('lyricflow_currentSongId');
             editor.value=persistedDraft;draftNotes=localStorage.getItem('lyricflow_draft_notes')||'';updateNotesBtn();statusText.textContent='Draft restored';
-        }else{statusText.textContent='Playlist Editor – Ready';}
+        }else{
+            if(persistedSongId)localStorage.removeItem('lyricflow_currentSongId');
+            statusText.textContent='Playlist Editor – Ready';
+        }
+
+        // FIX v1.1: warn before leaving with unsaved edits (refresh, close tab)
+        let leavingForStage=false;
+        window.addEventListener('beforeunload',e=>{
+            if(hasUnsavedChanges&&!leavingForStage){e.preventDefault();e.returnValue='';}
+        });
 
         function goToStage(){
+            // FIX v1.1: unsaved edits to a loaded song used to be silently lost here
+            if(currentSong&&hasUnsavedChanges){
+                if(!confirm(`You have unsaved changes to "${currentSong.name}".\n\nOK = save them and go to stage\nCancel = stay in the editor`))return;
+                if(!performSave(currentSong.name,currentSong.playlist))return;
+            }
             const text=editor?editor.value.trim():'';
             if(text&&!currentSong){
                 // Unsaved draft — persist it for stage
@@ -757,7 +908,16 @@
                 localStorage.removeItem('lyricflow_draft');
                 localStorage.removeItem('lyricflow_draft_notes');
             }
+            leavingForStage=true;
             window.location.href='index.html';
+        }
+        const modeToggle=qs('modeToggle');
+        if(modeToggle)modeToggle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goToStage();}});
+
+        // NEW v1.1: ask the browser not to evict saved songs, and cache the app for offline use
+        if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(()=>{});}
+        if('serviceWorker' in navigator&&location.protocol!=='file:'){
+            window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
         }
     </script>
 </body>
